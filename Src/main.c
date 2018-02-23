@@ -90,7 +90,6 @@ static void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-void blinkLightsTask(void const* argument);
 
 /* USER CODE END PFP */
 
@@ -472,40 +471,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void blinkLightsTask(void const* argument)
-{
-    uint32_t prevWakeTime = osKernelSysTick();
-    uint16_t counter = 0;
-
-    for (;;)
-    {
-        osDelayUntil(&prevWakeTime, 250);
-
-        switch (counter)
-        {
-            case 0:
-                HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-                counter = 1;
-                break;
-
-            case 1:
-                HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);
-                counter = 2;
-                break;
-
-            case 2:
-                HAL_GPIO_TogglePin(LD5_GPIO_Port, LD5_Pin);
-                counter = 3;
-                break;
-
-            case 3:
-                counter = 0;
-                HAL_GPIO_TogglePin(LD6_GPIO_Port, LD6_Pin);
-                break;
-        }
-    }
-}
-
 /* USER CODE END 4 */
 
 /**
