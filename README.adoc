@@ -1,0 +1,3 @@
+= Vander Avionics
+
+For the University of Calgary's Student Organization for Aerospace Research's rocket to compete in the 2018 Spaceport America Cup.
