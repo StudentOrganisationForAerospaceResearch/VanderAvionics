@@ -52,22 +52,41 @@
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "MonitorForEmergencyShutoff.h"
+#include "MonitorForLaunch.h"
+#include "MonitorForParachutes.h"
+#include "ReadAccelGyroMagnetism.h"
+#include "ReadGps.h"
+#include "ReadInternalTemperature.h"
+#include "ReadOxidizerTankPressure.h"
+#include "ReadPressure.h"
+#include "ReadTemperature.h"
+#include "TransmitData.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
-osThreadId defaultTaskHandle;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-osThreadId blinkLightsTaskHandle;
+// Reading data
+static osThreadId readAccelGyroMagnetismTaskHandle;
+static osThreadId readPressureTaskHandle;
+static osThreadId readTemperatureTaskHandle;
+static osThreadId readInternalTemperatureTaskHandle;
+static osThreadId readGpsTaskHandle;
+static osThreadId readOxidizerTankPressureTaskHandle;
+// Transmitting data
+static osThreadId transmitDataTaskHandle;
+// Monitors that will perform actions
+static osThreadId monitorForParachutesTaskHandle;
+static osThreadId monitorForLaunchTaskHandle;
+static osThreadId monitorForEmergencyShutoffTaskHandle;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-void StartDefaultTask(void const* argument);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -122,13 +141,96 @@ int main(void)
     /* USER CODE END RTOS_TIMERS */
 
     /* Create the thread(s) */
-    /* definition and creation of defaultTask */
-    osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-    defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
-
     /* USER CODE BEGIN RTOS_THREADS */
-    osThreadDef(blinkLightsThread, blinkLightsTask, osPriorityNormal, 1, configMINIMAL_STACK_SIZE);
-    blinkLightsTaskHandle = osThreadCreate(osThread(blinkLightsThread), NULL);
+    osThreadDef(
+        readAccelGyroMagnetismThread,
+        readAccelGyroMagnetismTask,
+        osPriorityNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    readAccelGyroMagnetismTaskHandle = osThreadCreate(osThread(readAccelGyroMagnetismThread), NULL);
+
+    osThreadDef(
+        readPressureThread,
+        readPressureTask,
+        osPriorityNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    readPressureTaskHandle = osThreadCreate(osThread(readPressureThread), NULL);
+
+    osThreadDef(
+        readTemperatureThread,
+        readTemperatureTask,
+        osPriorityLow,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    readTemperatureTaskHandle = osThreadCreate(osThread(readTemperatureThread), NULL);
+
+    osThreadDef(
+        readInternalTemperatureThread,
+        readInternalTemperatureTask,
+        osPriorityLow,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    readInternalTemperatureTaskHandle = osThreadCreate(osThread(readInternalTemperatureThread), NULL);
+
+    osThreadDef(
+        readGpsThread,
+        readGpsTask,
+        osPriorityBelowNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    readGpsTaskHandle = osThreadCreate(osThread(readGpsThread), NULL);
+
+    osThreadDef(
+        readOxidizerTankPressureThread,
+        readOxidizerTankPressureTask,
+        osPriorityAboveNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    readOxidizerTankPressureTaskHandle = osThreadCreate(osThread(readOxidizerTankPressureThread), NULL);
+
+    osThreadDef(
+        transmitDataThread,
+        transmitDataTask,
+        osPriorityNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    transmitDataTaskHandle = osThreadCreate(osThread(transmitDataThread), NULL);
+
+    osThreadDef(
+        monitorForParachutesThread,
+        monitorForParachutesTask,
+        osPriorityAboveNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    monitorForParachutesTaskHandle = osThreadCreate(osThread(monitorForParachutesThread), NULL);
+
+    osThreadDef(
+        monitorForLaunchThread,
+        monitorForLaunchTask,
+        osPriorityNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    monitorForLaunchTaskHandle = osThreadCreate(osThread(monitorForLaunchThread), NULL);
+
+    osThreadDef(
+        monitorForEmergencyShutoffThread,
+        monitorForEmergencyShutoffTask,
+        osPriorityHigh,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    monitorForEmergencyShutoffTaskHandle = osThreadCreate(osThread(monitorForEmergencyShutoffThread), NULL);
     /* USER CODE END RTOS_THREADS */
 
     /* USER CODE BEGIN RTOS_QUEUES */
@@ -405,20 +507,6 @@ void blinkLightsTask(void const* argument)
 }
 
 /* USER CODE END 4 */
-
-/* StartDefaultTask function */
-void StartDefaultTask(void const* argument)
-{
-
-    /* USER CODE BEGIN 5 */
-    /* Infinite loop */
-    for (;;)
-    {
-        osDelay(1);
-    }
-
-    /* USER CODE END 5 */
-}
 
 /**
   * @brief  Period elapsed callback in non blocking mode
