@@ -1,3 +1,3 @@
 #pragma once
 
-void logData(void const* arg);
+void logDataTask(void const* arg);

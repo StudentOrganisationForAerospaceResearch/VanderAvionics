@@ -6,7 +6,7 @@
 
 static int LOG_DATA_PERIOD = 1000;
 
-void logData(void const* arg)
+void logDataTask(void const* arg)
 {
     uint32_t prevWakeTime = osKernelSysTick();
     for (;;)

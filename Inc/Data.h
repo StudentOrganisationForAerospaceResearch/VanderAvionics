@@ -3,15 +3,15 @@
 /* Structs containing data primitives */
 
 typedef struct {
-    float accelX_,
-    float accelY_,
-    float accelZ_,
-    float gyroX_,
-    float gyroY_,
-    float gyroZ_,
-    float magnetoX_,
-    float magnetoY_,
-    float magnetoZ_,
+    float accelX_;
+    float accelY_;
+    float accelZ_;
+    float gyroX_;
+    float gyroY_;
+    float gyroZ_;
+    float magnetoX_;
+    float magnetoY_;
+    float magnetoZ_;
 
     osMutexId mutex_;
 } AccelGyroMagnetismData;
