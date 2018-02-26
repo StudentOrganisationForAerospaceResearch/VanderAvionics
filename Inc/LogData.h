@@ -5,7 +5,7 @@
 
 #include "cmsis_os.h"
 
-void readTemperatureTask(void const* arg)
+void logData(void const* arg)
 {
     for (;;)
     {
