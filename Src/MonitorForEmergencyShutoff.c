@@ -11,6 +11,7 @@ void monitorForEmergencyShutoffTask(void const* arg)
     osMutexId* canHandleMutex = (osMutexId*) arg;
 
     uint32_t prevWakeTime = osKernelSysTick();
+
     for (;;)
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_EMERGENCY_SHUTOFF_PERIOD);

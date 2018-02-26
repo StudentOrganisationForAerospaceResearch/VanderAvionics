@@ -156,27 +156,52 @@ int main(void)
     /* USER CODE BEGIN RTOS_MUTEX */
     osMutexDef(ACCEL_GYRO_MAGNETISM_DATA_MUTEX); // pick any unique name
     accelGyroMagnetismData.mutex_ = osMutexCreate(osMutex(ACCEL_GYRO_MAGNETISM_DATA_MUTEX));
-    if (accelGyroMagnetismData.mutex_ == NULL) { Error_Handler(); }
+
+    if (accelGyroMagnetismData.mutex_ == NULL)
+    {
+        Error_Handler();
+    }
 
     osMutexDef(EXTERNAL_PRESSURE_DATA_MUTEX); // pick any unique name
     externalPressureData.mutex_ = osMutexCreate(osMutex(EXTERNAL_PRESSURE_DATA_MUTEX));
-    if (externalPressureData.mutex_ == NULL) { Error_Handler(); }
+
+    if (externalPressureData.mutex_ == NULL)
+    {
+        Error_Handler();
+    }
 
     osMutexDef(EXTERNAL_TEMPERATURE_DATA_MUTEX); // pick any unique name
     externalTemperatureData.mutex_ = osMutexCreate(osMutex(EXTERNAL_TEMPERATURE_DATA_MUTEX));
-    if (externalTemperatureData.mutex_ == NULL) { Error_Handler(); }
+
+    if (externalTemperatureData.mutex_ == NULL)
+    {
+        Error_Handler();
+    }
 
     osMutexDef(GPS_DATA_MUTEX); // pick any unique name
     gpsData.mutex_ = osMutexCreate(osMutex(GPS_DATA_MUTEX));
-    if (gpsData.mutex_ == NULL) { Error_Handler(); }
+
+    if (gpsData.mutex_ == NULL)
+    {
+        Error_Handler();
+    }
 
     osMutexDef(INTEGRATED_TEMPERATURE_DATA_MUTEX); // pick any unique name
     integratedTemperatureData.mutex_ = osMutexCreate(osMutex(INTEGRATED_TEMPERATURE_DATA_MUTEX));
-    if (integratedTemperatureData.mutex_ == NULL) { Error_Handler(); }
+
+    if (integratedTemperatureData.mutex_ == NULL)
+    {
+        Error_Handler();
+    }
 
     osMutexDef(OXIDIZER_TANK_DATA_MUTEX); // pick any unique name
     oxidizerTankConditionsData.mutex_ = osMutexCreate(osMutex(OXIDIZER_TANK_DATA_MUTEX));
-    if (oxidizerTankConditionsData.mutex_ == NULL) { Error_Handler(); }
+
+    if (oxidizerTankConditionsData.mutex_ == NULL)
+    {
+        Error_Handler();
+    }
+
     /* USER CODE END RTOS_MUTEX */
 
     /* USER CODE BEGIN RTOS_SEMAPHORES */

@@ -2,7 +2,8 @@
 
 /* Structs containing data primitives */
 
-typedef struct {
+typedef struct
+{
     float accelX_;
     float accelY_;
     float accelZ_;
@@ -16,22 +17,26 @@ typedef struct {
     osMutexId mutex_;
 } AccelGyroMagnetismData;
 
-typedef struct {
+typedef struct
+{
     int externalPressure_;
     osMutexId mutex_;
 } ExternalPressureData;
 
-typedef struct {
+typedef struct
+{
     int externalTemperature_;
     osMutexId mutex_;
 } ExternalTemperatureData;
 
-typedef struct {
+typedef struct
+{
     int integratedTemperature_;
     osMutexId mutex_;
 } IntegratedTemperatureData;
 
-typedef struct {
+typedef struct
+{
     int latitude_;
     int longitude_;
     int altitude_;
@@ -39,7 +44,8 @@ typedef struct {
     osMutexId mutex_;
 } GpsData;
 
-typedef struct {
+typedef struct
+{
     float pressure_;
     float temperature_;
     osMutexId mutex_;
@@ -47,7 +53,8 @@ typedef struct {
 
 /* Data Containers */
 
-typedef struct {
+typedef struct
+{
     AccelGyroMagnetismData* accelGyroMagnetismData_;
     ExternalTemperatureData* externalTemperatureData_;
     GpsData* gpsData_;
@@ -56,7 +63,8 @@ typedef struct {
     ExternalPressureData* externalPressureData_;
 } AllData;
 
-typedef struct {
+typedef struct
+{
     AccelGyroMagnetismData* accelGyroMagnetismData_;
     ExternalPressureData* externalPressureData_;
 } MonitorForParachuteData;

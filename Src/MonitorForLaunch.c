@@ -9,6 +9,7 @@ static int MONITOR_FOR_LAUNCH_PERIOD = 1000;
 void monitorForLaunchTask(void const* arg)
 {
     uint32_t prevWakeTime = osKernelSysTick();
+
     for (;;)
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_LAUNCH_PERIOD);
