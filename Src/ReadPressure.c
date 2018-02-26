@@ -4,11 +4,15 @@
 
 #include "ReadPressure.h"
 
+#include "Data.h"
+
 static int READ_PRESSURE_PERIOD = 1000;
 
 void readPressureTask(void const* arg)
 {
+    PressureData* data = (PressureData*) arg;
     uint32_t prevWakeTime = osKernelSysTick();
+
     for (;;)
     {
         osDelayUntil(&prevWakeTime, READ_PRESSURE_PERIOD);

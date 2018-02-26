@@ -8,6 +8,8 @@ static int MONITOR_FOR_EMERGENCY_SHUTOFF_PERIOD = 1000;
 
 void monitorForEmergencyShutoffTask(void const* arg)
 {
+    osMutexId* canHandleMutex = (osMutexId*) arg;
+
     uint32_t prevWakeTime = osKernelSysTick();
     for (;;)
     {

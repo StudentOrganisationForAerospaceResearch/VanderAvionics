@@ -150,28 +150,28 @@ int main(void)
     /* USER CODE END 2 */
 
     /* USER CODE BEGIN RTOS_MUTEX */
-    osMutexDef(accelGyroMagnetismDataMutex); // pick any unique name
-    accelGyroMagnetismData.mutex_ = osMutexCreate(osMutex(accelGyroMagnetismDataMutex));
+    osMutexDef(ACCEL_GYRO_MAGNETISM_DATA_MUTEX); // pick any unique name
+    accelGyroMagnetismData.mutex_ = osMutexCreate(osMutex(ACCEL_GYRO_MAGNETISM_DATA_MUTEX));
     if (accelGyroMagnetismData.mutex_ == NULL) { Error_Handler(); }
 
-    osMutexDef(pressureDataMutex); // pick any unique name
-    pressureData.mutex_ = osMutexCreate(osMutex(pressureDataMutex));
+    osMutexDef(PRESSURE_DATA_MUTEX); // pick any unique name
+    pressureData.mutex_ = osMutexCreate(osMutex(PRESSURE_DATA_MUTEX));
     if (pressureData.mutex_ == NULL) { Error_Handler(); }
 
-    osMutexDef(externalTemperatureDataMutex); // pick any unique name
-    externalTemperatureData.mutex_ = osMutexCreate(osMutex(externalTemperatureDataMutex));
+    osMutexDef(EXTERNAL_TEMPERATURE_DATA_MUTEX); // pick any unique name
+    externalTemperatureData.mutex_ = osMutexCreate(osMutex(EXTERNAL_TEMPERATURE_DATA_MUTEX));
     if (externalTemperatureData.mutex_ == NULL) { Error_Handler(); }
 
-    osMutexDef(integratedTemperatureDataMutex); // pick any unique name
-    integratedTemperatureData.mutex_ = osMutexCreate(osMutex(integratedTemperatureDataMutex));
+    osMutexDef(INTEGRATED_TEMPERATURE_DATA_MUTEX); // pick any unique name
+    integratedTemperatureData.mutex_ = osMutexCreate(osMutex(INTEGRATED_TEMPERATURE_DATA_MUTEX));
     if (integratedTemperatureData.mutex_ == NULL) { Error_Handler(); }
 
-    osMutexDef(gpsDataMutex); // pick any unique name
-    gpsData.mutex_ = osMutexCreate(osMutex(gpsDataMutex));
+    osMutexDef(GPS_DATA_MUTEX); // pick any unique name
+    gpsData.mutex_ = osMutexCreate(osMutex(GPS_DATA_MUTEX));
     if (gpsData.mutex_ == NULL) { Error_Handler(); }
 
-    osMutexDef(oxidizerTankDataMutex); // pick any unique name
-    oxidizerTankData.mutex_ = osMutexCreate(osMutex(oxidizerTankDataMutex));
+    osMutexDef(OXIDIZER_TANK_DATA_MUTEX); // pick any unique name
+    oxidizerTankData.mutex_ = osMutexCreate(osMutex(OXIDIZER_TANK_DATA_MUTEX));
     if (oxidizerTankData.mutex_ == NULL) { Error_Handler(); }
     /* USER CODE END RTOS_MUTEX */
 
@@ -192,7 +192,8 @@ int main(void)
         1,
         configMINIMAL_STACK_SIZE
     );
-    readAccelGyroMagnetismTaskHandle = osThreadCreate(osThread(readAccelGyroMagnetismThread), &accelGyroMagnetismData);
+    readAccelGyroMagnetismTaskHandle =
+        osThreadCreate(osThread(readAccelGyroMagnetismThread), &accelGyroMagnetismData);
 
     osThreadDef(
         readPressureThread,
@@ -201,7 +202,8 @@ int main(void)
         1,
         configMINIMAL_STACK_SIZE
     );
-    readPressureTaskHandle = osThreadCreate(osThread(readPressureThread), &pressureData);
+    readPressureTaskHandle =
+        osThreadCreate(osThread(readPressureThread), &pressureData);
 
     osThreadDef(
         readExternalTemperatureThread,
@@ -210,7 +212,8 @@ int main(void)
         1,
         configMINIMAL_STACK_SIZE
     );
-    readExternalTemperatureTaskHandle = osThreadCreate(osThread(readExternalTemperatureThread), &externalTemperatureData);
+    readExternalTemperatureTaskHandle =
+        osThreadCreate(osThread(readExternalTemperatureThread), &externalTemperatureData);
 
     osThreadDef(
         readInternalTemperatureThread,
@@ -219,7 +222,8 @@ int main(void)
         1,
         configMINIMAL_STACK_SIZE
     );
-    readInternalTemperatureTaskHandle = osThreadCreate(osThread(readInternalTemperatureThread), &integratedTemperatureData);
+    readInternalTemperatureTaskHandle =
+        osThreadCreate(osThread(readInternalTemperatureThread), &integratedTemperatureData);
 
     osThreadDef(
         readGpsThread,
@@ -228,7 +232,8 @@ int main(void)
         1,
         configMINIMAL_STACK_SIZE
     );
-    readGpsTaskHandle = osThreadCreate(osThread(readGpsThread), &gpsData);
+    readGpsTaskHandle =
+        osThreadCreate(osThread(readGpsThread), &gpsData);
 
     osThreadDef(
         readOxidizerTankPressureThread,
@@ -237,7 +242,8 @@ int main(void)
         1,
         configMINIMAL_STACK_SIZE
     );
-    readOxidizerTankPressureTaskHandle = osThreadCreate(osThread(readOxidizerTankPressureThread), &oxidizerTankData);
+    readOxidizerTankPressureTaskHandle =
+        osThreadCreate(osThread(readOxidizerTankPressureThread), &oxidizerTankData);
 
     osThreadDef(
         transmitDataThread,
@@ -246,7 +252,8 @@ int main(void)
         1,
         configMINIMAL_STACK_SIZE
     );
-    transmitDataTaskHandle = osThreadCreate(osThread(transmitDataThread), &allData);
+    transmitDataTaskHandle =
+        osThreadCreate(osThread(transmitDataThread), &allData);
 
     osThreadDef(
         logDataThread,
@@ -255,7 +262,8 @@ int main(void)
         1,
         configMINIMAL_STACK_SIZE
     );
-    logDataTaskHandle = osThreadCreate(osThread(logDataThread), &allData);
+    logDataTaskHandle =
+        osThreadCreate(osThread(logDataThread), &allData);
 
     osThreadDef(
         monitorForParachutesThread,
@@ -264,7 +272,8 @@ int main(void)
         1,
         configMINIMAL_STACK_SIZE
     );
-    monitorForParachutesTaskHandle = osThreadCreate(osThread(monitorForParachutesThread), &monitorForParachuteData);
+    monitorForParachutesTaskHandle =
+        osThreadCreate(osThread(monitorForParachutesThread), &monitorForParachuteData);
 
     osThreadDef(
         monitorForLaunchThread,
@@ -273,7 +282,8 @@ int main(void)
         1,
         configMINIMAL_STACK_SIZE
     );
-    monitorForLaunchTaskHandle = osThreadCreate(osThread(monitorForLaunchThread), NULL);
+    monitorForLaunchTaskHandle =
+        osThreadCreate(osThread(monitorForLaunchThread), NULL);
 
     osThreadDef(
         monitorForEmergencyShutoffThread,
@@ -282,7 +292,8 @@ int main(void)
         1,
         configMINIMAL_STACK_SIZE
     );
-    monitorForEmergencyShutoffTaskHandle = osThreadCreate(osThread(monitorForEmergencyShutoffThread), NULL);
+    monitorForEmergencyShutoffTaskHandle =
+        osThreadCreate(osThread(monitorForEmergencyShutoffThread), NULL);
     /* USER CODE END RTOS_THREADS */
 
     /* USER CODE BEGIN RTOS_QUEUES */
