@@ -2,19 +2,19 @@
 #include "stm32f4xx_hal_conf.h"
 #include "cmsis_os.h"
 
-#include "ReadInternalTemperature.h"
+#include "ReadIntegratedTemperature.h"
 
 #include "Data.h"
 
-static int READ_INTERNAL_TEMPERATURE_PERIOD = 1000;
+static int READ_INTEGRATED_TEMPERATURE_PERIOD = 1000;
 
-void readInternalTemperatureTask(void const* arg)
+void readIntegratedTemperatureTask(void const* arg)
 {
     IntegratedTemperatureData* data = (IntegratedTemperatureData*) arg;
     uint32_t prevWakeTime = osKernelSysTick();
 
     for (;;)
     {
-        osDelayUntil(&prevWakeTime, READ_INTERNAL_TEMPERATURE_PERIOD);
+        osDelayUntil(&prevWakeTime, READ_INTEGRATED_TEMPERATURE_PERIOD);
     }
 }

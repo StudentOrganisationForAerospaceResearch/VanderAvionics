@@ -52,17 +52,21 @@
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN Includes */
+// Reads
+#include "ReadAccelGyroMagnetism.h"
+#include "ReadExternalPressure.h"
+#include "ReadExternalTemperature.h"
+#include "ReadGps.h"
+#include "ReadIntegratedTemperature.h"
+#include "ReadOxidizerTankConditions.h"
+// Monitors
 #include "MonitorForEmergencyShutoff.h"
 #include "MonitorForLaunch.h"
 #include "MonitorForParachutes.h"
-#include "ReadAccelGyroMagnetism.h"
-#include "ReadGps.h"
-#include "ReadInternalTemperature.h"
-#include "ReadOxidizerTankPressure.h"
-#include "ReadPressure.h"
-#include "ReadExternalTemperature.h"
-#include "TransmitData.h"
+// Store Data
 #include "LogData.h"
+#include "TransmitData.h"
+// Data Structures
 #include "Data.h"
 /* USER CODE END Includes */
 
@@ -72,18 +76,18 @@
 /* Private variables ---------------------------------------------------------*/
 // Reading data
 static osThreadId readAccelGyroMagnetismTaskHandle;
-static osThreadId readPressureTaskHandle;
+static osThreadId readExternalPressureTaskHandle;
 static osThreadId readExternalTemperatureTaskHandle;
-static osThreadId readInternalTemperatureTaskHandle;
 static osThreadId readGpsTaskHandle;
-static osThreadId readOxidizerTankPressureTaskHandle;
-// Storing data
-static osThreadId transmitDataTaskHandle;
-static osThreadId logDataTaskHandle;
+static osThreadId readIntegratedTemperatureTaskHandle;
+static osThreadId readOxidizerTankConditionsTaskHandle;
 // Monitors that will perform actions
-static osThreadId monitorForParachutesTaskHandle;
-static osThreadId monitorForLaunchTaskHandle;
 static osThreadId monitorForEmergencyShutoffTaskHandle;
+static osThreadId monitorForLaunchTaskHandle;
+static osThreadId monitorForParachutesTaskHandle;
+// Storing data
+static osThreadId logDataTaskHandle;
+static osThreadId transmitDataTaskHandle;
 
 /* USER CODE END PV */
 
@@ -129,24 +133,24 @@ int main(void)
     /* USER CODE BEGIN 2 */
     // data primitive structs
     AccelGyroMagnetismData accelGyroMagnetismData;
-    PressureData pressureData;
+    ExternalPressureData externalPressureData;
     ExternalTemperatureData externalTemperatureData;
-    IntegratedTemperatureData integratedTemperatureData;
     GpsData gpsData;
-    OxidizerTankData oxidizerTankData;
+    IntegratedTemperatureData integratedTemperatureData;
+    OxidizerTankConditionsData oxidizerTankConditionsData;
 
     // data containers
     AllData allData;
     allData.accelGyroMagnetismData_ = &accelGyroMagnetismData;
-    allData.pressureData_ = &pressureData;
+    allData.externalPressureData_ = &externalPressureData;
     allData.externalTemperatureData_ = &externalTemperatureData;
-    allData.integratedTemperatureData_ = &integratedTemperatureData;
     allData.gpsData_ = &gpsData;
-    allData.oxidizerTankData_ = &oxidizerTankData;
+    allData.integratedTemperatureData_ = &integratedTemperatureData;
+    allData.oxidizerTankConditionsData_ = &oxidizerTankConditionsData;
 
     MonitorForParachuteData monitorForParachuteData;
     monitorForParachuteData.accelGyroMagnetismData_ = &accelGyroMagnetismData;
-    monitorForParachuteData.pressureData_ = &pressureData;
+    monitorForParachuteData.externalPressureData_ = &externalPressureData;
     /* USER CODE END 2 */
 
     /* USER CODE BEGIN RTOS_MUTEX */
@@ -154,25 +158,25 @@ int main(void)
     accelGyroMagnetismData.mutex_ = osMutexCreate(osMutex(ACCEL_GYRO_MAGNETISM_DATA_MUTEX));
     if (accelGyroMagnetismData.mutex_ == NULL) { Error_Handler(); }
 
-    osMutexDef(PRESSURE_DATA_MUTEX); // pick any unique name
-    pressureData.mutex_ = osMutexCreate(osMutex(PRESSURE_DATA_MUTEX));
-    if (pressureData.mutex_ == NULL) { Error_Handler(); }
+    osMutexDef(EXTERNAL_PRESSURE_DATA_MUTEX); // pick any unique name
+    externalPressureData.mutex_ = osMutexCreate(osMutex(EXTERNAL_PRESSURE_DATA_MUTEX));
+    if (externalPressureData.mutex_ == NULL) { Error_Handler(); }
 
     osMutexDef(EXTERNAL_TEMPERATURE_DATA_MUTEX); // pick any unique name
     externalTemperatureData.mutex_ = osMutexCreate(osMutex(EXTERNAL_TEMPERATURE_DATA_MUTEX));
     if (externalTemperatureData.mutex_ == NULL) { Error_Handler(); }
 
-    osMutexDef(INTEGRATED_TEMPERATURE_DATA_MUTEX); // pick any unique name
-    integratedTemperatureData.mutex_ = osMutexCreate(osMutex(INTEGRATED_TEMPERATURE_DATA_MUTEX));
-    if (integratedTemperatureData.mutex_ == NULL) { Error_Handler(); }
-
     osMutexDef(GPS_DATA_MUTEX); // pick any unique name
     gpsData.mutex_ = osMutexCreate(osMutex(GPS_DATA_MUTEX));
     if (gpsData.mutex_ == NULL) { Error_Handler(); }
 
+    osMutexDef(INTEGRATED_TEMPERATURE_DATA_MUTEX); // pick any unique name
+    integratedTemperatureData.mutex_ = osMutexCreate(osMutex(INTEGRATED_TEMPERATURE_DATA_MUTEX));
+    if (integratedTemperatureData.mutex_ == NULL) { Error_Handler(); }
+
     osMutexDef(OXIDIZER_TANK_DATA_MUTEX); // pick any unique name
-    oxidizerTankData.mutex_ = osMutexCreate(osMutex(OXIDIZER_TANK_DATA_MUTEX));
-    if (oxidizerTankData.mutex_ == NULL) { Error_Handler(); }
+    oxidizerTankConditionsData.mutex_ = osMutexCreate(osMutex(OXIDIZER_TANK_DATA_MUTEX));
+    if (oxidizerTankConditionsData.mutex_ == NULL) { Error_Handler(); }
     /* USER CODE END RTOS_MUTEX */
 
     /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -185,6 +189,9 @@ int main(void)
 
     /* Create the thread(s) */
     /* USER CODE BEGIN RTOS_THREADS */
+
+    // Reading data
+
     osThreadDef(
         readAccelGyroMagnetismThread,
         readAccelGyroMagnetismTask,
@@ -196,14 +203,14 @@ int main(void)
         osThreadCreate(osThread(readAccelGyroMagnetismThread), &accelGyroMagnetismData);
 
     osThreadDef(
-        readPressureThread,
-        readPressureTask,
+        readExternalPressureThread,
+        readExternalPressureTask,
         osPriorityNormal,
         1,
         configMINIMAL_STACK_SIZE
     );
-    readPressureTaskHandle =
-        osThreadCreate(osThread(readPressureThread), &pressureData);
+    readExternalPressureTaskHandle =
+        osThreadCreate(osThread(readExternalPressureThread), &externalPressureData);
 
     osThreadDef(
         readExternalTemperatureThread,
@@ -216,14 +223,14 @@ int main(void)
         osThreadCreate(osThread(readExternalTemperatureThread), &externalTemperatureData);
 
     osThreadDef(
-        readInternalTemperatureThread,
-        readInternalTemperatureTask,
+        readIntegratedTemperatureThread,
+        readIntegratedTemperatureTask,
         osPriorityLow,
         1,
         configMINIMAL_STACK_SIZE
     );
-    readInternalTemperatureTaskHandle =
-        osThreadCreate(osThread(readInternalTemperatureThread), &integratedTemperatureData);
+    readIntegratedTemperatureTaskHandle =
+        osThreadCreate(osThread(readIntegratedTemperatureThread), &integratedTemperatureData);
 
     osThreadDef(
         readGpsThread,
@@ -236,44 +243,26 @@ int main(void)
         osThreadCreate(osThread(readGpsThread), &gpsData);
 
     osThreadDef(
-        readOxidizerTankPressureThread,
-        readOxidizerTankPressureTask,
+        readOxidizerTankConditionsThread,
+        readOxidizerTankConditionsTask,
         osPriorityAboveNormal,
         1,
         configMINIMAL_STACK_SIZE
     );
-    readOxidizerTankPressureTaskHandle =
-        osThreadCreate(osThread(readOxidizerTankPressureThread), &oxidizerTankData);
+    readOxidizerTankConditionsTaskHandle =
+        osThreadCreate(osThread(readOxidizerTankConditionsThread), &oxidizerTankConditionsData);
+
+    // Monitors that will perform actions
 
     osThreadDef(
-        transmitDataThread,
-        transmitDataTask,
-        osPriorityNormal,
+        monitorForEmergencyShutoffThread,
+        monitorForEmergencyShutoffTask,
+        osPriorityHigh,
         1,
         configMINIMAL_STACK_SIZE
     );
-    transmitDataTaskHandle =
-        osThreadCreate(osThread(transmitDataThread), &allData);
-
-    osThreadDef(
-        logDataThread,
-        logDataTask,
-        osPriorityNormal,
-        1,
-        configMINIMAL_STACK_SIZE
-    );
-    logDataTaskHandle =
-        osThreadCreate(osThread(logDataThread), &allData);
-
-    osThreadDef(
-        monitorForParachutesThread,
-        monitorForParachutesTask,
-        osPriorityAboveNormal,
-        1,
-        configMINIMAL_STACK_SIZE
-    );
-    monitorForParachutesTaskHandle =
-        osThreadCreate(osThread(monitorForParachutesThread), &monitorForParachuteData);
+    monitorForEmergencyShutoffTaskHandle =
+        osThreadCreate(osThread(monitorForEmergencyShutoffThread), NULL);
 
     osThreadDef(
         monitorForLaunchThread,
@@ -286,14 +275,36 @@ int main(void)
         osThreadCreate(osThread(monitorForLaunchThread), NULL);
 
     osThreadDef(
-        monitorForEmergencyShutoffThread,
-        monitorForEmergencyShutoffTask,
-        osPriorityHigh,
+        monitorForParachutesThread,
+        monitorForParachutesTask,
+        osPriorityAboveNormal,
         1,
         configMINIMAL_STACK_SIZE
     );
-    monitorForEmergencyShutoffTaskHandle =
-        osThreadCreate(osThread(monitorForEmergencyShutoffThread), NULL);
+    monitorForParachutesTaskHandle =
+        osThreadCreate(osThread(monitorForParachutesThread), &monitorForParachuteData);
+
+    // Storing data
+
+    osThreadDef(
+        logDataThread,
+        logDataTask,
+        osPriorityNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    logDataTaskHandle =
+        osThreadCreate(osThread(logDataThread), &allData);
+
+    osThreadDef(
+        transmitDataThread,
+        transmitDataTask,
+        osPriorityNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    transmitDataTaskHandle =
+        osThreadCreate(osThread(transmitDataThread), &allData);
     /* USER CODE END RTOS_THREADS */
 
     /* USER CODE BEGIN RTOS_QUEUES */

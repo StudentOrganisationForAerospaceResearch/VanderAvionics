@@ -55,11 +55,11 @@ C_SOURCES = \
   Src/MonitorForLaunch.c \
   Src/MonitorForParachutes.c \
   Src/ReadAccelGyroMagnetism.c \
+  Src/ReadExternalPressure.c \
   Src/ReadExternalTemperature.c \
   Src/ReadGps.c \
-  Src/ReadInternalTemperature.c \
-  Src/ReadOxidizerTankPressure.c \
-  Src/ReadPressure.c \
+  Src/ReadIntegratedTemperature.c \
+  Src/ReadOxidizerTankConditions.c \
   Src/stm32f4xx_hal_msp.c \
   Src/stm32f4xx_hal_timebase_TIM.c \
   Src/stm32f4xx_it.c \

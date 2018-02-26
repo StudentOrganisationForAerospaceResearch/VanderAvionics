@@ -17,17 +17,17 @@ typedef struct {
 } AccelGyroMagnetismData;
 
 typedef struct {
-    int data_;
+    int externalPressure_;
     osMutexId mutex_;
-} PressureData;
+} ExternalPressureData;
 
 typedef struct {
-    int data_;
+    int externalTemperature_;
     osMutexId mutex_;
 } ExternalTemperatureData;
 
 typedef struct {
-    int data_;
+    int integratedTemperature_;
     osMutexId mutex_;
 } IntegratedTemperatureData;
 
@@ -43,20 +43,20 @@ typedef struct {
     float pressure_;
     float temperature_;
     osMutexId mutex_;
-} OxidizerTankData;
+} OxidizerTankConditionsData;
 
 /* Data Containers */
 
 typedef struct {
     AccelGyroMagnetismData* accelGyroMagnetismData_;
-    PressureData* pressureData_;
     ExternalTemperatureData* externalTemperatureData_;
-    IntegratedTemperatureData* integratedTemperatureData_;
     GpsData* gpsData_;
-    OxidizerTankData* oxidizerTankData_;
+    IntegratedTemperatureData* integratedTemperatureData_;
+    OxidizerTankConditionsData* oxidizerTankConditionsData_;
+    ExternalPressureData* externalPressureData_;
 } AllData;
 
 typedef struct {
     AccelGyroMagnetismData* accelGyroMagnetismData_;
-    PressureData* pressureData_;
+    ExternalPressureData* externalPressureData_;
 } MonitorForParachuteData;
