@@ -8,7 +8,7 @@
 
 static int LOG_DATA_PERIOD = 1000;
 
-int sd_write_multi_blocks(const char* entry)
+int writeToSdCard(const char* entry)
 {
     return 0;
 }
