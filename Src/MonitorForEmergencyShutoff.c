@@ -3,14 +3,15 @@
 #include "cmsis_os.h"
 
 #include "MonitorForEmergencyShutoff.h"
+#include "Data.h"
 
 static int MONITOR_FOR_EMERGENCY_SHUTOFF_PERIOD = 1000;
 
 void monitorForEmergencyShutoffTask(void const* arg)
 {
-    osMutexId* canHandleMutex = (osMutexId*) arg;
-
     uint32_t prevWakeTime = osKernelSysTick();
+
+    AccelGyroMagnetismData* data = (AccelGyroMagnetismData*) arg;
 
     for (;;)
     {

@@ -287,7 +287,7 @@ int main(void)
         configMINIMAL_STACK_SIZE
     );
     monitorForEmergencyShutoffTaskHandle =
-        osThreadCreate(osThread(monitorForEmergencyShutoffThread), NULL);
+        osThreadCreate(osThread(monitorForEmergencyShutoffThread), &accelGyroMagnetismData);
 
     osThreadDef(
         monitorForLaunchThread,
