@@ -1,16 +1,16 @@
-#include "stm32f4xx.h"
 #include <math.h>
 
+#include "stm32f4xx.h"
 #include "stm32f4xx_hal_conf.h"
 #include "cmsis_os.h"
 
 #include "MonitorForParachutes.h"
-
 #include "Data.h"
 
 static int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
 
-float readAccel(AccelGyroMagnetismData* data) {
+float readAccel(AccelGyroMagnetismData* data)
+{
     if (osMutexWait(data->mutex_, 0) != osOK)
     {
         // TODO
@@ -32,7 +32,8 @@ float readAccel(AccelGyroMagnetismData* data) {
     return accelMagnitude;
 }
 
-float readPressure(ExternalPressureData* data) {
+float readPressure(ExternalPressureData* data)
+{
     if (osMutexWait(data->mutex_, 0) != osOK)
     {
         // TODO
@@ -45,19 +46,22 @@ float readPressure(ExternalPressureData* data) {
     return (float)pressure;
 }
 
-void filterSensors(float current_accel, float current_pressure, float positionVector[3]) {
+void filterSensors(float current_accel, float current_pressure, float positionVector[3])
+{
     // TODO
     positionVector[0] = 0.f;
     positionVector[1] = 0.f;
     positionVector[2] = 0.f;
 }
 
-int detectApogee(float positionVector[3]) {
+int detectApogee(float positionVector[3])
+{
     // TODO
     return 0;
 }
 
-void ejectParachute() {
+void ejectParachute()
+{
     // TODO
 }
 
@@ -75,14 +79,16 @@ void monitorForParachutesTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
-        if(!parachuteLaunched) {
+        if (!parachuteLaunched)
+        {
             float currentAccel = readAccel(accelGyroMagnetismData);
             float currentPressure = readPressure(externalPressureData);
 
             float positionVector[3];
             filterSensors(currentAccel, currentPressure, positionVector);
 
-            if(detectApogee(positionVector)) {
+            if (detectApogee(positionVector))
+            {
                 ejectParachute();
                 parachuteLaunched = 1;
                 osThreadSuspend(osThreadGetId()); // kill thread
