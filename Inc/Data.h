@@ -40,7 +40,7 @@ typedef struct
     int latitude_;
     int longitude_;
     int altitude_;
-    int timeSeconds_;
+    unsigned int epochTimeMsec_;
     osMutexId mutex_;
 } GpsData;
 
@@ -56,11 +56,11 @@ typedef struct
 typedef struct
 {
     AccelGyroMagnetismData* accelGyroMagnetismData_;
+    ExternalPressureData* externalPressureData_;
     ExternalTemperatureData* externalTemperatureData_;
     GpsData* gpsData_;
     IntegratedTemperatureData* integratedTemperatureData_;
     OxidizerTankConditionsData* oxidizerTankConditionsData_;
-    ExternalPressureData* externalPressureData_;
 } AllData;
 
 typedef struct
