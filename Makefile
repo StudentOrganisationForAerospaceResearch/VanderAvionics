@@ -37,6 +37,7 @@ C_SOURCES = \
   Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c \
   Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
   Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
+  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
   Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
   Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
   Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
@@ -64,9 +65,19 @@ C_SOURCES = \
   Src/stm32f4xx_hal_timebase_TIM.c \
   Src/stm32f4xx_it.c \
   Src/system_stm32f4xx.c \
-  Src/TransmitData.c  
+  Src/TransmitData.c \
+  tm_fatfs/Src/ccsbcs.c \
+  tm_fatfs/Src/diskio.c \
+  tm_fatfs/Src/fatfs_sd.c \
+  tm_fatfs/Src/ff.c \
+  tm_fatfs/Src/syscall.c \
+  tm_fatfs/Src/tm_stm32_delay.c \
+  tm_fatfs/Src/tm_stm32_fatfs.c \
+  tm_fatfs/Src/tm_stm32_gpio.c \
+  tm_fatfs/Src/tm_stm32_rcc.c \
+  tm_fatfs/Src/tm_stm32_spi.c  
 ASM_SOURCES = \
-  startup/startup_stm32f411xe.s
+  startup/startup_stm32f405xx.s
 
 #######################################
 # binaries
@@ -84,7 +95,7 @@ BIN = $(CP) -O binary -S
 #######################################
 # macros for gcc
 AS_DEFS =
-C_DEFS = -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F411xE -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F411xE
+C_DEFS = -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F405xx -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F405xx -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F405xx -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F405xx
 # includes for gcc
 AS_INCLUDES =
 C_INCLUDES = -IDrivers/CMSIS/Device/ST/STM32F4xx/Include
@@ -95,6 +106,7 @@ C_INCLUDES += -IInc
 C_INCLUDES += -IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS
 C_INCLUDES += -IMiddlewares/Third_Party/FreeRTOS/Source/include
 C_INCLUDES += -IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
+C_INCLUDES += -Itm_fatfs/Inc
 # compile gcc flags
 ASFLAGS = -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 CFLAGS = -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
@@ -108,7 +120,7 @@ CFLAGS += -std=c99 -MD -MP -MF $(BUILD_DIR)/.dep/$(@F).d
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32F411VETx_FLASH.ld
+LDSCRIPT = STM32F405RGTx_FLASH.ld
 # libraries
 LIBS = -lc -lm -lnosys
 LIBDIR =
