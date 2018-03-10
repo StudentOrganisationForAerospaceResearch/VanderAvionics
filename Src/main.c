@@ -51,6 +51,22 @@
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN Includes */
+// Reads
+#include "ReadAccelGyroMagnetism.h"
+#include "ReadExternalPressure.h"
+#include "ReadExternalTemperature.h"
+#include "ReadGps.h"
+#include "ReadIntegratedTemperature.h"
+#include "ReadOxidizerTankConditions.h"
+// Monitors
+#include "MonitorForEmergencyShutoff.h"
+#include "MonitorForLaunch.h"
+#include "MonitorForParachutes.h"
+// Store Data
+#include "LogData.h"
+#include "TransmitData.h"
+// Data Structures
+#include "Data.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -60,13 +76,19 @@ osThreadId defaultTaskHandle;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-/* Fatfs object */
-FATFS FS;
-FIL fil;
-FRESULT fres;
-TM_FATFS_Size_t CardSize;
-char buffer[100];
-
+static osThreadId readAccelGyroMagnetismTaskHandle;
+static osThreadId readExternalPressureTaskHandle;
+static osThreadId readExternalTemperatureTaskHandle;
+static osThreadId readGpsTaskHandle;
+static osThreadId readIntegratedTemperatureTaskHandle;
+static osThreadId readOxidizerTankConditionsTaskHandle;
+// Monitors that will perform actions
+static osThreadId monitorForEmergencyShutoffTaskHandle;
+static osThreadId monitorForLaunchTaskHandle;
+static osThreadId monitorForParachutesTaskHandle;
+// Storing data
+static osThreadId logDataTaskHandle;
+static osThreadId transmitDataTaskHandle;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -114,36 +136,89 @@ int main(void)
     MX_GPIO_Init();
     MX_SPI3_Init();
     /* USER CODE BEGIN 2 */
-    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
-    // HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, 0);
+    // data primitive structs
+    AccelGyroMagnetismData accelGyroMagnetismData;
+    ExternalPressureData externalPressureData;
+    ExternalTemperatureData externalTemperatureData;
+    GpsData gpsData;
+    IntegratedTemperatureData integratedTemperatureData;
+    OxidizerTankConditionsData oxidizerTankConditionsData;
 
-    if (f_mount(&FS, "SD:", 1) == FR_OK)
-    {
-        HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
+    // data containers
+    AllData allData;
+    allData.accelGyroMagnetismData_ = &accelGyroMagnetismData;
+    allData.externalPressureData_ = &externalPressureData;
+    allData.externalTemperatureData_ = &externalTemperatureData;
+    allData.gpsData_ = &gpsData;
+    allData.integratedTemperatureData_ = &integratedTemperatureData;
+    allData.oxidizerTankConditionsData_ = &oxidizerTankConditionsData;
 
-        if ((fres = f_open(&fil, "SD:first_file.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE)) == FR_OK)
-        {
-            // Read SDCARD size
-            TM_FATFS_GetDriveSize("SD:", &CardSize);
-            // Format string
-            sprintf(buffer, "Hello Total card size: %u kBytes\n", CardSize.Total);
-            // Write total card size to file
-            f_puts(buffer, &fil);
-            // Format string for free card size
-            sprintf(buffer, "Free card size:  %u kBytes\n", CardSize.Free);
-            // Write free card size to file
-            f_puts(buffer, &fil);
-            // Close file
-            f_close(&fil);
-        }
-
-        f_mount(NULL, "SD:", 1);
-    }
-
+    MonitorForParachuteData monitorForParachuteData;
+    monitorForParachuteData.accelGyroMagnetismData_ = &accelGyroMagnetismData;
+    monitorForParachuteData.externalPressureData_ = &externalPressureData;
     /* USER CODE END 2 */
 
     /* USER CODE BEGIN RTOS_MUTEX */
-    /* add mutexes, ... */
+    osMutexDef(ACCEL_GYRO_MAGNETISM_DATA_MUTEX); // pick any unique name
+    accelGyroMagnetismData.mutex_ = osMutexCreate(osMutex(ACCEL_GYRO_MAGNETISM_DATA_MUTEX));
+
+    if (accelGyroMagnetismData.mutex_ == NULL)
+    {
+        Error_Handler();
+    }
+
+    osMutexRelease(accelGyroMagnetismData.mutex_);
+
+    osMutexDef(EXTERNAL_PRESSURE_DATA_MUTEX); // pick any unique name
+    externalPressureData.mutex_ = osMutexCreate(osMutex(EXTERNAL_PRESSURE_DATA_MUTEX));
+
+    if (externalPressureData.mutex_ == NULL)
+    {
+        Error_Handler();
+    }
+
+    osMutexRelease(externalPressureData.mutex_);
+
+    osMutexDef(EXTERNAL_TEMPERATURE_DATA_MUTEX); // pick any unique name
+    externalTemperatureData.mutex_ = osMutexCreate(osMutex(EXTERNAL_TEMPERATURE_DATA_MUTEX));
+
+    if (externalTemperatureData.mutex_ == NULL)
+    {
+        Error_Handler();
+    }
+
+    osMutexRelease(externalTemperatureData.mutex_);
+
+    osMutexDef(GPS_DATA_MUTEX); // pick any unique name
+    gpsData.mutex_ = osMutexCreate(osMutex(GPS_DATA_MUTEX));
+
+    if (gpsData.mutex_ == NULL)
+    {
+        Error_Handler();
+    }
+
+    osMutexRelease(gpsData.mutex_);
+
+    osMutexDef(INTEGRATED_TEMPERATURE_DATA_MUTEX); // pick any unique name
+    integratedTemperatureData.mutex_ = osMutexCreate(osMutex(INTEGRATED_TEMPERATURE_DATA_MUTEX));
+
+    if (integratedTemperatureData.mutex_ == NULL)
+    {
+        Error_Handler();
+    }
+
+    osMutexRelease(integratedTemperatureData.mutex_);
+
+    osMutexDef(OXIDIZER_TANK_DATA_MUTEX); // pick any unique name
+    oxidizerTankConditionsData.mutex_ = osMutexCreate(osMutex(OXIDIZER_TANK_DATA_MUTEX));
+
+    if (oxidizerTankConditionsData.mutex_ == NULL)
+    {
+        Error_Handler();
+    }
+
+    osMutexRelease(oxidizerTankConditionsData.mutex_);
+
     /* USER CODE END RTOS_MUTEX */
 
     /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -160,7 +235,122 @@ int main(void)
     defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
     /* USER CODE BEGIN RTOS_THREADS */
-    /* add threads, ... */
+
+    // Reading data
+
+    osThreadDef(
+        readAccelGyroMagnetismThread,
+        readAccelGyroMagnetismTask,
+        osPriorityNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    readAccelGyroMagnetismTaskHandle =
+        osThreadCreate(osThread(readAccelGyroMagnetismThread), &accelGyroMagnetismData);
+
+    osThreadDef(
+        readExternalPressureThread,
+        readExternalPressureTask,
+        osPriorityNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    readExternalPressureTaskHandle =
+        osThreadCreate(osThread(readExternalPressureThread), &externalPressureData);
+
+    osThreadDef(
+        readExternalTemperatureThread,
+        readExternalTemperatureTask,
+        osPriorityLow,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    readExternalTemperatureTaskHandle =
+        osThreadCreate(osThread(readExternalTemperatureThread), &externalTemperatureData);
+
+    osThreadDef(
+        readIntegratedTemperatureThread,
+        readIntegratedTemperatureTask,
+        osPriorityLow,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    readIntegratedTemperatureTaskHandle =
+        osThreadCreate(osThread(readIntegratedTemperatureThread), &integratedTemperatureData);
+
+    osThreadDef(
+        readGpsThread,
+        readGpsTask,
+        osPriorityBelowNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    readGpsTaskHandle =
+        osThreadCreate(osThread(readGpsThread), &gpsData);
+
+    osThreadDef(
+        readOxidizerTankConditionsThread,
+        readOxidizerTankConditionsTask,
+        osPriorityAboveNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    readOxidizerTankConditionsTaskHandle =
+        osThreadCreate(osThread(readOxidizerTankConditionsThread), &oxidizerTankConditionsData);
+
+    // Monitors that will perform actions
+
+    osThreadDef(
+        monitorForEmergencyShutoffThread,
+        monitorForEmergencyShutoffTask,
+        osPriorityHigh,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    monitorForEmergencyShutoffTaskHandle =
+        osThreadCreate(osThread(monitorForEmergencyShutoffThread), &accelGyroMagnetismData);
+
+    osThreadDef(
+        monitorForLaunchThread,
+        monitorForLaunchTask,
+        osPriorityNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    monitorForLaunchTaskHandle =
+        osThreadCreate(osThread(monitorForLaunchThread), NULL);
+
+    osThreadDef(
+        monitorForParachutesThread,
+        monitorForParachutesTask,
+        osPriorityAboveNormal,
+        1,
+        configMINIMAL_STACK_SIZE * 2
+    );
+    monitorForParachutesTaskHandle =
+        osThreadCreate(osThread(monitorForParachutesThread), &monitorForParachuteData);
+
+    // Storing data
+
+    osThreadDef(
+        logDataThread,
+        logDataTask,
+        osPriorityNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    logDataTaskHandle =
+        osThreadCreate(osThread(logDataThread), &allData);
+
+    osThreadDef(
+        transmitDataThread,
+        transmitDataTask,
+        osPriorityNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    transmitDataTaskHandle =
+        osThreadCreate(osThread(transmitDataThread), &allData);
     /* USER CODE END RTOS_THREADS */
 
     /* USER CODE BEGIN RTOS_QUEUES */
