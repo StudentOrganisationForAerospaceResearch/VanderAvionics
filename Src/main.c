@@ -89,6 +89,19 @@ static osThreadId monitorForParachutesTaskHandle;
 // Storing data
 static osThreadId logDataTaskHandle;
 static osThreadId transmitDataTaskHandle;
+
+osMutexId accelGyroMagnetismDataMutex;
+osMutexDef(accelGyroMagnetismDataMutex);
+osMutexId externalPressureDataMutex;
+osMutexDef(externalPressureDataMutex);
+osMutexId externalTemperatureDataMutex;
+osMutexDef(externalTemperatureDataMutex);
+osMutexId gpsDataMutex;
+osMutexDef(gpsDataMutex);
+osMutexId integratedTemperatureDataMutex;
+osMutexDef(integratedTemperatureDataMutex);
+osMutexId oxidizerTankConditionsDataMutex;
+osMutexDef(oxidizerTankConditionsDataMutex);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -159,66 +172,12 @@ int main(void)
     /* USER CODE END 2 */
 
     /* USER CODE BEGIN RTOS_MUTEX */
-    osMutexDef(ACCEL_GYRO_MAGNETISM_DATA_MUTEX); // pick any unique name
-    accelGyroMagnetismData.mutex_ = osMutexCreate(osMutex(ACCEL_GYRO_MAGNETISM_DATA_MUTEX));
-
-    if (accelGyroMagnetismData.mutex_ == NULL)
-    {
-        Error_Handler();
-    }
-
-    osMutexRelease(accelGyroMagnetismData.mutex_);
-
-    osMutexDef(EXTERNAL_PRESSURE_DATA_MUTEX); // pick any unique name
-    externalPressureData.mutex_ = osMutexCreate(osMutex(EXTERNAL_PRESSURE_DATA_MUTEX));
-
-    if (externalPressureData.mutex_ == NULL)
-    {
-        Error_Handler();
-    }
-
-    osMutexRelease(externalPressureData.mutex_);
-
-    osMutexDef(EXTERNAL_TEMPERATURE_DATA_MUTEX); // pick any unique name
-    externalTemperatureData.mutex_ = osMutexCreate(osMutex(EXTERNAL_TEMPERATURE_DATA_MUTEX));
-
-    if (externalTemperatureData.mutex_ == NULL)
-    {
-        Error_Handler();
-    }
-
-    osMutexRelease(externalTemperatureData.mutex_);
-
-    osMutexDef(GPS_DATA_MUTEX); // pick any unique name
-    gpsData.mutex_ = osMutexCreate(osMutex(GPS_DATA_MUTEX));
-
-    if (gpsData.mutex_ == NULL)
-    {
-        Error_Handler();
-    }
-
-    osMutexRelease(gpsData.mutex_);
-
-    osMutexDef(INTEGRATED_TEMPERATURE_DATA_MUTEX); // pick any unique name
-    integratedTemperatureData.mutex_ = osMutexCreate(osMutex(INTEGRATED_TEMPERATURE_DATA_MUTEX));
-
-    if (integratedTemperatureData.mutex_ == NULL)
-    {
-        Error_Handler();
-    }
-
-    osMutexRelease(integratedTemperatureData.mutex_);
-
-    osMutexDef(OXIDIZER_TANK_DATA_MUTEX); // pick any unique name
-    oxidizerTankConditionsData.mutex_ = osMutexCreate(osMutex(OXIDIZER_TANK_DATA_MUTEX));
-
-    if (oxidizerTankConditionsData.mutex_ == NULL)
-    {
-        Error_Handler();
-    }
-
-    osMutexRelease(oxidizerTankConditionsData.mutex_);
-
+    accelGyroMagnetismDataMutex = osMutexCreate(osMutex(accelGyroMagnetismDataMutex));
+    externalPressureDataMutex = osMutexCreate(osMutex(externalPressureDataMutex));
+    externalTemperatureDataMutex = osMutexCreate(osMutex(externalTemperatureDataMutex));
+    gpsDataMutex = osMutexCreate(osMutex(gpsDataMutex));
+    integratedTemperatureDataMutex = osMutexCreate(osMutex(integratedTemperatureDataMutex));
+    oxidizerTankConditionsDataMutex = osMutexCreate(osMutex(oxidizerTankConditionsDataMutex));
     /* USER CODE END RTOS_MUTEX */
 
     /* USER CODE BEGIN RTOS_SEMAPHORES */

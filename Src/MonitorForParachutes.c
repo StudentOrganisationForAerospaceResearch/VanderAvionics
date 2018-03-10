@@ -6,20 +6,17 @@
 
 #include "MonitorForParachutes.h"
 #include "Data.h"
+#include "main.h"
 
 static int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
 
 float readAccel(AccelGyroMagnetismData* data)
 {
-    if (osMutexWait(data->mutex_, 0) != osOK)
-    {
-    }
-
+    osMutexWait(accelGyroMagnetismDataMutex, 0);
     float accelX = data->accelX_;
     float accelY = data->accelY_;
     float accelZ = data->accelZ_;
-
-    osMutexRelease(data->mutex_);
+    osMutexRelease(accelGyroMagnetismDataMutex);
 
     float accelMagnitude =
         sqrt(
@@ -33,14 +30,9 @@ float readAccel(AccelGyroMagnetismData* data)
 
 float readPressure(ExternalPressureData* data)
 {
-    if (osMutexWait(data->mutex_, 0) != osOK)
-    {
-        // TODO
-    }
-
+    osMutexWait(externalPressureDataMutex, 0);
     int pressure = data->externalPressure_;
-
-    osMutexRelease(data->mutex_);
+    osMutexRelease(externalPressureDataMutex);
 
     return (float)pressure;
 }
