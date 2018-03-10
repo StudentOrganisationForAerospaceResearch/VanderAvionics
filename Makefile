@@ -50,22 +50,11 @@ C_SOURCES = \
   Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
   Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
   Src/freertos.c \
-  Src/LogData.c \
   Src/main.c \
-  Src/MonitorForEmergencyShutoff.c \
-  Src/MonitorForLaunch.c \
-  Src/MonitorForParachutes.c \
-  Src/ReadAccelGyroMagnetism.c \
-  Src/ReadExternalPressure.c \
-  Src/ReadExternalTemperature.c \
-  Src/ReadGps.c \
-  Src/ReadIntegratedTemperature.c \
-  Src/ReadOxidizerTankConditions.c \
   Src/stm32f4xx_hal_msp.c \
   Src/stm32f4xx_hal_timebase_TIM.c \
   Src/stm32f4xx_it.c \
   Src/system_stm32f4xx.c \
-  Src/TransmitData.c \
   tm_fatfs/Src/ccsbcs.c \
   tm_fatfs/Src/diskio.c \
   tm_fatfs/Src/fatfs_sd.c \
@@ -95,7 +84,7 @@ BIN = $(CP) -O binary -S
 #######################################
 # macros for gcc
 AS_DEFS =
-C_DEFS = -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F405xx -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F405xx -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F405xx -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F405xx
+C_DEFS = -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F405xx -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F405xx
 # includes for gcc
 AS_INCLUDES =
 C_INCLUDES = -IDrivers/CMSIS/Device/ST/STM32F4xx/Include
@@ -106,6 +95,7 @@ C_INCLUDES += -IInc
 C_INCLUDES += -IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS
 C_INCLUDES += -IMiddlewares/Third_Party/FreeRTOS/Source/include
 C_INCLUDES += -IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
+C_INCLUDES += -ISrc
 C_INCLUDES += -Itm_fatfs/Inc
 # compile gcc flags
 ASFLAGS = -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections

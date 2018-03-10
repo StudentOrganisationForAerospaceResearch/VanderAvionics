@@ -65,12 +65,12 @@
 #define LED2_GPIO_Port GPIOC
 #define SD_SPI_SCK_Pin GPIO_PIN_10
 #define SD_SPI_SCK_GPIO_Port GPIOC
-#define SD_SPI_MISO_Pin GPIO_PIN_11
-#define SD_SPI_MISO_GPIO_Port GPIOC
+#define SD_SPI_MSIO_Pin GPIO_PIN_11
+#define SD_SPI_MSIO_GPIO_Port GPIOC
 #define SD_SPI_MOSI_Pin GPIO_PIN_12
 #define SD_SPI_MOSI_GPIO_Port GPIOC
-#define SD_SPI_CS_Pin GPIO_PIN_2
-#define SD_SPI_CS_GPIO_Port GPIOD
+#define SD_CS_Pin GPIO_PIN_2
+#define SD_CS_GPIO_Port GPIOD
 
 /* ########################## Assert Selection ############################## */
 /**
