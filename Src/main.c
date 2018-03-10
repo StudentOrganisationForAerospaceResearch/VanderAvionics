@@ -296,7 +296,7 @@ int main(void)
         logDataTask,
         osPriorityNormal,
         1,
-        configMINIMAL_STACK_SIZE
+        configMINIMAL_STACK_SIZE * 2
     );
     logDataTaskHandle =
         osThreadCreate(osThread(logDataThread), &allData);
