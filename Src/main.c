@@ -150,44 +150,52 @@ int main(void)
     MX_SPI3_Init();
     /* USER CODE BEGIN 2 */
     // data primitive structs
-    AccelGyroMagnetismData accelGyroMagnetismData;
-    ExternalPressureData externalPressureData;
-    ExternalTemperatureData externalTemperatureData;
-    GpsData gpsData;
-    IntegratedTemperatureData integratedTemperatureData;
-    OxidizerTankConditionsData oxidizerTankConditionsData;
+    AccelGyroMagnetismData* accelGyroMagnetismData =
+        malloc(sizeof(AccelGyroMagnetismData));
+    ExternalPressureData* externalPressureData =
+        malloc(sizeof(ExternalPressureData));
+    ExternalTemperatureData* externalTemperatureData =
+        malloc(sizeof(ExternalTemperatureData));
+    GpsData* gpsData =
+        malloc(sizeof(GpsData));
+    IntegratedTemperatureData* integratedTemperatureData =
+        malloc(sizeof(IntegratedTemperatureData));
+    OxidizerTankConditionsData* oxidizerTankConditionsData =
+        malloc(sizeof(OxidizerTankConditionsData));
 
-    accelGyroMagnetismData.accelX_ = -1.f;
-    accelGyroMagnetismData.accelY_ = -2.f;
-    accelGyroMagnetismData.accelZ_ = -3.f;
-    accelGyroMagnetismData.gyroX_ = -4.f;
-    accelGyroMagnetismData.gyroY_ = -5.f;
-    accelGyroMagnetismData.gyroZ_ = -6.f;
-    accelGyroMagnetismData.magnetoX_ = -7.f;
-    accelGyroMagnetismData.magnetoY_ = -8.f;
-    accelGyroMagnetismData.magnetoZ_ = -9.f;
-    externalPressureData.externalPressure_ = -10;
-    externalTemperatureData.externalTemperature_ = -11;
-    integratedTemperatureData.integratedTemperature_ = -12;
-    gpsData.altitude_ = -13;
-    gpsData.epochTimeMsec_ = -14;
-    gpsData.latitude_ = -15;
-    gpsData.longitude_ = -16;
-    oxidizerTankConditionsData.pressure_ = -17.f;
-    oxidizerTankConditionsData.temperature_ = -18.f;
+    accelGyroMagnetismData->accelX_ = -1.f;
+    accelGyroMagnetismData->accelY_ = -2.f;
+    accelGyroMagnetismData->accelZ_ = -3.f;
+    accelGyroMagnetismData->gyroX_ = -4.f;
+    accelGyroMagnetismData->gyroY_ = -5.f;
+    accelGyroMagnetismData->gyroZ_ = -6.f;
+    accelGyroMagnetismData->magnetoX_ = -7.f;
+    accelGyroMagnetismData->magnetoY_ = -8.f;
+    accelGyroMagnetismData->magnetoZ_ = -9.f;
+    externalPressureData->externalPressure_ = -10;
+    externalTemperatureData->externalTemperature_ = -11;
+    integratedTemperatureData->integratedTemperature_ = -12;
+    gpsData->altitude_ = -13;
+    gpsData->epochTimeMsec_ = -14;
+    gpsData->latitude_ = -15;
+    gpsData->longitude_ = -16;
+    oxidizerTankConditionsData->pressure_ = -17.f;
+    oxidizerTankConditionsData->temperature_ = -18.f;
 
     // data containers
-    AllData allData;
-    allData.accelGyroMagnetismData_ = &accelGyroMagnetismData;
-    allData.externalPressureData_ = &externalPressureData;
-    allData.externalTemperatureData_ = &externalTemperatureData;
-    allData.gpsData_ = &gpsData;
-    allData.integratedTemperatureData_ = &integratedTemperatureData;
-    allData.oxidizerTankConditionsData_ = &oxidizerTankConditionsData;
+    AllData* allData =
+        malloc(sizeof(AllData));
+    allData->accelGyroMagnetismData_ = accelGyroMagnetismData;
+    allData->externalPressureData_ = externalPressureData;
+    allData->externalTemperatureData_ = externalTemperatureData;
+    allData->gpsData_ = gpsData;
+    allData->integratedTemperatureData_ = integratedTemperatureData;
+    allData->oxidizerTankConditionsData_ = oxidizerTankConditionsData;
 
-    MonitorForParachuteData monitorForParachuteData;
-    monitorForParachuteData.accelGyroMagnetismData_ = &accelGyroMagnetismData;
-    monitorForParachuteData.externalPressureData_ = &externalPressureData;
+    MonitorForParachuteData* monitorForParachuteData =
+        malloc(sizeof(MonitorForParachuteData));
+    monitorForParachuteData->accelGyroMagnetismData_ = accelGyroMagnetismData;
+    monitorForParachuteData->externalPressureData_ = externalPressureData;
     /* USER CODE END 2 */
 
     /* USER CODE BEGIN RTOS_MUTEX */
@@ -224,7 +232,7 @@ int main(void)
         configMINIMAL_STACK_SIZE
     );
     readAccelGyroMagnetismTaskHandle =
-        osThreadCreate(osThread(readAccelGyroMagnetismThread), &accelGyroMagnetismData);
+        osThreadCreate(osThread(readAccelGyroMagnetismThread), accelGyroMagnetismData);
 
     osThreadDef(
         readExternalPressureThread,
@@ -234,7 +242,7 @@ int main(void)
         configMINIMAL_STACK_SIZE
     );
     readExternalPressureTaskHandle =
-        osThreadCreate(osThread(readExternalPressureThread), &externalPressureData);
+        osThreadCreate(osThread(readExternalPressureThread), externalPressureData);
 
     osThreadDef(
         readExternalTemperatureThread,
@@ -244,7 +252,7 @@ int main(void)
         configMINIMAL_STACK_SIZE
     );
     readExternalTemperatureTaskHandle =
-        osThreadCreate(osThread(readExternalTemperatureThread), &externalTemperatureData);
+        osThreadCreate(osThread(readExternalTemperatureThread), externalTemperatureData);
 
     osThreadDef(
         readIntegratedTemperatureThread,
@@ -254,7 +262,7 @@ int main(void)
         configMINIMAL_STACK_SIZE
     );
     readIntegratedTemperatureTaskHandle =
-        osThreadCreate(osThread(readIntegratedTemperatureThread), &integratedTemperatureData);
+        osThreadCreate(osThread(readIntegratedTemperatureThread), integratedTemperatureData);
 
     osThreadDef(
         readGpsThread,
@@ -264,7 +272,7 @@ int main(void)
         configMINIMAL_STACK_SIZE
     );
     readGpsTaskHandle =
-        osThreadCreate(osThread(readGpsThread), &gpsData);
+        osThreadCreate(osThread(readGpsThread), gpsData);
 
     osThreadDef(
         readOxidizerTankConditionsThread,
@@ -274,7 +282,7 @@ int main(void)
         configMINIMAL_STACK_SIZE
     );
     readOxidizerTankConditionsTaskHandle =
-        osThreadCreate(osThread(readOxidizerTankConditionsThread), &oxidizerTankConditionsData);
+        osThreadCreate(osThread(readOxidizerTankConditionsThread), oxidizerTankConditionsData);
 
     // Monitors that will perform actions
 
@@ -286,7 +294,7 @@ int main(void)
         configMINIMAL_STACK_SIZE
     );
     monitorForEmergencyShutoffTaskHandle =
-        osThreadCreate(osThread(monitorForEmergencyShutoffThread), &accelGyroMagnetismData);
+        osThreadCreate(osThread(monitorForEmergencyShutoffThread), accelGyroMagnetismData);
 
     osThreadDef(
         monitorForLaunchThread,
@@ -306,7 +314,7 @@ int main(void)
         configMINIMAL_STACK_SIZE * 2
     );
     monitorForParachutesTaskHandle =
-        osThreadCreate(osThread(monitorForParachutesThread), &monitorForParachuteData);
+        osThreadCreate(osThread(monitorForParachutesThread), monitorForParachuteData);
 
     // Storing data
 
@@ -318,7 +326,7 @@ int main(void)
         configMINIMAL_STACK_SIZE * 2
     );
     logDataTaskHandle =
-        osThreadCreate(osThread(logDataThread), &allData);
+        osThreadCreate(osThread(logDataThread), allData);
 
     osThreadDef(
         transmitDataThread,
@@ -328,7 +336,7 @@ int main(void)
         configMINIMAL_STACK_SIZE
     );
     transmitDataTaskHandle =
-        osThreadCreate(osThread(transmitDataThread), &allData);
+        osThreadCreate(osThread(transmitDataThread), allData);
     /* USER CODE END RTOS_THREADS */
 
     /* USER CODE BEGIN RTOS_QUEUES */
@@ -351,6 +359,14 @@ int main(void)
 
     }
 
+    free(accelGyroMagnetismData);
+    free(externalPressureData);
+    free(externalTemperatureData);
+    free(gpsData);
+    free(integratedTemperatureData);
+    free(oxidizerTankConditionsData);
+    free(allData);
+    free(monitorForParachuteData);
     /* USER CODE END 3 */
 
 }
