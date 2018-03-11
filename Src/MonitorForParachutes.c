@@ -12,11 +12,11 @@ static int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
 
 float readAccel(AccelGyroMagnetismData* data)
 {
-    osMutexWait(accelGyroMagnetismDataMutex, 0);
+    osMutexWait(data->mutex_, 0);
     float accelX = data->accelX_;
     float accelY = data->accelY_;
     float accelZ = data->accelZ_;
-    osMutexRelease(accelGyroMagnetismDataMutex);
+    osMutexRelease(data->mutex_);
 
     float accelMagnitude =
         sqrt(
@@ -30,9 +30,9 @@ float readAccel(AccelGyroMagnetismData* data)
 
 float readPressure(ExternalPressureData* data)
 {
-    osMutexWait(externalPressureDataMutex, 0);
+    osMutexWait(data->mutex_, 0);
     int pressure = data->externalPressure_;
-    osMutexRelease(externalPressureDataMutex);
+    osMutexRelease(data->mutex_);
 
     return (float)pressure;
 }

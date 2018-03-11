@@ -12,8 +12,8 @@
 
 static int LOG_DATA_PERIOD = 1000;
 
-FATFS fatfs;
-FIL file;
+static FATFS fatfs;
+static FIL file;
 
 void writeToSdCard(const char* entry)
 {
@@ -34,7 +34,7 @@ void writeToSdCard(const char* entry)
 
 void logDataTask(void const* arg)
 {
-    AllData* data = (AllData**) arg;
+    AllData* data = (AllData*) arg;
     uint32_t prevWakeTime = osKernelSysTick();
 
     for (;;)
@@ -42,7 +42,7 @@ void logDataTask(void const* arg)
         osDelayUntil(&prevWakeTime, LOG_DATA_PERIOD);
 
         char buffer[256];
-        osMutexWait(accelGyroMagnetismDataMutex, 0);
+        osMutexWait(data->accelGyroMagnetismData_->mutex_, 0);
         float accelX = data->accelGyroMagnetismData_->accelX_;
         float accelY = data->accelGyroMagnetismData_->accelY_;
         float accelZ = data->accelGyroMagnetismData_->accelZ_;
@@ -52,31 +52,31 @@ void logDataTask(void const* arg)
         float magnetoX = data->accelGyroMagnetismData_->magnetoX_;
         float magnetoY = data->accelGyroMagnetismData_->magnetoY_;
         float magnetoZ = data->accelGyroMagnetismData_->magnetoZ_;
-        osMutexRelease(accelGyroMagnetismDataMutex);
+        osMutexRelease(data->accelGyroMagnetismData_->mutex_);
 
-        osMutexWait(externalPressureDataMutex, 0);
+        osMutexWait(data->externalPressureData_->mutex_, 0);
         int externalPressure = data->externalPressureData_->externalPressure_;
-        osMutexRelease(externalPressureDataMutex);
+        osMutexRelease(data->externalPressureData_->mutex_);
 
-        osMutexWait(externalTemperatureDataMutex, 0);
+        osMutexWait(data->externalTemperatureData_->mutex_, 0);
         int externalTemperature = data->externalTemperatureData_->externalTemperature_;
-        osMutexRelease(externalTemperatureDataMutex);
+        osMutexRelease(data->externalTemperatureData_->mutex_);
 
-        osMutexWait(integratedTemperatureDataMutex, 0);
+        osMutexWait(data->integratedTemperatureData_->mutex_, 0);
         int integratedTemperature = data->integratedTemperatureData_->integratedTemperature_;
-        osMutexRelease(integratedTemperatureDataMutex);
+        osMutexRelease(data->integratedTemperatureData_->mutex_);
 
-        osMutexWait(gpsDataMutex, 0);
+        osMutexWait(data->gpsData_->mutex_, 0);
         int altitude = data->gpsData_->altitude_;
         int epochTimeMsec = data->gpsData_->epochTimeMsec_;
         int latitude = data->gpsData_->latitude_;
         int longitude = data->gpsData_->longitude_;
-        osMutexRelease(gpsDataMutex);
+        osMutexRelease(data->gpsData_->mutex_);
 
-        osMutexWait(oxidizerTankConditionsDataMutex, 0);
+        osMutexWait(data->oxidizerTankConditionsData_->mutex_, 0);
         float pressure = data->oxidizerTankConditionsData_->pressure_;
         float temperature = data->oxidizerTankConditionsData_->temperature_;
-        osMutexRelease(oxidizerTankConditionsDataMutex);
+        osMutexRelease(data->oxidizerTankConditionsData_->mutex_);
 
         sprintf(
             buffer,

@@ -51,6 +51,7 @@
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN Includes */
+#include <stdlib.h>
 // Reads
 #include "ReadAccelGyroMagnetism.h"
 #include "ReadExternalPressure.h"
@@ -89,19 +90,6 @@ static osThreadId monitorForParachutesTaskHandle;
 // Storing data
 static osThreadId logDataTaskHandle;
 static osThreadId transmitDataTaskHandle;
-
-osMutexId accelGyroMagnetismDataMutex;
-osMutexDef(accelGyroMagnetismDataMutex);
-osMutexId externalPressureDataMutex;
-osMutexDef(externalPressureDataMutex);
-osMutexId externalTemperatureDataMutex;
-osMutexDef(externalTemperatureDataMutex);
-osMutexId gpsDataMutex;
-osMutexDef(gpsDataMutex);
-osMutexId integratedTemperatureDataMutex;
-osMutexDef(integratedTemperatureDataMutex);
-osMutexId oxidizerTankConditionsDataMutex;
-osMutexDef(oxidizerTankConditionsDataMutex);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -163,6 +151,8 @@ int main(void)
     OxidizerTankConditionsData* oxidizerTankConditionsData =
         malloc(sizeof(OxidizerTankConditionsData));
 
+    osMutexDef(ACCEL_GYRO_MAGNETISM_DATA_MUTEX);
+    accelGyroMagnetismData->mutex_ = osMutexCreate(osMutex(ACCEL_GYRO_MAGNETISM_DATA_MUTEX));
     accelGyroMagnetismData->accelX_ = -1.f;
     accelGyroMagnetismData->accelY_ = -2.f;
     accelGyroMagnetismData->accelZ_ = -3.f;
@@ -172,13 +162,28 @@ int main(void)
     accelGyroMagnetismData->magnetoX_ = -7.f;
     accelGyroMagnetismData->magnetoY_ = -8.f;
     accelGyroMagnetismData->magnetoZ_ = -9.f;
+
+    osMutexDef(EXTERNAL_PRESSURE_DATA_MUTEX);
+    externalPressureData->mutex_ = osMutexCreate(osMutex(EXTERNAL_PRESSURE_DATA_MUTEX));
     externalPressureData->externalPressure_ = -10;
+
+    osMutexDef(EXTERNAL_TEMPERATURE_DATA_MUTEX);
+    externalTemperatureData->mutex_ = osMutexCreate(osMutex(EXTERNAL_TEMPERATURE_DATA_MUTEX));
     externalTemperatureData->externalTemperature_ = -11;
+
+    osMutexDef(INTEGRATED_TEMPERATURE_DATA_MUTEX);
+    integratedTemperatureData->mutex_ = osMutexCreate(osMutex(INTEGRATED_TEMPERATURE_DATA_MUTEX));
     integratedTemperatureData->integratedTemperature_ = -12;
+
+    osMutexDef(GPS_DATA_MUTEX);
+    gpsData->mutex_ = osMutexCreate(osMutex(GPS_DATA_MUTEX));
     gpsData->altitude_ = -13;
     gpsData->epochTimeMsec_ = -14;
     gpsData->latitude_ = -15;
     gpsData->longitude_ = -16;
+
+    osMutexDef(OXIDIZER_TANK_CONDITIONS_DATA_MUTEX);
+    oxidizerTankConditionsData->mutex_ = osMutexCreate(osMutex(OXIDIZER_TANK_CONDITIONS_DATA_MUTEX));
     oxidizerTankConditionsData->pressure_ = -17.f;
     oxidizerTankConditionsData->temperature_ = -18.f;
 
@@ -199,12 +204,6 @@ int main(void)
     /* USER CODE END 2 */
 
     /* USER CODE BEGIN RTOS_MUTEX */
-    accelGyroMagnetismDataMutex = osMutexCreate(osMutex(accelGyroMagnetismDataMutex));
-    externalPressureDataMutex = osMutexCreate(osMutex(externalPressureDataMutex));
-    externalTemperatureDataMutex = osMutexCreate(osMutex(externalTemperatureDataMutex));
-    gpsDataMutex = osMutexCreate(osMutex(gpsDataMutex));
-    integratedTemperatureDataMutex = osMutexCreate(osMutex(integratedTemperatureDataMutex));
-    oxidizerTankConditionsDataMutex = osMutexCreate(osMutex(oxidizerTankConditionsDataMutex));
     /* USER CODE END RTOS_MUTEX */
 
     /* USER CODE BEGIN RTOS_SEMAPHORES */
