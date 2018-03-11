@@ -157,6 +157,25 @@ int main(void)
     IntegratedTemperatureData integratedTemperatureData;
     OxidizerTankConditionsData oxidizerTankConditionsData;
 
+    accelGyroMagnetismData.accelX_ = -1.f;
+    accelGyroMagnetismData.accelY_ = -2.f;
+    accelGyroMagnetismData.accelZ_ = -3.f;
+    accelGyroMagnetismData.gyroX_ = -4.f;
+    accelGyroMagnetismData.gyroY_ = -5.f;
+    accelGyroMagnetismData.gyroZ_ = -6.f;
+    accelGyroMagnetismData.magnetoX_ = -7.f;
+    accelGyroMagnetismData.magnetoY_ = -8.f;
+    accelGyroMagnetismData.magnetoZ_ = -9.f;
+    externalPressureData.externalPressure_ = -10;
+    externalTemperatureData.externalTemperature_ = -11;
+    integratedTemperatureData.integratedTemperature_ = -12;
+    gpsData.altitude_ = -13;
+    gpsData.epochTimeMsec_ = -14;
+    gpsData.latitude_ = -15;
+    gpsData.longitude_ = -16;
+    oxidizerTankConditionsData.pressure_ = -17.f;
+    oxidizerTankConditionsData.temperature_ = -18.f;
+
     // data containers
     AllData allData;
     allData.accelGyroMagnetismData_ = &accelGyroMagnetismData;

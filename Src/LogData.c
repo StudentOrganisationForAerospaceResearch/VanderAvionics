@@ -11,47 +11,38 @@
 #include "main.h"
 
 static int LOG_DATA_PERIOD = 1000;
+char buffer[200];
 
 FATFS fatfs;
 FIL file;
 
-int writeToSdCard(const char* entry)
+void writeToSdCard(const char* entry)
 {
     if (f_mount(&fatfs, "SD:", 1) == FR_OK)
     {
         HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
 
-        if (f_open(&file, "SD:VanderAvionics.log", FA_OPEN_APPEND | FA_WRITE) == FR_OK)
+        if (f_open(&file, "SD:VanderAvionics.log", FA_OPEN_APPEND | FA_READ | FA_WRITE) == FR_OK)
         {
-            f_puts(entry, &file);
+            // sprintf(buffer, entry);
+            f_puts(buffer, &file);
             f_close(&file);
         }
-        else
-        {
-            return 2;
-        }
-
         f_mount(NULL, "SD:", 1);
         HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
     }
-    else
-    {
-        return 1;
-    }
-
-    return 0;
 }
 
 void logDataTask(void const* arg)
 {
-    AllData* data = (AllData*) arg;
+    AllData* data = (AllData**) arg;
     uint32_t prevWakeTime = osKernelSysTick();
 
     for (;;)
     {
         osDelayUntil(&prevWakeTime, LOG_DATA_PERIOD);
 
-        const char* entry = "";
+        char* entry = "";
         osMutexWait(accelGyroMagnetismDataMutex, 0);
         float accelX = data->accelGyroMagnetismData_->accelX_;
         float accelY = data->accelGyroMagnetismData_->accelY_;
@@ -89,8 +80,8 @@ void logDataTask(void const* arg)
         osMutexRelease(oxidizerTankConditionsDataMutex);
 
         sprintf(
-            entry,
-            "%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d,%d,%d,%d,%d,%d,%f,%f,",
+            buffer,
+            "%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d,%d,%d,%d,%d,%d,%f,%f,\n",
             accelX,
             accelY,
             accelZ,
@@ -111,7 +102,7 @@ void logDataTask(void const* arg)
             temperature
         );
 
-        int error = writeToSdCard(entry);
+        writeToSdCard(entry);
     }
 }
 
