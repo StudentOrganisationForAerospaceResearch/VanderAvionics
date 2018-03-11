@@ -28,6 +28,7 @@ void writeToSdCard(const char* entry)
             f_puts(buffer, &file);
             f_close(&file);
         }
+
         f_mount(NULL, "SD:", 1);
         HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
     }
