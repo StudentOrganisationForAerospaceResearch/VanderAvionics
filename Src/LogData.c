@@ -11,7 +11,6 @@
 #include "main.h"
 
 static int LOG_DATA_PERIOD = 1000;
-char buffer[200];
 
 FATFS fatfs;
 FIL file;
@@ -24,8 +23,7 @@ void writeToSdCard(const char* entry)
 
         if (f_open(&file, "SD:VanderAvionics.log", FA_OPEN_APPEND | FA_READ | FA_WRITE) == FR_OK)
         {
-            // sprintf(buffer, entry);
-            f_puts(buffer, &file);
+            f_puts(entry, &file);
             f_close(&file);
         }
 
@@ -43,7 +41,7 @@ void logDataTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, LOG_DATA_PERIOD);
 
-        char* entry = "";
+        char buffer[256];
         osMutexWait(accelGyroMagnetismDataMutex, 0);
         float accelX = data->accelGyroMagnetismData_->accelX_;
         float accelY = data->accelGyroMagnetismData_->accelY_;
@@ -103,7 +101,7 @@ void logDataTask(void const* arg)
             temperature
         );
 
-        writeToSdCard(entry);
+        writeToSdCard(buffer);
     }
 }
 
