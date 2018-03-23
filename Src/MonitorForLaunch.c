@@ -4,9 +4,22 @@
 
 #include "MonitorForLaunch.h"
 
-static const int MONITOR_FOR_LAUNCH_PERIOD = 50;
-static const int LAUNCH_READ_TIMEOUT = 5;
-static const int BURN_DURATION = 10000; // 10 seconds
+// prelaunch
+static const int PRELAUNCH_PHASE_PERIOD = 50;
+static const int PRELAUNCH_READ_TIMEOUT = 5;
+// burn
+static const int BURN_DURATION = 10000;
+// coast
+static const int COAST_PHASE_PERIOD = 10;
+// descent
+static const int DESCENT_PHASE_PERIOD = 100;
+static const int VENT_VALVE_TOGGLE_PERIOD = 5000;
+
+
+// Cmmands
+static const int LAUNCH_CMD = 0xAA;
+static const int OPEN_VENT_CMD = 0xAA;
+static const int CLOSE_VENT_CMD = 0xAA;
 
 void openInjectionValve()
 {
@@ -18,25 +31,48 @@ void closeInjectionValve()
     // TDOD
 }
 
+void openVentValve()
+{
+    // TODO
+}
+
+void closeVentValve()
+{
+    // TDOD
+}
+
+void toggleVentValve()
+{
+    // TODO
+}
+
 void monitorForLaunchTask(void const* arg)
 {
-    /** PRE LAUNCH PHASE **/
+    /** PRELAUNCH PHASE **/
     uint32_t prevWakeTime = osKernelSysTick();
     uint8_t buffer[1];
 
     for (;;)
     {
-        osDelayUntil(&prevWakeTime, MONITOR_FOR_LAUNCH_PERIOD);
+        osDelayUntil(&prevWakeTime, PRELAUNCH_PHASE_PERIOD);
         // Ensure valve is closed
         closeInjectionValve();
 
         buffer[0] = 0;
-        HAL_UART_Receive(&huart1, buffer, sizeof(buffer), LAUNCH_READ_TIMEOUT);
+        HAL_UART_Receive(&huart1, buffer, sizeof(buffer), PRELAUNCH_READ_TIMEOUT);
 
-        if (buffer[0] == 0xAA)
+        if (buffer[0] == LAUNCH_CMD)
         {
             // Launch signal received, go to burn phase
             break;
+        }
+        else if (buffer[0] == OPEN_VENT_CMD)
+        {
+            openVentValve();
+        }
+        else if (buffer[0] == CLOSE_VENT_CMD)
+        {
+            closeVentValve();
         }
     }
 
@@ -45,11 +81,34 @@ void monitorForLaunchTask(void const* arg)
     osDelay(BURN_DURATION);
     closeInjectionValve();
 
-    /** POST BURN PHASE **/
+    /** COAST PHASE **/
+    prevWakeTime = osKernelSysTick();
+
     for (;;)
     {
-        // Ensure valve is closed
-        osDelay(MONITOR_FOR_LAUNCH_PERIOD);
-        closeInjectionValve();
+        osDelayUntil(&prevWakeTime, COAST_PHASE_PERIOD);
+
+        if (apogeeDetected)
+        {
+            break;
+        }
+    }
+
+    /** DESCENT PHASE **/
+    uint8_t ventValveToggleCounter = 0;
+    prevWakeTime = osKernelSysTick();
+
+    for (;;)
+    {
+        osDelayUntil(&prevWakeTime, DESCENT_PHASE_PERIOD);
+        closeInjectionValve(); // Ensure valve is closed
+        ventValveToggleCounter += DESCENT_PHASE_PERIOD;
+
+        if (ventValveToggleCounter > VENT_VALVE_TOGGLE_PERIOD)
+        {
+            toggleVentValve();
+            ventValveToggleCounter = 0;
+        }
+
     }
 }

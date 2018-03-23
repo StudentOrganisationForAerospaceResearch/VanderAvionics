@@ -9,6 +9,7 @@
 #include "main.h"
 
 static int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
+uint8_t apogeeDetected = 0;
 
 float readAccel(AccelGyroMagnetismData* data)
 {
@@ -80,10 +81,18 @@ void monitorForParachutesTask(void const* arg)
 
             if (detectApogee(positionVector))
             {
+                apogeeDetected = 1;
                 ejectParachute();
                 parachuteLaunched = 1;
                 osThreadSuspend(osThreadGetId()); // kill thread
+                break;
             }
         }
+
+    }
+
+    for (;;)
+    {
+        // do nothing incase thread doesn't die
     }
 }
