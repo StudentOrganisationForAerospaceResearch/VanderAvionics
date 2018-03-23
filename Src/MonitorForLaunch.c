@@ -15,7 +15,6 @@ static const int COAST_PHASE_PERIOD = 10;
 static const int DESCENT_PHASE_PERIOD = 100;
 static const int VENT_VALVE_TOGGLE_PERIOD = 5000;
 
-
 // Cmmands
 static const int LAUNCH_CMD = 0xAA;
 static const int OPEN_VENT_CMD = 0xAA;
@@ -88,7 +87,7 @@ void monitorForLaunchTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, COAST_PHASE_PERIOD);
 
-        if (apogeeDetected)
+        if (drogueParachuteLaunched)
         {
             break;
         }

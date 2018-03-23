@@ -9,7 +9,7 @@
 #include "main.h"
 
 static int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
-uint8_t apogeeDetected = 0;
+uint8_t drogueParachuteLaunched = 0;
 
 float readAccel(AccelGyroMagnetismData* data)
 {
@@ -52,7 +52,12 @@ int detectApogee(float positionVector[3])
     return 0;
 }
 
-void ejectParachute()
+void ejectDrogueParachute()
+{
+    // TODO
+}
+
+void ejectMainParachute()
 {
     // TODO
 }
@@ -65,30 +70,36 @@ void monitorForParachutesTask(void const* arg)
     AccelGyroMagnetismData* accelGyroMagnetismData = data->accelGyroMagnetismData_;
     ExternalPressureData* externalPressureData = data->externalPressureData_;
 
-    int parachuteLaunched = 0;
-
     for (;;)
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
-        if (!parachuteLaunched)
+        float currentAccel = readAccel(accelGyroMagnetismData);
+        float currentPressure = readPressure(externalPressureData);
+
+        float positionVector[3];
+        filterSensors(currentAccel, currentPressure, positionVector);
+
+        if (!drogueParachuteLaunched)
         {
-            float currentAccel = readAccel(accelGyroMagnetismData);
-            float currentPressure = readPressure(externalPressureData);
-
-            float positionVector[3];
-            filterSensors(currentAccel, currentPressure, positionVector);
-
             if (detectApogee(positionVector))
             {
-                apogeeDetected = 1;
-                ejectParachute();
-                parachuteLaunched = 1;
+                ejectDrogueParachute();
+                drogueParachuteLaunched = 1;
+            }
+        }
+        else
+        {
+            // TODO
+            // detect 4600 ft above sea level and launch
+            if (0)
+            {
+                ejectMainParachute();
                 osThreadSuspend(osThreadGetId()); // kill thread
                 break;
             }
-        }
 
+        }
     }
 
     for (;;)
