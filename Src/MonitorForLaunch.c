@@ -20,6 +20,15 @@ static const int LAUNCH_CMD = 0xAA;
 static const int OPEN_VENT_CMD = 0xAA;
 static const int CLOSE_VENT_CMD = 0xAA;
 
+uint8_t readCommand()
+{
+    // TODO
+    // uint8_t buffer[1];
+    // buffer[0] = 0;
+    // HAL_UART_Receive(&huart1, buffer, sizeof(buffer), PRELAUNCH_READ_TIMEOUT);
+    return 0;
+}
+
 void openInjectionValve()
 {
     // TODO
@@ -49,7 +58,6 @@ void monitorForLaunchTask(void const* arg)
 {
     /** PRELAUNCH PHASE **/
     uint32_t prevWakeTime = osKernelSysTick();
-    uint8_t buffer[1];
 
     for (;;)
     {
@@ -57,19 +65,18 @@ void monitorForLaunchTask(void const* arg)
         // Ensure valve is closed
         closeInjectionValve();
 
-        buffer[0] = 0;
-        HAL_UART_Receive(&huart1, buffer, sizeof(buffer), PRELAUNCH_READ_TIMEOUT);
+        uint8_t command = readCommand();
 
-        if (buffer[0] == LAUNCH_CMD)
+        if (command == LAUNCH_CMD)
         {
             // Launch signal received, go to burn phase
             break;
         }
-        else if (buffer[0] == OPEN_VENT_CMD)
+        else if (command == OPEN_VENT_CMD)
         {
             openVentValve();
         }
-        else if (buffer[0] == CLOSE_VENT_CMD)
+        else if (command == CLOSE_VENT_CMD)
         {
             closeVentValve();
         }
