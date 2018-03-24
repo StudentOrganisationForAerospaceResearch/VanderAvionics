@@ -4,6 +4,11 @@
 
 #include "MonitorForLaunch.h"
 
+// Ground Station Commands
+#define LAUNCH_CMD 0xAA
+#define OPEN_VENT_CMD 0x01
+#define CLOSE_VENT_CMD 0x02
+
 // prelaunch
 static const int PRELAUNCH_PHASE_PERIOD = 50;
 // burn
@@ -13,11 +18,6 @@ static const int COAST_PHASE_PERIOD = 10;
 // descent
 static const int DESCENT_PHASE_PERIOD = 100;
 static const int VENT_VALVE_TOGGLE_PERIOD = 5000;
-
-// Cmmands
-static const int LAUNCH_CMD = 0xAA;
-static const int OPEN_VENT_CMD = 0xAA;
-static const int CLOSE_VENT_CMD = 0xAA;
 
 uint8_t readCommandFromGroundStation()
 {
@@ -53,9 +53,8 @@ void toggleVentValve()
     // TODO
 }
 
-void monitorForLaunchTask(void const* arg)
+void prelaunchRoutine()
 {
-    /** PRELAUNCH PHASE **/
     uint32_t prevWakeTime = osKernelSysTick();
 
     for (;;)
@@ -64,47 +63,50 @@ void monitorForLaunchTask(void const* arg)
         // Ensure valve is closed
         closeInjectionValve();
 
-        uint8_t command = readCommandFromGroundStation();
-
-        if (command == LAUNCH_CMD)
+        switch(readCommandFromGroundStation())
         {
-            // Launch signal received, go to burn phase
+        case LAUNCH_CMD:
+            currentFlightPhase = BURN;
+            return; // Launch signal received, go to burn phase
+            break;
+        case OPEN_VENT_CMD:
+            openVentValve();
+            break;
+        case CLOSE_VENT_CMD:
+            closeVentValve();
             break;
         }
-        else if (command == OPEN_VENT_CMD)
-        {
-            openVentValve();
-        }
-        else if (command == CLOSE_VENT_CMD)
-        {
-            closeVentValve();
-        }
     }
+}
 
-    currentFlightPhase = BURN;
-    /** BURN PHASE **/
+void burnRoutine()
+{
     openInjectionValve();
     osDelay(BURN_DURATION);
-    closeInjectionValve();
-
     currentFlightPhase = COAST;
-    /** COAST PHASE **/
-    prevWakeTime = osKernelSysTick();
+    return;
+}
+
+void coastRoutine()
+{
+    uint32_t prevWakeTime = osKernelSysTick();
 
     for (;;)
     {
         osDelayUntil(&prevWakeTime, COAST_PHASE_PERIOD);
-
+        closeInjectionValve();
         // Wait for apogee to be reached
         if (currentFlightPhase >= DROUGE_DESCENT)
         {
-            break;
+            return;
         }
     }
+}
 
-    /** DROGUE_DESCENT, MAIN_DESCENT PHASE **/
+void postCoastRoutine()
+{
     uint8_t ventValveToggleCounter = 0;
-    prevWakeTime = osKernelSysTick();
+    uint32_t prevWakeTime = osKernelSysTick();
 
     for (;;)
     {
@@ -117,5 +119,26 @@ void monitorForLaunchTask(void const* arg)
             toggleVentValve();
             ventValveToggleCounter = 0;
         }
+    }
+}
+
+void monitorForLaunchTask(void const* arg)
+{
+    switch(currentFlightPhase) {
+    case PRELAUNCH:
+        prelaunchRoutine();
+        break;
+    case BURN:
+        burnRoutine();
+        break;
+    case COAST:
+        coastRoutine();
+        break;
+    case DROUGE_DESCENT: // fall through
+    case MAIN_DESCENT:
+        postCoastRoutine();
+        break;
+    default:
+        break;
     }
 }

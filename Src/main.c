@@ -304,7 +304,7 @@ int main(void)
         monitorForLaunchTask,
         osPriorityNormal,
         1,
-        configMINIMAL_STACK_SIZE
+        configMINIMAL_STACK_SIZE * 2
     );
     monitorForLaunchTaskHandle =
         osThreadCreate(osThread(monitorForLaunchThread), NULL);
@@ -336,7 +336,7 @@ int main(void)
         transmitDataTask,
         osPriorityNormal,
         1,
-        configMINIMAL_STACK_SIZE
+        configMINIMAL_STACK_SIZE * 3
     );
     transmitDataTaskHandle =
         osThreadCreate(osThread(transmitDataThread), allData);
