@@ -152,29 +152,32 @@ void parachutesControlTask(void const* arg)
 {
     ParachutesControlData* data = (ParachutesControlData*) arg;
 
-    switch (currentFlightPhase)
+    for (;;)
     {
-        case PRELAUNCH:
-            parachutesControlPrelaunchRoutine();
-            break;
+        switch (currentFlightPhase)
+        {
+            case PRELAUNCH:
+                parachutesControlPrelaunchRoutine();
+                break;
 
-        case BURN: // fall through
-        case COAST:
-            parachutesControlAscentRoutine(
-                data->accelGyroMagnetismData_,
-                data->externalPressureData_
-            );
-            break;
+            case BURN: // fall through
+            case COAST:
+                parachutesControlAscentRoutine(
+                    data->accelGyroMagnetismData_,
+                    data->externalPressureData_
+                );
+                break;
 
-        case DROGUE_DESCENT:
-            parachutesControlDrogueDescentRoutine();
-            break;
+            case DROGUE_DESCENT:
+                parachutesControlDrogueDescentRoutine();
+                break;
 
-        case MAIN_DESCENT:
-            parachutesControlMainDescentRoutine();
-            break;
+            case MAIN_DESCENT:
+                parachutesControlMainDescentRoutine();
+                break;
 
-        default:
-            break;
+            default:
+                break;
+        }
     }
 }

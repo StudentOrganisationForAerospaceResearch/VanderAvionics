@@ -152,26 +152,29 @@ void engineControlPostCoastRoutine()
 
 void engineControlTask(void const* arg)
 {
-    switch (currentFlightPhase)
+    for (;;)
     {
-        case PRELAUNCH:
-            engineControlPrelaunchRoutine();
-            break;
+        switch (currentFlightPhase)
+        {
+            case PRELAUNCH:
+                engineControlPrelaunchRoutine();
+                break;
 
-        case BURN:
-            engineControlBurnRoutine();
-            break;
+            case BURN:
+                engineControlBurnRoutine();
+                break;
 
-        case COAST:
-            engineControlCoastRoutine();
-            break;
+            case COAST:
+                engineControlCoastRoutine();
+                break;
 
-        case DROGUE_DESCENT: // fall through
-        case MAIN_DESCENT:
-            engineControlPostCoastRoutine();
-            break;
+            case DROGUE_DESCENT: // fall through
+            case MAIN_DESCENT:
+                engineControlPostCoastRoutine();
+                break;
 
-        default:
-            break;
+            default:
+                break;
+        }
     }
 }
