@@ -61,32 +61,28 @@ void ejectMainParachute()
     // TODO
 }
 
-void monitorForParachutesTask(void const* arg)
+void parachutesControlPrelaunchRoutine()
 {
-    switch (currentFlightPhase)
-    {
-
-    }
-
     uint32_t prevWakeTime = osKernelSysTick();
 
-    MonitorForParachuteData* data = (MonitorForParachuteData*) arg;
-    AccelGyroMagnetismData* accelGyroMagnetismData = data->accelGyroMagnetismData_;
-    ExternalPressureData* externalPressureData = data->externalPressureData_;
-
-    /** PRELAUNCH PHASE **/
     for (;;)
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
         if (currentFlightPhase > PRELAUNCH)
         {
-            break;
+            // Ascent has begun
+            return;
         }
     }
+}
 
-    /** BURN, COAST PHASE **/
-    prevWakeTime = osKernelSysTick();
+void parachutesControlAscentRoutine(
+    AccelGyroMagnetismData* accelGyroMagnetismData,
+    ExternalPressureData* externalPressureData
+)
+{
+    uint32_t prevWakeTime = osKernelSysTick();
 
     for (;;)
     {
@@ -101,27 +97,70 @@ void monitorForParachutesTask(void const* arg)
         if (detectApogee(positionVector))
         {
             ejectDrogueParachute();
-            break;
+            // Begin descent phases
+            currentFlightPhase = DROGUE_DESCENT;
+            return;
         }
     }
+}
 
-    currentFlightPhase = DROUGE_DESCENT;
-    /** DROGUE_DESCENT PHASE **/
-
-    prevWakeTime = osKernelSysTick();
+void parachutesControlDrogueDescentRoutine()
+{
+    uint32_t prevWakeTime = osKernelSysTick();
 
     for (;;)
     {
+        osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
         // TODO
-        // detect 4600 ft above sea level and launch
+        // detect 4600 ft above sea level and eject main parachute
         if (0)
         {
+
+            currentFlightPhase = MAIN_DESCENT;
             ejectMainParachute();
-            break;
+            return;
         }
     }
+}
 
-    currentFlightPhase = MAIN_DESCENT;
-    /** MAIN_DESCENT PHASE **/
-    osThreadSuspend(osThreadGetId()); // kill thread, nothing left to do
+void parachutesControlMainDescentRoutine()
+{
+    uint32_t prevWakeTime = osKernelSysTick();
+
+    for (;;)
+    {
+        osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
+        // idle
+    }
+}
+
+void monitorForParachutesTask(void const* arg)
+{
+    MonitorForParachuteData* data = (MonitorForParachuteData*) arg;
+
+    switch (currentFlightPhase)
+    {
+        case PRELAUNCH:
+            parachutesControlPrelaunchRoutine();
+            break;
+
+        case BURN: // fall through
+        case COAST:
+            parachutesControlAscentRoutine(
+                data->accelGyroMagnetismData_,
+                data->externalPressureData_
+            );
+            break;
+
+        case DROGUE_DESCENT:
+            parachutesControlDrogueDescentRoutine();
+            break;
+
+        case MAIN_DESCENT:
+            parachutesControlMainDescentRoutine();
+            break;
+
+        default:
+            break;
+    }
 }

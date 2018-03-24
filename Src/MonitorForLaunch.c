@@ -53,7 +53,7 @@ void toggleVentValve()
     // TODO
 }
 
-void prelaunchRoutine()
+void engineControlPrelaunchRoutine()
 {
     uint32_t prevWakeTime = osKernelSysTick();
 
@@ -81,7 +81,7 @@ void prelaunchRoutine()
     }
 }
 
-void burnRoutine()
+void engineControlBurnRoutine()
 {
     openInjectionValve();
     osDelay(BURN_DURATION);
@@ -89,7 +89,7 @@ void burnRoutine()
     return;
 }
 
-void coastRoutine()
+void engineControlCoastRoutine()
 {
     uint32_t prevWakeTime = osKernelSysTick();
 
@@ -99,14 +99,14 @@ void coastRoutine()
         closeInjectionValve();
 
         // Wait for apogee to be reached
-        if (currentFlightPhase >= DROUGE_DESCENT)
+        if (currentFlightPhase >= DROGUE_DESCENT)
         {
             return;
         }
     }
 }
 
-void postCoastRoutine()
+void engineControlPostCoastRoutine()
 {
     uint8_t ventValveToggleCounter = 0;
     uint32_t prevWakeTime = osKernelSysTick();
@@ -130,20 +130,20 @@ void monitorForLaunchTask(void const* arg)
     switch (currentFlightPhase)
     {
         case PRELAUNCH:
-            prelaunchRoutine();
+            engineControlPrelaunchRoutine();
             break;
 
         case BURN:
-            burnRoutine();
+            engineControlBurnRoutine();
             break;
 
         case COAST:
-            coastRoutine();
+            engineControlCoastRoutine();
             break;
 
-        case DROUGE_DESCENT: // fall through
+        case DROGUE_DESCENT: // fall through
         case MAIN_DESCENT:
-            postCoastRoutine();
+            engineControlPostCoastRoutine();
             break;
 
         default:

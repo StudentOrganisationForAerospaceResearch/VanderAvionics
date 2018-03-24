@@ -5,6 +5,6 @@ typedef enum
     PRELAUNCH,
     BURN,
     COAST,
-    DROUGE_DESCENT,
+    DROGUE_DESCENT,
     MAIN_DESCENT
 } FlightPhase;
