@@ -72,4 +72,4 @@ typedef struct
 {
     AccelGyroMagnetismData* accelGyroMagnetismData_;
     ExternalPressureData* externalPressureData_;
-} MonitorForParachuteData;
+} ParachutesControlData;

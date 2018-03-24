@@ -50,12 +50,12 @@ C_SOURCES = \
   Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
   Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
   Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
+  Src/EngineControl.c \
   Src/freertos.c \
   Src/LogData.c \
   Src/main.c \
   Src/MonitorForEmergencyShutoff.c \
-  Src/MonitorForLaunch.c \
-  Src/MonitorForParachutes.c \
+  Src/ParachutesControl.c \
   Src/ReadAccelGyroMagnetism.c \
   Src/ReadExternalPressure.c \
   Src/ReadExternalTemperature.c \

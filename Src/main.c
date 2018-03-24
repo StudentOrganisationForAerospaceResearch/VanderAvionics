@@ -52,21 +52,17 @@
 
 /* USER CODE BEGIN Includes */
 #include <stdlib.h>
-// Reads
 #include "ReadAccelGyroMagnetism.h"
 #include "ReadExternalPressure.h"
 #include "ReadExternalTemperature.h"
 #include "ReadGps.h"
 #include "ReadIntegratedTemperature.h"
 #include "ReadOxidizerTankConditions.h"
-// Monitors
 #include "MonitorForEmergencyShutoff.h"
-#include "MonitorForLaunch.h"
-#include "MonitorForParachutes.h"
-// Store Data
+#include "EngineControl.h"
+#include "ParachutesControl.h"
 #include "LogData.h"
 #include "TransmitData.h"
-// Data Structures
 #include "Data.h"
 #include "FlightPhase.h"
 /* USER CODE END Includes */
@@ -85,10 +81,10 @@ static osThreadId readExternalTemperatureTaskHandle;
 static osThreadId readGpsTaskHandle;
 static osThreadId readIntegratedTemperatureTaskHandle;
 static osThreadId readOxidizerTankConditionsTaskHandle;
-// Monitors that will perform actions
+// Controls that will perform actions
 static osThreadId monitorForEmergencyShutoffTaskHandle;
-static osThreadId monitorForLaunchTaskHandle;
-static osThreadId monitorForParachutesTaskHandle;
+static osThreadId engineControlTaskHandle;
+static osThreadId parachutesControlTaskHandle;
 // Storing data
 static osThreadId logDataTaskHandle;
 static osThreadId transmitDataTaskHandle;
@@ -201,10 +197,10 @@ int main(void)
     allData->integratedTemperatureData_ = integratedTemperatureData;
     allData->oxidizerTankConditionsData_ = oxidizerTankConditionsData;
 
-    MonitorForParachuteData* monitorForParachuteData =
-        malloc(sizeof(MonitorForParachuteData));
-    monitorForParachuteData->accelGyroMagnetismData_ = accelGyroMagnetismData;
-    monitorForParachuteData->externalPressureData_ = externalPressureData;
+    ParachutesControlData* parachutesControlData =
+        malloc(sizeof(ParachutesControlData));
+    parachutesControlData->accelGyroMagnetismData_ = accelGyroMagnetismData;
+    parachutesControlData->externalPressureData_ = externalPressureData;
     /* USER CODE END 2 */
 
     /* USER CODE BEGIN RTOS_MUTEX */
@@ -224,8 +220,6 @@ int main(void)
     defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
     /* USER CODE BEGIN RTOS_THREADS */
-
-    // Reading data
 
     osThreadDef(
         readAccelGyroMagnetismThread,
@@ -287,8 +281,6 @@ int main(void)
     readOxidizerTankConditionsTaskHandle =
         osThreadCreate(osThread(readOxidizerTankConditionsThread), oxidizerTankConditionsData);
 
-    // Monitors that will perform actions
-
     osThreadDef(
         monitorForEmergencyShutoffThread,
         monitorForEmergencyShutoffTask,
@@ -300,26 +292,24 @@ int main(void)
         osThreadCreate(osThread(monitorForEmergencyShutoffThread), accelGyroMagnetismData);
 
     osThreadDef(
-        monitorForLaunchThread,
-        monitorForLaunchTask,
+        engineControlThread,
+        engineControlTask,
         osPriorityNormal,
         1,
         configMINIMAL_STACK_SIZE * 2
     );
-    monitorForLaunchTaskHandle =
-        osThreadCreate(osThread(monitorForLaunchThread), NULL);
+    engineControlTaskHandle =
+        osThreadCreate(osThread(engineControlThread), NULL);
 
     osThreadDef(
-        monitorForParachutesThread,
-        monitorForParachutesTask,
+        parachutesControlThread,
+        parachutesControlTask,
         osPriorityAboveNormal,
         1,
         configMINIMAL_STACK_SIZE * 2
     );
-    monitorForParachutesTaskHandle =
-        osThreadCreate(osThread(monitorForParachutesThread), monitorForParachuteData);
-
-    // Storing data
+    parachutesControlTaskHandle =
+        osThreadCreate(osThread(parachutesControlThread), parachutesControlData);
 
     osThreadDef(
         logDataThread,
@@ -340,12 +330,12 @@ int main(void)
     );
     transmitDataTaskHandle =
         osThreadCreate(osThread(transmitDataThread), allData);
+
     /* USER CODE END RTOS_THREADS */
 
     /* USER CODE BEGIN RTOS_QUEUES */
     /* add queues, ... */
     /* USER CODE END RTOS_QUEUES */
-
 
     /* Start scheduler */
     osKernelStart();
@@ -359,7 +349,6 @@ int main(void)
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
-
     }
 
     free(accelGyroMagnetismData);
@@ -369,7 +358,7 @@ int main(void)
     free(integratedTemperatureData);
     free(oxidizerTankConditionsData);
     free(allData);
-    free(monitorForParachuteData);
+    free(parachutesControlData);
     /* USER CODE END 3 */
 
 }

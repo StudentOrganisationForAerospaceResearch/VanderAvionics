@@ -2,7 +2,7 @@
 #include "stm32f4xx_hal_conf.h"
 #include "cmsis_os.h"
 
-#include "MonitorForLaunch.h"
+#include "EngineControl.h"
 
 // Ground Station Commands
 #define LAUNCH_CMD 0xAA
@@ -150,7 +150,7 @@ void engineControlPostCoastRoutine()
     }
 }
 
-void monitorForLaunchTask(void const* arg)
+void engineControlTask(void const* arg)
 {
     switch (currentFlightPhase)
     {

@@ -4,4 +4,4 @@
 
 extern FlightPhase currentFlightPhase;
 
-void monitorForParachutesTask(void const* arg);
+void parachutesControlTask(void const* arg);

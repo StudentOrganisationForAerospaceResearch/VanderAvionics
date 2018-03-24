@@ -4,7 +4,7 @@
 #include "stm32f4xx_hal_conf.h"
 #include "cmsis_os.h"
 
-#include "MonitorForParachutes.h"
+#include "ParachutesControl.h"
 #include "Data.h"
 #include "main.h"
 
@@ -148,9 +148,9 @@ void parachutesControlMainDescentRoutine()
     }
 }
 
-void monitorForParachutesTask(void const* arg)
+void parachutesControlTask(void const* arg)
 {
-    MonitorForParachuteData* data = (MonitorForParachuteData*) arg;
+    ParachutesControlData* data = (ParachutesControlData*) arg;
 
     switch (currentFlightPhase)
     {
