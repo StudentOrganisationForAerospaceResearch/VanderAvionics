@@ -61,6 +61,9 @@ void ejectMainParachute()
     // TODO
 }
 
+/**
+ * This routine just waits for the currentFlightPhase to get out of PRELAUNCH
+ */
 void parachutesControlPrelaunchRoutine()
 {
     uint32_t prevWakeTime = osKernelSysTick();
@@ -77,12 +80,19 @@ void parachutesControlPrelaunchRoutine()
     }
 }
 
+
+/**
+ * This routine monitors for apogee.
+ * Once apogee has been detected,
+ * eject the drogue parachute and update the currentFlightPhase.
+ */
 void parachutesControlAscentRoutine(
     AccelGyroMagnetismData* accelGyroMagnetismData,
     ExternalPressureData* externalPressureData
 )
 {
     uint32_t prevWakeTime = osKernelSysTick();
+    float positionVector[3];
 
     for (;;)
     {
@@ -91,19 +101,22 @@ void parachutesControlAscentRoutine(
         float currentAccel = readAccel(accelGyroMagnetismData);
         float currentPressure = readPressure(externalPressureData);
 
-        float positionVector[3];
         filterSensors(currentAccel, currentPressure, positionVector);
 
         if (detectApogee(positionVector))
         {
             ejectDrogueParachute();
-            // Begin descent phases
             currentFlightPhase = DROGUE_DESCENT;
             return;
         }
     }
 }
 
+/**
+ * This routine detects reaching a certain altitude
+ * Once that altitude has been reached, eject the main parachute
+ * and update the currentFlightPhase.
+ */
 void parachutesControlDrogueDescentRoutine()
 {
     uint32_t prevWakeTime = osKernelSysTick();
@@ -111,26 +124,27 @@ void parachutesControlDrogueDescentRoutine()
     for (;;)
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
+
         // TODO
         // detect 4600 ft above sea level and eject main parachute
         if (0)
         {
 
-            currentFlightPhase = MAIN_DESCENT;
             ejectMainParachute();
+            currentFlightPhase = MAIN_DESCENT;
             return;
         }
     }
 }
 
+/**
+ * This routine does nothing since there is nothing left to do
+ * after the main parachute has been launched.
+ */
 void parachutesControlMainDescentRoutine()
 {
-    uint32_t prevWakeTime = osKernelSysTick();
-
     for (;;)
     {
-        osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
-        // idle
     }
 }
 
