@@ -1,5 +1,7 @@
 #pragma once
 
-extern uint8_t drogueParachuteLaunched;
+#include "FlightPhase.h"
+
+extern FlightPhase currentFlightPhase;
 
 void transmitDataTask(void const* arg);

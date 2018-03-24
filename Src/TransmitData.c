@@ -15,7 +15,7 @@ void transmitData(
     int longitude,
     float pressure,
     float temperature,
-    uint8_t drogueParachuteStatus)
+    FlightPhase phase)
 {
     // TODO
     // Send data via radio
@@ -49,7 +49,7 @@ void transmitDataTask(void const* arg)
             longitude,
             pressure,
             temperature,
-            drogueParachuteLaunched
+            currentFlightPhase
         );
     }
 }

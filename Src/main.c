@@ -68,14 +68,14 @@
 #include "TransmitData.h"
 // Data Structures
 #include "Data.h"
+#include "FlightPhase.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi3;
-
 UART_HandleTypeDef huart1;
-
 osThreadId defaultTaskHandle;
+FlightPhase currentFlightPhase = PRELAUNCH;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/

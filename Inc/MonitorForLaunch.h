@@ -1,6 +1,8 @@
 #pragma once
 
+#include "FlightPhase.h"
+
 extern UART_HandleTypeDef huart1;
-extern uint8_t drogueParachuteLaunched;
+extern FlightPhase currentFlightPhase;
 
 void monitorForLaunchTask(void const* arg);

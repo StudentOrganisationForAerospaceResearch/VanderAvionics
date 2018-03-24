@@ -9,7 +9,6 @@
 #include "main.h"
 
 static int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
-uint8_t drogueParachuteLaunched = 0;
 
 float readAccel(AccelGyroMagnetismData* data)
 {
@@ -70,6 +69,20 @@ void monitorForParachutesTask(void const* arg)
     AccelGyroMagnetismData* accelGyroMagnetismData = data->accelGyroMagnetismData_;
     ExternalPressureData* externalPressureData = data->externalPressureData_;
 
+    /** PRELAUNCH PHASE **/
+    for (;;)
+    {
+        osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
+
+        if (currentFlightPhase > PRELAUNCH)
+        {
+            break;
+        }
+    }
+
+    /** BURN, COAST PHASE **/
+    prevWakeTime = osKernelSysTick();
+
     for (;;)
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
@@ -80,30 +93,30 @@ void monitorForParachutesTask(void const* arg)
         float positionVector[3];
         filterSensors(currentAccel, currentPressure, positionVector);
 
-        if (!drogueParachuteLaunched)
+        if (detectApogee(positionVector))
         {
-            if (detectApogee(positionVector))
-            {
-                ejectDrogueParachute();
-                drogueParachuteLaunched = 1;
-            }
-        }
-        else
-        {
-            // TODO
-            // detect 4600 ft above sea level and launch
-            if (0)
-            {
-                ejectMainParachute();
-                osThreadSuspend(osThreadGetId()); // kill thread
-                break;
-            }
-
+            ejectDrogueParachute();
+            break;
         }
     }
+
+    currentFlightPhase = DROUGE_DESCENT;
+    /** DROGUE_DESCENT PHASE **/
+
+    prevWakeTime = osKernelSysTick();
 
     for (;;)
     {
-        // do nothing incase thread doesn't die
+        // TODO
+        // detect 4600 ft above sea level and launch
+        if (0)
+        {
+            ejectMainParachute();
+            break;
+        }
     }
+
+    currentFlightPhase = MAIN_DESCENT;
+    /** MAIN_DESCENT PHASE **/
+    osThreadSuspend(osThreadGetId()); // kill thread, nothing left to do
 }

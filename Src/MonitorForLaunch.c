@@ -6,7 +6,6 @@
 
 // prelaunch
 static const int PRELAUNCH_PHASE_PERIOD = 50;
-static const int PRELAUNCH_READ_TIMEOUT = 5;
 // burn
 static const int BURN_DURATION = 10000;
 // coast
@@ -20,7 +19,7 @@ static const int LAUNCH_CMD = 0xAA;
 static const int OPEN_VENT_CMD = 0xAA;
 static const int CLOSE_VENT_CMD = 0xAA;
 
-uint8_t readCommand()
+uint8_t readCommandFromGroundStation()
 {
     // TODO
     // uint8_t buffer[1];
@@ -65,7 +64,7 @@ void monitorForLaunchTask(void const* arg)
         // Ensure valve is closed
         closeInjectionValve();
 
-        uint8_t command = readCommand();
+        uint8_t command = readCommandFromGroundStation();
 
         if (command == LAUNCH_CMD)
         {
@@ -82,11 +81,13 @@ void monitorForLaunchTask(void const* arg)
         }
     }
 
+    currentFlightPhase = BURN;
     /** BURN PHASE **/
     openInjectionValve();
     osDelay(BURN_DURATION);
     closeInjectionValve();
 
+    currentFlightPhase = COAST;
     /** COAST PHASE **/
     prevWakeTime = osKernelSysTick();
 
@@ -94,20 +95,21 @@ void monitorForLaunchTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, COAST_PHASE_PERIOD);
 
-        if (drogueParachuteLaunched)
+        // Wait for apogee to be reached
+        if (currentFlightPhase >= DROUGE_DESCENT)
         {
             break;
         }
     }
 
-    /** DESCENT PHASE **/
+    /** DROGUE_DESCENT, MAIN_DESCENT PHASE **/
     uint8_t ventValveToggleCounter = 0;
     prevWakeTime = osKernelSysTick();
 
     for (;;)
     {
         osDelayUntil(&prevWakeTime, DESCENT_PHASE_PERIOD);
-        closeInjectionValve(); // Ensure valve is closed
+        closeInjectionValve(); // Ensure valve is closedp
         ventValveToggleCounter += DESCENT_PHASE_PERIOD;
 
         if (ventValveToggleCounter > VENT_VALVE_TOGGLE_PERIOD)
@@ -115,6 +117,5 @@ void monitorForLaunchTask(void const* arg)
             toggleVentValve();
             ventValveToggleCounter = 0;
         }
-
     }
 }
