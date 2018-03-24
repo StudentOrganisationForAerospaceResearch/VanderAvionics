@@ -98,9 +98,10 @@ void lowFrequencyLogToSdRoutine(AllData* data, char* buffer, FlightPhase entryPh
         if (f_mount(&fatfs, "SD:", 1) == FR_OK)
         {
             HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
+
             if (f_open(&file, "SD:VanderAvionics.log", FA_OPEN_APPEND | FA_READ | FA_WRITE) == FR_OK)
             {
-                f_puts(entry, &file);
+                f_puts(buffer, &file);
                 f_close(&file);
             }
 
@@ -110,13 +111,16 @@ void lowFrequencyLogToSdRoutine(AllData* data, char* buffer, FlightPhase entryPh
     }
 }
 
-void highFrequencyLogToSdRoutine(AllData* data, char* buffer, FlightPhase entryPhase)
+void highFrequencyLogToSdRoutine(AllData* data, char* buffer)
 {
     // Get card mounted
     uint8_t mounted = 0;
-    while(!mounted) {
+
+    while (!mounted)
+    {
         // Keep trying, really need to log during this time
         mounted = (f_mount(&fatfs, "SD:", 1) == FR_OK);
+
         if ( currentFlightPhase != BURN ||
                 currentFlightPhase != COAST ||
                 currentFlightPhase != DROGUE_DESCENT)
@@ -128,9 +132,12 @@ void highFrequencyLogToSdRoutine(AllData* data, char* buffer, FlightPhase entryP
 
     // Open file
     uint8_t opened = 0;
-    while(!opened) {
+
+    while (!opened)
+    {
         // Keep trying, really need to log during this time
-        opened = (f_open(&file, "SD:VanderAvionics.log", FA_OPEN_APPEND | FA_READ | FA_WRITE) == FR_OK)
+        opened = (f_open(&file, "SD:VanderAvionics.log", FA_OPEN_APPEND | FA_READ | FA_WRITE) == FR_OK);
+
         if ( currentFlightPhase != BURN ||
                 currentFlightPhase != COAST ||
                 currentFlightPhase != DROGUE_DESCENT)
@@ -187,7 +194,7 @@ void logDataTask(void const* arg)
 
             case MAIN_DESCENT:
             default:
-                lowFrequencyLogToSdRoutine(data, buffer);
+                lowFrequencyLogToSdRoutine(data, buffer, MAIN_DESCENT);
                 break;
         }
     }
