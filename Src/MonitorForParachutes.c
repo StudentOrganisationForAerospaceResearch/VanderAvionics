@@ -63,6 +63,11 @@ void ejectMainParachute()
 
 void monitorForParachutesTask(void const* arg)
 {
+    switch (currentFlightPhase)
+    {
+
+    }
+
     uint32_t prevWakeTime = osKernelSysTick();
 
     MonitorForParachuteData* data = (MonitorForParachuteData*) arg;

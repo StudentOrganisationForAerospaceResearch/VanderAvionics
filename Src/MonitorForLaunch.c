@@ -63,18 +63,20 @@ void prelaunchRoutine()
         // Ensure valve is closed
         closeInjectionValve();
 
-        switch(readCommandFromGroundStation())
+        switch (readCommandFromGroundStation())
         {
-        case LAUNCH_CMD:
-            currentFlightPhase = BURN;
-            return; // Launch signal received, go to burn phase
-            break;
-        case OPEN_VENT_CMD:
-            openVentValve();
-            break;
-        case CLOSE_VENT_CMD:
-            closeVentValve();
-            break;
+            case LAUNCH_CMD:
+                currentFlightPhase = BURN;
+                return; // Launch signal received, go to burn phase
+                break;
+
+            case OPEN_VENT_CMD:
+                openVentValve();
+                break;
+
+            case CLOSE_VENT_CMD:
+                closeVentValve();
+                break;
         }
     }
 }
@@ -95,6 +97,7 @@ void coastRoutine()
     {
         osDelayUntil(&prevWakeTime, COAST_PHASE_PERIOD);
         closeInjectionValve();
+
         // Wait for apogee to be reached
         if (currentFlightPhase >= DROUGE_DESCENT)
         {
@@ -124,21 +127,26 @@ void postCoastRoutine()
 
 void monitorForLaunchTask(void const* arg)
 {
-    switch(currentFlightPhase) {
-    case PRELAUNCH:
-        prelaunchRoutine();
-        break;
-    case BURN:
-        burnRoutine();
-        break;
-    case COAST:
-        coastRoutine();
-        break;
-    case DROUGE_DESCENT: // fall through
-    case MAIN_DESCENT:
-        postCoastRoutine();
-        break;
-    default:
-        break;
+    switch (currentFlightPhase)
+    {
+        case PRELAUNCH:
+            prelaunchRoutine();
+            break;
+
+        case BURN:
+            burnRoutine();
+            break;
+
+        case COAST:
+            coastRoutine();
+            break;
+
+        case DROUGE_DESCENT: // fall through
+        case MAIN_DESCENT:
+            postCoastRoutine();
+            break;
+
+        default:
+            break;
     }
 }
