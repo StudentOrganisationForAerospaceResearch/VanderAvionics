@@ -53,6 +53,12 @@ void toggleVentValve()
     // TODO
 }
 
+/**
+ * This routine listens for and reacts to commands from the ground station.
+ * The ground station will provide commands to open and close the ventilation valve
+ * for the purpose of avoiding pressure build up in the oxidizer tank.
+ * The ground station will also send a launch command to begin the burn phase.
+ */
 void engineControlPrelaunchRoutine()
 {
     uint32_t prevWakeTime = osKernelSysTick();
@@ -81,6 +87,11 @@ void engineControlPrelaunchRoutine()
     }
 }
 
+/**
+ * This routine opens the injection valve for the burn phase
+ * for a preconfigured amount of time. Once the preconfigured amount
+ * of time has passed, this routine updates the currentFlightPhase.
+ */
 void engineControlBurnRoutine()
 {
     openInjectionValve();
@@ -89,6 +100,12 @@ void engineControlBurnRoutine()
     return;
 }
 
+/**
+ * This routine keeps the injection valve and ventilation valves closed for the coast phase.
+ * The injection valve is closed to avoid overshooting the goal altitude.
+ * The ventilation valve is closed to avoid a trajectory change from oxidizer discharge.
+ * The routine exits when the currentFlightPhase is past the coast phase.
+ */
 void engineControlCoastRoutine()
 {
     uint32_t prevWakeTime = osKernelSysTick();
@@ -97,15 +114,23 @@ void engineControlCoastRoutine()
     {
         osDelayUntil(&prevWakeTime, COAST_PHASE_PERIOD);
         closeInjectionValve();
+        closeVentValve();
 
-        // Wait for apogee to be reached
-        if (currentFlightPhase >= DROGUE_DESCENT)
+        // Wait for the coast phase to end
+        if (currentFlightPhase > COAST)
         {
             return;
         }
     }
 }
 
+/**
+ * This routine closes the injection valve and vents any remaining oxidizer.
+ * The injection valve is closed to prevent combustion during descent.
+ * The ventilation valve is toggled to vent any remaining oxidizer.
+ * The ventilation valve must be toggled because the valve will break
+ * if open for over ~10 seconds.
+ */
 void engineControlPostCoastRoutine()
 {
     uint8_t ventValveToggleCounter = 0;
