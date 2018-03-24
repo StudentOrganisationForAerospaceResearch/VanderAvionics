@@ -6,7 +6,20 @@
 
 #include "Data.h"
 
-static int TRANSMIT_DATA_PERIOD = 1000;
+static int TRANSMIT_DATA_PERIOD = 250;
+
+void transmitData(
+    int altitude,
+    int epochTimeMsec,
+    int latitude,
+    int longitude,
+    float pressure,
+    float temperature,
+    FlightPhase phase)
+{
+    // TODO
+    // Send data via radio
+}
 
 void transmitDataTask(void const* arg)
 {
@@ -16,5 +29,27 @@ void transmitDataTask(void const* arg)
     for (;;)
     {
         osDelayUntil(&prevWakeTime, TRANSMIT_DATA_PERIOD);
+
+        osMutexWait(data->gpsData_->mutex_, 0);
+        int altitude = data->gpsData_->altitude_;
+        int epochTimeMsec = data->gpsData_->epochTimeMsec_;
+        int latitude = data->gpsData_->latitude_;
+        int longitude = data->gpsData_->longitude_;
+        osMutexRelease(data->gpsData_->mutex_);
+
+        osMutexWait(data->oxidizerTankConditionsData_->mutex_, 0);
+        float pressure = data->oxidizerTankConditionsData_->pressure_;
+        float temperature = data->oxidizerTankConditionsData_->temperature_;
+        osMutexRelease(data->oxidizerTankConditionsData_->mutex_);
+
+        transmitData(
+            altitude,
+            epochTimeMsec,
+            latitude,
+            longitude,
+            pressure,
+            temperature,
+            currentFlightPhase
+        );
     }
 }

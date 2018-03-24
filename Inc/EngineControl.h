@@ -2,6 +2,7 @@
 
 #include "FlightPhase.h"
 
+extern UART_HandleTypeDef huart1;
 extern FlightPhase currentFlightPhase;
 
-void transmitDataTask(void const* arg);
+void engineControlTask(void const* arg);

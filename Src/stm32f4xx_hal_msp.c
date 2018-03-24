@@ -102,19 +102,19 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     PC3     ------> SPI2_MOSI
     PB10     ------> SPI2_SCK 
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_2|BARO_SPI_MOSI_Pin;
+    GPIO_InitStruct.Pin = BARO_SPI_MISO_Pin|BARO_SPI_MOSI_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = BARO_SPI_SCLK_Pin;
+    GPIO_InitStruct.Pin = BARO_SPI_SCK_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
-    HAL_GPIO_Init(BARO_SPI_SCLK_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(BARO_SPI_SCK_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN SPI2_MspInit 1 */
 
@@ -163,9 +163,9 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
     PC3     ------> SPI2_MOSI
     PB10     ------> SPI2_SCK 
     */
-    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_2|BARO_SPI_MOSI_Pin);
+    HAL_GPIO_DeInit(GPIOC, BARO_SPI_MISO_Pin|BARO_SPI_MOSI_Pin);
 
-    HAL_GPIO_DeInit(BARO_SPI_SCLK_GPIO_Port, BARO_SPI_SCLK_Pin);
+    HAL_GPIO_DeInit(BARO_SPI_SCK_GPIO_Port, BARO_SPI_SCK_Pin);
 
   /* USER CODE BEGIN SPI2_MspDeInit 1 */
 
@@ -189,6 +189,60 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
   /* USER CODE BEGIN SPI3_MspDeInit 1 */
 
   /* USER CODE END SPI3_MspDeInit 1 */
+  }
+
+}
+
+void HAL_UART_MspInit(UART_HandleTypeDef* huart)
+{
+
+  GPIO_InitTypeDef GPIO_InitStruct;
+  if(huart->Instance==USART1)
+  {
+  /* USER CODE BEGIN USART1_MspInit 0 */
+
+  /* USER CODE END USART1_MspInit 0 */
+    /* Peripheral clock enable */
+    __HAL_RCC_USART1_CLK_ENABLE();
+  
+    /**USART1 GPIO Configuration    
+    PA9     ------> USART1_TX
+    PA10     ------> USART1_RX 
+    */
+    GPIO_InitStruct.Pin = UART_GND_STATION_TX_Pin|UART_GND_STATION_RX_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /* USER CODE BEGIN USART1_MspInit 1 */
+
+  /* USER CODE END USART1_MspInit 1 */
+  }
+
+}
+
+void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
+{
+
+  if(huart->Instance==USART1)
+  {
+  /* USER CODE BEGIN USART1_MspDeInit 0 */
+
+  /* USER CODE END USART1_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_USART1_CLK_DISABLE();
+  
+    /**USART1 GPIO Configuration    
+    PA9     ------> USART1_TX
+    PA10     ------> USART1_RX 
+    */
+    HAL_GPIO_DeInit(GPIOA, UART_GND_STATION_TX_Pin|UART_GND_STATION_RX_Pin);
+
+  /* USER CODE BEGIN USART1_MspDeInit 1 */
+
+  /* USER CODE END USART1_MspDeInit 1 */
   }
 
 }

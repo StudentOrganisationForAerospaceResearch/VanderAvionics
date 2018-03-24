@@ -52,27 +52,26 @@
 
 /* USER CODE BEGIN Includes */
 #include <stdlib.h>
-// Reads
 #include "ReadAccelGyroMagnetism.h"
 #include "ReadExternalPressure.h"
 #include "ReadExternalTemperature.h"
 #include "ReadGps.h"
 #include "ReadIntegratedTemperature.h"
 #include "ReadOxidizerTankConditions.h"
-// Monitors
 #include "MonitorForEmergencyShutoff.h"
-#include "MonitorForLaunch.h"
-#include "MonitorForParachutes.h"
-// Store Data
+#include "EngineControl.h"
+#include "ParachutesControl.h"
 #include "LogData.h"
 #include "TransmitData.h"
-// Data Structures
 #include "Data.h"
+#include "FlightPhase.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi2;
 SPI_HandleTypeDef hspi3;
+
+UART_HandleTypeDef huart1;
 
 osThreadId defaultTaskHandle;
 
@@ -84,19 +83,22 @@ static osThreadId readExternalTemperatureTaskHandle;
 static osThreadId readGpsTaskHandle;
 static osThreadId readIntegratedTemperatureTaskHandle;
 static osThreadId readOxidizerTankConditionsTaskHandle;
-// Monitors that will perform actions
+// Controls that will perform actions
 static osThreadId monitorForEmergencyShutoffTaskHandle;
-static osThreadId monitorForLaunchTaskHandle;
-static osThreadId monitorForParachutesTaskHandle;
+static osThreadId engineControlTaskHandle;
+static osThreadId parachutesControlTaskHandle;
 // Storing data
 static osThreadId logDataTaskHandle;
 static osThreadId transmitDataTaskHandle;
+
+FlightPhase currentFlightPhase = PRELAUNCH;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI3_Init(void);
+static void MX_USART1_UART_Init(void);
 static void MX_SPI2_Init(void);
 void StartDefaultTask(void const * argument);
 
@@ -138,6 +140,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI3_Init();
+  MX_USART1_UART_Init();
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
     // data primitive structs
@@ -200,10 +203,10 @@ int main(void)
     allData->integratedTemperatureData_ = integratedTemperatureData;
     allData->oxidizerTankConditionsData_ = oxidizerTankConditionsData;
 
-    MonitorForParachuteData* monitorForParachuteData =
-        malloc(sizeof(MonitorForParachuteData));
-    monitorForParachuteData->accelGyroMagnetismData_ = accelGyroMagnetismData;
-    monitorForParachuteData->externalPressureData_ = externalPressureData;
+    ParachutesControlData* parachutesControlData =
+        malloc(sizeof(ParachutesControlData));
+    parachutesControlData->accelGyroMagnetismData_ = accelGyroMagnetismData;
+    parachutesControlData->externalPressureData_ = externalPressureData;
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -223,8 +226,6 @@ int main(void)
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-
-    // Reading data
 
     osThreadDef(
         readAccelGyroMagnetismThread,
@@ -286,8 +287,6 @@ int main(void)
     readOxidizerTankConditionsTaskHandle =
         osThreadCreate(osThread(readOxidizerTankConditionsThread), oxidizerTankConditionsData);
 
-    // Monitors that will perform actions
-
     osThreadDef(
         monitorForEmergencyShutoffThread,
         monitorForEmergencyShutoffTask,
@@ -299,26 +298,24 @@ int main(void)
         osThreadCreate(osThread(monitorForEmergencyShutoffThread), accelGyroMagnetismData);
 
     osThreadDef(
-        monitorForLaunchThread,
-        monitorForLaunchTask,
+        engineControlThread,
+        engineControlTask,
         osPriorityNormal,
         1,
-        configMINIMAL_STACK_SIZE
+        configMINIMAL_STACK_SIZE * 2
     );
-    monitorForLaunchTaskHandle =
-        osThreadCreate(osThread(monitorForLaunchThread), NULL);
+    engineControlTaskHandle =
+        osThreadCreate(osThread(engineControlThread), NULL);
 
     osThreadDef(
-        monitorForParachutesThread,
-        monitorForParachutesTask,
+        parachutesControlThread,
+        parachutesControlTask,
         osPriorityAboveNormal,
         1,
         configMINIMAL_STACK_SIZE * 2
     );
-    monitorForParachutesTaskHandle =
-        osThreadCreate(osThread(monitorForParachutesThread), monitorForParachuteData);
-
-    // Storing data
+    parachutesControlTaskHandle =
+        osThreadCreate(osThread(parachutesControlThread), parachutesControlData);
 
     osThreadDef(
         logDataThread,
@@ -335,10 +332,11 @@ int main(void)
         transmitDataTask,
         osPriorityNormal,
         1,
-        configMINIMAL_STACK_SIZE
+        configMINIMAL_STACK_SIZE * 3
     );
     transmitDataTaskHandle =
         osThreadCreate(osThread(transmitDataThread), allData);
+
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -358,7 +356,6 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-
     }
 
     free(accelGyroMagnetismData);
@@ -368,7 +365,7 @@ int main(void)
     free(integratedTemperatureData);
     free(oxidizerTankConditionsData);
     free(allData);
-    free(monitorForParachuteData);
+    free(parachutesControlData);
   /* USER CODE END 3 */
 
 }
@@ -478,6 +475,25 @@ static void MX_SPI3_Init(void)
 
 }
 
+/* USART1 init function */
+static void MX_USART1_UART_Init(void)
+{
+
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+}
+
 /** Configure pins as 
         * Analog 
         * Input 
@@ -494,6 +510,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
