@@ -39,28 +39,28 @@ void readExternalPressureTask(void const* arg)
 
         HAL_SPI_Transmit(&hspi2, &ADC_READ_CMD, CMD_SIZE, CMD_TIMEOUT);
         HAL_SPI_Receive(&hspi2, &dataIn, CMD_SIZE, CMD_TIMEOUT);
-	temp=65536*dataIn;
+        temp = 65536 * dataIn;
 
         HAL_SPI_Transmit(&hspi2, &ADC_READ_CMD, CMD_SIZE, CMD_TIMEOUT);
-     	HAL_SPI_Receive(&hspi2, &dataIn, CMD_SIZE, CMD_TIMEOUT);
-     	temp=temp+256*dataIn;
+        HAL_SPI_Receive(&hspi2, &dataIn, CMD_SIZE, CMD_TIMEOUT);
+        temp = temp + 256 * dataIn;
 
-    	HAL_SPI_Transmit(&hspi2, &ADC_READ_CMD, CMD_SIZE, CMD_TIMEOUT);
-	HAL_SPI_Receive(&hspi2, &dataIn, CMD_SIZE, CMD_TIMEOUT);
-     	temp=temp+dataIn;
+        HAL_SPI_Transmit(&hspi2, &ADC_READ_CMD, CMD_SIZE, CMD_TIMEOUT);
+        HAL_SPI_Receive(&hspi2, &dataIn, CMD_SIZE, CMD_TIMEOUT);
+        temp = temp + dataIn;
 
-	baroCSHigh();
+        baroCSHigh();
 
-     	osMutexWait(data->mutex_, 0);
+        osMutexWait(data->mutex_, 0);
         data->externalPressure_ = temp;
         osMutexRelease(data->mutex_);
-  }
+    }
 }
 void baroCSLow()
 {
-	HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_RESET);
 }
 void baroCSHigh()
 {
-	HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
 }
