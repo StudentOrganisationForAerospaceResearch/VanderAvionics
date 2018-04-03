@@ -70,9 +70,7 @@
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi2;
 SPI_HandleTypeDef hspi3;
-
 UART_HandleTypeDef huart1;
-
 osThreadId defaultTaskHandle;
 FlightPhase currentFlightPhase = PRELAUNCH;
 
@@ -91,7 +89,6 @@ static osThreadId parachutesControlTaskHandle;
 // Storing data
 static osThreadId logDataTaskHandle;
 static osThreadId transmitDataTaskHandle;
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
