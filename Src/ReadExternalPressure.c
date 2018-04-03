@@ -22,7 +22,7 @@ void readExternalPressureTask(void const* arg)
 
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&hspi2, &RESET_CMD, CMD_SIZE, CMD_TIMEOUT);
-    osDelay(3);   // 3 ms after reset
+    osDelay(3);   // 2.8ms reload after Reset command
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
 
     uint32_t pressureReading;   // Stores a 24 bit value
@@ -34,7 +34,7 @@ void readExternalPressureTask(void const* arg)
         HAL_SPI_Transmit(&hspi2, &ADC_512_CONV_CMD, CMD_SIZE, CMD_TIMEOUT);
         HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
 
-        osDelay(3); // 3 ms after conversion command
+        osDelay(2); // 1.17ms max conversion time for OSR 512
 
         HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_RESET);
         HAL_SPI_Transmit(&hspi2, &ADC_READ_CMD, CMD_SIZE, CMD_TIMEOUT);
