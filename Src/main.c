@@ -68,6 +68,7 @@
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
+SPI_HandleTypeDef hspi2;
 SPI_HandleTypeDef hspi3;
 UART_HandleTypeDef huart1;
 osThreadId defaultTaskHandle;
@@ -95,6 +96,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_SPI2_Init(void);
 void StartDefaultTask(void const* argument);
 
 /* USER CODE BEGIN PFP */
@@ -136,6 +138,7 @@ int main(void)
     MX_GPIO_Init();
     MX_SPI3_Init();
     MX_USART1_UART_Init();
+    MX_SPI2_Init();
     /* USER CODE BEGIN 2 */
     // data primitive structs
     AccelGyroMagnetismData* accelGyroMagnetismData =
@@ -337,6 +340,7 @@ int main(void)
     /* add queues, ... */
     /* USER CODE END RTOS_QUEUES */
 
+
     /* Start scheduler */
     osKernelStart();
 
@@ -421,6 +425,31 @@ void SystemClock_Config(void)
     HAL_NVIC_SetPriority(SysTick_IRQn, 15, 0);
 }
 
+/* SPI2 init function */
+static void MX_SPI2_Init(void)
+{
+
+    /* SPI2 parameter configuration*/
+    hspi2.Instance = SPI2;
+    hspi2.Init.Mode = SPI_MODE_MASTER;
+    hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+    hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+    hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+    hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+    hspi2.Init.NSS = SPI_NSS_SOFT;
+    hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+    hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+    hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
+    hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    hspi2.Init.CRCPolynomial = 10;
+
+    if (HAL_SPI_Init(&hspi2) != HAL_OK)
+    {
+        _Error_Handler(__FILE__, __LINE__);
+    }
+
+}
+
 /* SPI3 init function */
 static void MX_SPI3_Init(void)
 {
@@ -481,14 +510,15 @@ static void MX_GPIO_Init(void)
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOH_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
     /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOC, LED1_Pin | LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, LED1_Pin | LED2_Pin | BARO_CS_Pin, GPIO_PIN_RESET);
 
-    /*Configure GPIO pins : LED1_Pin LED2_Pin */
-    GPIO_InitStruct.Pin = LED1_Pin | LED2_Pin;
+    /*Configure GPIO pins : LED1_Pin LED2_Pin BARO_CS_Pin */
+    GPIO_InitStruct.Pin = LED1_Pin | LED2_Pin | BARO_CS_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
