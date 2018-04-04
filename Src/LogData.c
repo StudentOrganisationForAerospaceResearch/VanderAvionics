@@ -198,7 +198,7 @@ void logDataTask(void const* arg)
         "longitude,"
         "pressure,"
         "temperature,"
-        "currentFlightPhase"
+        "currentFlightPhase\n"
     );
 
     if (f_mount(&fatfs, "SD:", 1) == FR_OK)
