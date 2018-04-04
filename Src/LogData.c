@@ -178,6 +178,43 @@ void logDataTask(void const* arg)
     AllData* data = (AllData*) arg;
     char buffer[256];
 
+    sprintf(
+        buffer,
+        "accelX,"
+        "accelY,"
+        "accelZ,"
+        "gyroX,"
+        "gyroY,"
+        "gyroZ,"
+        "magnetoX,"
+        "magnetoY,"
+        "magnetoZ,"
+        "externalPressure,"
+        "externalTemperature,"
+        "integratedTemperature,"
+        "altitude,"
+        "epochTimeMsec,"
+        "latitude,"
+        "longitude,"
+        "pressure,"
+        "temperature,"
+        "currentFlightPhase\n"
+    );
+
+    if (f_mount(&fatfs, "SD:", 1) == FR_OK)
+    {
+        HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
+
+        if (f_open(&file, "SD:VanderAvionics.log", FA_OPEN_APPEND | FA_READ | FA_WRITE) == FR_OK)
+        {
+            f_puts(buffer, &file);
+            f_close(&file);
+        }
+
+        f_mount(NULL, "SD:", 1);
+        HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
+    }
+
     for (;;)
     {
         switch (currentFlightPhase)
