@@ -549,7 +549,7 @@ void StartDefaultTask(void const* argument)
 
     for (;;)
     {
-        osDelay(500);
+        osDelay(1500);
 
         // blink once for PRELAUNCH phase
         // blink twice for BURN phase
@@ -559,8 +559,9 @@ void StartDefaultTask(void const* argument)
         for (int i = -1; i < currentFlightPhase; i++)
         {
             HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 1);
-            osDelay(100);
+            osDelay(200);
             HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 0);
+            osDelay(200);
         }
     }
 
