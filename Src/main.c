@@ -90,7 +90,7 @@ static osThreadId logDataTaskHandle;
 static osThreadId transmitDataTaskHandle;
 
 FlightPhase currentFlightPhase = PRELAUNCH;
-static const int FLIGHT_PHASE_DISPLAY_FREQ = 500;
+static const int FLIGHT_PHASE_DISPLAY_FREQ = 1000;
 static const int FLIGHT_PHASE_BLINK_FREQ = 100;
 /* USER CODE END PV */
 
@@ -549,7 +549,7 @@ void StartDefaultTask(void const* argument)
 
     for (;;)
     {
-        osDelay(1500);
+        osDelay(FLIGHT_PHASE_DISPLAY_FREQ);
 
         // blink once for PRELAUNCH phase
         // blink twice for BURN phase
@@ -559,9 +559,9 @@ void StartDefaultTask(void const* argument)
         for (int i = -1; i < currentFlightPhase; i++)
         {
             HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 1);
-            osDelay(200);
+            osDelay(FLIGHT_PHASE_BLINK_FREQ);
             HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 0);
-            osDelay(200);
+            osDelay(FLIGHT_PHASE_BLINK_FREQ);
         }
     }
 
