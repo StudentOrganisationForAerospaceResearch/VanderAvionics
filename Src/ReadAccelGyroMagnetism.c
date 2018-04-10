@@ -19,6 +19,7 @@ static const int CMD_TIMEOUT = 150;
 #define ACCEL_CTRL_REGISTER_6_ADDR 0x20 // CTRL_REG6_XL (20h)
 #define GYRO_CTRL_REGISTER_1_ADDR 0x10 // CTRL_REG1_G (10h)
 #define CTRL_REGISTER_8_ADDR 0x22 // CTRL_REG8 (22h)
+#define WHOAMI_REGISTER_ADDR 0x0F // CTRL_REG8 (22h)
 
 #define ACCEL_X_LOW_REGISTER_ADDR 0x28
 #define ACCEL_X_HIGH_REGISTER_ADDR 0x29
@@ -42,11 +43,13 @@ static const uint8_t READ_ACCEL_Y_LOW_CMD = ACCEL_Y_LOW_REGISTER_ADDR << 1 | REA
 static const uint8_t READ_ACCEL_Y_HIGH_CMD = ACCEL_Y_HIGH_REGISTER_ADDR << 1 | READ_CMD;
 static const uint8_t READ_ACCEL_Z_LOW_CMD = ACCEL_Z_LOW_REGISTER_ADDR << 1 | READ_CMD;
 static const uint8_t READ_ACCEL_Z_HIGH_CMD = ACCEL_Z_HIGH_REGISTER_ADDR << 1 | READ_CMD;
+static const uint8_t READ_WHOAMI_CMD = WHOAMI_REGISTER_ADDR << 1 | READ_CMD;
 
 uint8_t accelXData[2], accelYData[2], accelZData[2];
 uint16_t accelX, accelY, accelZ;
 uint8_t gyroX, gyroY, gyroZ;
 uint8_t magnetX, magnetY, magnetZ;
+uint8_t whoami;
 
 void readAccelGyroMagnetismTask(void const* arg)
 {
@@ -143,14 +146,18 @@ void readAccelGyroMagnetismTask(void const* arg)
         accelY /= 3;
         accelZ /= 3;
 
+        HAL_SPI_Transmit(&hspi1, &READ_WHOAMI_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        HAL_SPI_Receive(&hspi1, &whoami, READ_CMD_SIZE, CMD_TIMEOUT);
+
         HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_SET);
+
 
         /* Writeback */
         osMutexWait(data->mutex_, 0);
         data->accelX_ = accelX;
         data->accelY_ = accelY;
         data->accelZ_ = accelZ;
-        // data->gyroX_ = whoami;
+        data->gyroX_ = whoami;
         // data->gyroY_ = gyroY;
         // data->gyroZ_ = gyroZ;
         // data->magnetoX_ = magnetX;
