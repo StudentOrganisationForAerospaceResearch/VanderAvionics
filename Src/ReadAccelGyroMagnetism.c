@@ -11,12 +11,16 @@ static int READ_ACCEL_GYRO_MAGNETISM = 1000;
 static const int CMD_SIZE = 1;
 static const int CMD_TIMEOUT = 150;
 static const uint8_t RESET_CMD = 0x1E;
-static const uint8_t READX_LOW_CMD = 0x28;
-static const uint8_t READX_HIGH_CMD = 0x29;
-static const uint8_t READY_LOW_CMD = 0x2A;
-static const uint8_t READY_HIGH_CMD = 0x2B;
-static const uint8_t READZ_LOW_CMD = 0x2C;
-static const uint8_t READZ_HIGH_CMD = 0x2D;
+static const uint8_t CTRL6_XL_CMD = 0x20; // set accelerometer and gyro to active
+static const uint8_t CTRL1_G_CMD = 0x10 | 0xE0; // turn on both accel and gyro
+static const uint8_t CTRL8_CMD = 0x22 | 0x08; // 3 wire mode
+
+static const uint8_t READX_LOW_CMD = 0x28 << 1 | 1;
+static const uint8_t READX_HIGH_CMD = 0x29 << 1 | 1;
+static const uint8_t READY_LOW_CMD = 0x2A << 1 | 1;
+static const uint8_t READY_HIGH_CMD = 0x2B << 1 | 1;
+static const uint8_t READZ_LOW_CMD = 0x2C << 1 | 1;
+static const uint8_t READZ_HIGH_CMD = 0x2D << 1 | 1;
 
 uint8_t address, dataIn;
 uint8_t accelXData[2], accelYData[2], accelZData[2];
@@ -29,18 +33,26 @@ void readAccelGyroMagnetismTask(void const* arg)
     AccelGyroMagnetismData* data = (AccelGyroMagnetismData*) arg;
     uint32_t prevWakeTime = osKernelSysTick();
 
-    // HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_GPIO_Pin, GPIO_PIN_RESET);
-    // //address = 0x20;
-    // HAL_SPI_Transmit(&hspi1,0x23,1,500);
-    // osDelay(1);
-    // //address = 0x14;
-    // HAL_SPI_Transmit(&hspi1,0xC9,1,500);
-    // osDelay(3);
-    // HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);
-
-
-    HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
+    /*HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&hspi1, &RESET_CMD, CMD_SIZE, CMD_TIMEOUT);
+    osDelay(3); 
+    HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_SET);*/
+
+    /* Accelerometer and gyro active mode on */
+    HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Transmit(&hspi1, &CTRL6_XL_CMD, CMD_SIZE, CMD_TIMEOUT);
+    osDelay(3); 
+    HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_SET);
+
+    /* Set up control register 1 */
+    HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Transmit(&hspi1, &CTRL1_G_CMD, CMD_SIZE, CMD_TIMEOUT);
+    osDelay(3); 
+    HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_SET);
+
+    /* Set up control register 8 */
+    HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Transmit(&hspi1, &CTRL8_CMD, CMD_SIZE, CMD_TIMEOUT);
     osDelay(3); 
     HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_SET);
 
@@ -48,28 +60,6 @@ void readAccelGyroMagnetismTask(void const* arg)
     for (;;)
     {
         osDelayUntil(&prevWakeTime, READ_ACCEL_GYRO_MAGNETISM);
-
-       //    // Read register to return higher bit data from z-axis
-       // // address = 0x80|0x2D;
-       //  HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
-       //  HAL_SPI_Transmit(&hspi1,0x20,1,500);
-       //  osDelay(2);
-       //  //address = 0x00;
-       //  //HAL_SPI_Receive(&hspi1,&accelZ,1,500);
-       //  HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_SET);
-
-       //  //accelZ = *hspi1.pRxBuffPtr;
-       //  //accelZ = address;
-
-       //  HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
-       //  HAL_SPI_Transmit(&hspi1, 0x67, 1, 500);
-       //  HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_SET);
-
-       //  osDelay(2); 
-
-        //HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);
-        //HAL_SPI_Transmit(&hspi1, &address, 1, 500);
-
 
        /* Check XLDA in STATUS_REG (Accelerometer ready bit)
         * Reading OUTX_XL/../ clears XLDA, wait for first sample
