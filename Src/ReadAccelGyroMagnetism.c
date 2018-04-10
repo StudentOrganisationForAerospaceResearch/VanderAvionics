@@ -12,27 +12,28 @@ static const int READ_CMD_SIZE = 1;
 static const int WRITE_CMD_SIZE = 2;
 static const int CMD_TIMEOUT = 150;
 
-static const uint8_t READ_CMD = 0x1;
-static const uint8_t WRITE_CMD = 0x0;
+#define READ_CMD 0x1;
+#define WRITE_CMD 0x0;
 
 // Register addresses
-static const uint8_t ACCEL_CTRL_REGISTER_6_ADDR = 0x20; // CTRL_REG6_XL (20h)
-static const uint8_t GYRO_CTRL_REGISTER_1_ADDR = 0x10; // CTRL_REG1_G (10h)
-static const uint8_t CTRL_REGISTER_8_ADDR = 0x22; // CTRL_REG8 (22h)
+#define ACCEL_CTRL_REGISTER_6_ADDR 0x20 // CTRL_REG6_XL (20h)
+#define GYRO_CTRL_REGISTER_1_ADDR 0x10 // CTRL_REG1_G (10h)
+#define CTRL_REGISTER_8_ADDR 0x22 // CTRL_REG8 (22h)
 
-static const uint8_t ACCEL_X_LOW_REGISTER_ADDR = 0x28;
-static const uint8_t ACCEL_X_HIGH_REGISTER_ADDR = 0x29;
-static const uint8_t ACCEL_Y_LOW_REGISTER_ADDR = 0x2A;
-static const uint8_t ACCEL_Y_HIGH_REGISTER_ADDR = 0x2B;
-static const uint8_t ACCEL_Z_LOW_REGISTER_ADDR = 0x2C;
-static const uint8_t ACCEL_Z_HIGH_REGISTER_ADDR = 0x2D;
+#define ACCEL_X_LOW_REGISTER_ADDR 0x28
+#define ACCEL_X_HIGH_REGISTER_ADDR 0x29
+#define ACCEL_Y_LOW_REGISTER_ADDR 0x2A
+#define ACCEL_Y_HIGH_REGISTER_ADDR 0x2B
+#define ACCEL_Z_LOW_REGISTER_ADDR 0x2C
+#define ACCEL_Z_HIGH_REGISTER_ADDR 0x2D
+
+#define ACCEL_ODR_FREQ_SETTING 0x4 // 0b100, 238Hz
+#define GYRO_ODR_FREQ_SETTING 0x4 // 0b100, 238Hz
+#define WIRE_MODE_3_SETTING 0x8
 
 // Full Commands
-static const uint8_t ACCEL_ODR_FREQ_SETTING = 0x4; // 0b100, 238Hz
 static const uint16_t ACTIVATE_ACCEL_CMD = ACCEL_ODR_FREQ_SETTING << 8 | ACCEL_CTRL_REGISTER_6_ADDR << 1 | WRITE_CMD;
-static const uint8_t ACCEL_ODR_FREQ_SETTING = 0x4; // 0b100, 238Hz
 static const uint16_t ACTIVATE_GYRO_CMD = ACCEL_ODR_FREQ_SETTING << 8 | GYRO_CTRL_REGISTER_1_ADDR << 1 | WRITE_CMD;
-static const uint8_t WIRE_MODE_3_SETTING = 0x8;
 static const uint16_t ACTIVATE_3_WIRE_MODE_CMD = WIRE_MODE_3_SETTING << 8 | CTRL_REGISTER_8_ADDR << 1 | WRITE_CMD;
 
 static const uint8_t READ_ACCEL_X_LOW_CMD = ACCEL_X_LOW_REGISTER_ADDR << 1 | READ_CMD;
@@ -42,7 +43,6 @@ static const uint8_t READ_ACCEL_Y_HIGH_CMD = ACCEL_Y_HIGH_REGISTER_ADDR << 1 | R
 static const uint8_t READ_ACCEL_Z_LOW_CMD = ACCEL_Z_LOW_REGISTER_ADDR << 1 | READ_CMD;
 static const uint8_t READ_ACCEL_Z_HIGH_CMD = ACCEL_Z_HIGH_REGISTER_ADDR << 1 | READ_CMD;
 
-uint8_t address, dataIn;
 uint8_t accelXData[2], accelYData[2], accelZData[2];
 uint16_t accelX, accelY, accelZ;
 uint8_t gyroX, gyroY, gyroZ;
@@ -74,47 +74,6 @@ void readAccelGyroMagnetismTask(void const* arg)
     for (;;)
     {
         osDelayUntil(&prevWakeTime, READ_ACCEL_GYRO_MAGNETISM);
-
-        /* Check XLDA in STATUS_REG (Accelerometer ready bit)
-         * Reading OUTX_XL/../ clears XLDA, wait for first sample
-         * Read again, discard data
-         */
-        //    // Read register to return higher bit data from z-axis
-        // // address = 0x80|0x2D;
-        //  HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
-        //  HAL_SPI_Transmit(&hspi1,0x20,1,500);
-        //  osDelay(2);
-        //  //address = 0x00;
-        //  //HAL_SPI_Receive(&hspi1,&accelZ,1,500);
-        //  HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_SET);
-
-        //  //accelZ = *hspi1.pRxBuffPtr;
-        //  //accelZ = address;
-
-        //  HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
-        //  HAL_SPI_Transmit(&hspi1, 0x67, 1, 500);
-        //  HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_SET);
-
-        //  osDelay(2);
-
-        //HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);
-        //HAL_SPI_Transmit(&hspi1, &address, 1, 500);
-
-
-        /* Check XLDA in STATUS_REG (Accelerometer ready bit)
-         * Reading OUTX_XL/../ clears XLDA, wait for first sample
-         * Read again, discard data
-         */
-
-        //address = 0x20;
-        //HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
-        //HAL_SPI_Transmit(&hspi1, &address, READ_CMD_SIZE, CMD_TIMEOUT);
-        //HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_SET);
-
-        //osDelay(2);
-
-        //HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
-        //HAL_SPI_Transmit(&hspi1, &READZ_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
 
         //READ------------------------------------------------------
         accelX = 0;
