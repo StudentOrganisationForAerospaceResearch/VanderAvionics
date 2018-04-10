@@ -75,6 +75,7 @@ void readAccelGyroMagnetismTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, READ_ACCEL_GYRO_MAGNETISM);
 
+        HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
         //READ------------------------------------------------------
         accelX = 0;
         accelY = 0;
@@ -149,7 +150,7 @@ void readAccelGyroMagnetismTask(void const* arg)
         data->accelX_ = accelX;
         data->accelY_ = accelY;
         data->accelZ_ = accelZ;
-        // data->gyroX_ = gyroX;
+        // data->gyroX_ = whoami;
         // data->gyroY_ = gyroY;
         // data->gyroZ_ = gyroZ;
         // data->magnetoX_ = magnetX;
