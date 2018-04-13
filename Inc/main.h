@@ -93,8 +93,8 @@
 #define XL_SPI_MOSI_GPIO_Port GPIOA
 #define XL_SPI_SCK_Pin GPIO_PIN_5
 #define XL_SPI_SCK_GPIO_Port GPIOA
-#define XL_CS_GPIO_Port GPIOE
-#define XL_CS_Pin GPIO_PIN_3
+#define XL_CS_GPIO_Port GPIOB
+#define XL_CS_Pin GPIO_PIN_11
 
 /* ########################## Assert Selection ############################## */
 /**
