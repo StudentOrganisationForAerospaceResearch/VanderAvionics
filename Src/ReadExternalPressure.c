@@ -15,12 +15,12 @@ static const uint8_t ADC_D2_512_CONV_CMD = 0x52;
 static const uint8_t ADC_READ_CMD = 0x00;
 static const uint8_t RESET_CMD = 0x1E;
 
-static const uint8_t PROM_READ_CMD_SENS = 0xA0;
-static const uint8_t PROM_READ_CMD_OFF = 0xA2;
-static const uint8_t PROM_READ_CMD_TCS = 0xA4;
-static const uint8_t PROM_READ_CMD_TCO = 0xA6;
-static const uint8_t PROM_READ_CMD_TREF = 0xA8;
-static const uint8_t PROM_READ_CMD_TEMPSENS = 0xAA;
+static const uint8_t PROM_READ_CMD_SENS = 0xA2;
+static const uint8_t PROM_READ_CMD_OFF = 0xA4;
+static const uint8_t PROM_READ_CMD_TCS = 0xA6;
+static const uint8_t PROM_READ_CMD_TCO = 0xA8;
+static const uint8_t PROM_READ_CMD_TREF = 0xAA;
+static const uint8_t PROM_READ_CMD_TEMPSENS = 0xAC;
 
 static uint8_t dataIn;
 
@@ -149,8 +149,8 @@ void readExternalPressureTask(void const* arg)
 
         // pressureReading = 6465444;
         // temperatureReading = 8077636;
-        //SENS = 46372;
-        // OFF = 43981;
+         SENS = 46372;
+         OFF = 43981;
         // TCS = 29059;
         // TCO = 27842;
         // TREF = 31553;
@@ -159,12 +159,12 @@ void readExternalPressureTask(void const* arg)
         // calcualte 1st order pressure and temperature (MS5607 1st order algorithm)
         double dT = temperatureReading-TREF*pow(2,8);
         double TEMP = 2000+dT*TEMPSENS/pow(2,23);
-        double OFFCALC = OFF*pow(2,17)+dT*TCO/pow(2,6);
-        double SENSCALC = SENS*pow(2,16)+dT*TCS/pow(2,7);
+        double OFFCALC=OFF*pow(2,17)+dT*TCO/pow(2,6);
+        double SENSCALC=SENS*pow(2,16)+dT*TCS/pow(2,7);
         double P = (pressureReading*SENSCALC/pow(2,21)-OFFCALC)/pow(2,15);
 
         osMutexWait(data->mutex_, 0);
-        data->externalPressure_ = SENS;
+        data->externalPressure_ = P;
         osMutexRelease(data->mutex_);
     }
 }
