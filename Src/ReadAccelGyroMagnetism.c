@@ -12,8 +12,8 @@ static const int READ_CMD_SIZE = 1;
 static const int WRITE_CMD_SIZE = 2;
 static const int CMD_TIMEOUT = 150;
 
-#define READ_CMD 0x1;
-#define WRITE_CMD 0x0;
+#define READ_CMD 0x80;
+#define WRITE_CMD 0x00;
 
 // Register addresses
 #define ACCEL_CTRL_REGISTER_6_ADDR 0x20 // CTRL_REG6_XL (20h)
@@ -28,22 +28,23 @@ static const int CMD_TIMEOUT = 150;
 #define ACCEL_Z_LOW_REGISTER_ADDR 0x2C
 #define ACCEL_Z_HIGH_REGISTER_ADDR 0x2D
 
-#define ACCEL_ODR_FREQ_SETTING 0x4 // 0b100, 238Hz
-#define GYRO_ODR_FREQ_SETTING 0x4 // 0b100, 238Hz
+#define ACCEL_ODR_FREQ_SETTING 0x20 // 0b100, 238Hz
+#define GYRO_ODR_FREQ_SETTING 0x80 // 0b100, 238Hz
 #define WIRE_MODE_3_SETTING 0x8
 
 // Full Commands
-static const uint16_t ACTIVATE_ACCEL_CMD = ACCEL_ODR_FREQ_SETTING << 8 | ACCEL_CTRL_REGISTER_6_ADDR << 1 | WRITE_CMD;
-static const uint16_t ACTIVATE_GYRO_CMD = ACCEL_ODR_FREQ_SETTING << 8 | GYRO_CTRL_REGISTER_1_ADDR << 1 | WRITE_CMD;
-static const uint16_t ACTIVATE_3_WIRE_MODE_CMD = WIRE_MODE_3_SETTING << 8 | CTRL_REGISTER_8_ADDR << 1 | WRITE_CMD;
+static const uint8_t ACTIVATE_ACCEL6_CMD = ACCEL_CTRL_REGISTER_6_ADDR & 0x3F;
+static const uint8_t ACTIVATE_ACCEL6_DATA = ACCEL_ODR_FREQ_SETTING;
 
-static const uint8_t READ_ACCEL_X_LOW_CMD = ACCEL_X_LOW_REGISTER_ADDR << 1 | READ_CMD;
-static const uint8_t READ_ACCEL_X_HIGH_CMD = ACCEL_X_HIGH_REGISTER_ADDR << 1 | READ_CMD;
-static const uint8_t READ_ACCEL_Y_LOW_CMD = ACCEL_Y_LOW_REGISTER_ADDR << 1 | READ_CMD;
-static const uint8_t READ_ACCEL_Y_HIGH_CMD = ACCEL_Y_HIGH_REGISTER_ADDR << 1 | READ_CMD;
-static const uint8_t READ_ACCEL_Z_LOW_CMD = ACCEL_Z_LOW_REGISTER_ADDR << 1 | READ_CMD;
-static const uint8_t READ_ACCEL_Z_HIGH_CMD = ACCEL_Z_HIGH_REGISTER_ADDR << 1 | READ_CMD;
-static const uint8_t READ_WHOAMI_CMD = WHOAMI_REGISTER_ADDR << 1 | READ_CMD;
+static const uint16_t ACTIVATE_GYRO_CMD = ACCEL_ODR_FREQ_SETTING | GYRO_CTRL_REGISTER_1_ADDR << 8 | WRITE_CMD;
+
+static const uint8_t READ_ACCEL_X_LOW_CMD = ACCEL_X_LOW_REGISTER_ADDR | READ_CMD;
+static const uint8_t READ_ACCEL_X_HIGH_CMD = ACCEL_X_HIGH_REGISTER_ADDR | READ_CMD;
+static const uint8_t READ_ACCEL_Y_LOW_CMD = ACCEL_Y_LOW_REGISTER_ADDR | READ_CMD;
+static const uint8_t READ_ACCEL_Y_HIGH_CMD = ACCEL_Y_HIGH_REGISTER_ADDR | READ_CMD;
+static const uint8_t READ_ACCEL_Z_LOW_CMD = ACCEL_Z_LOW_REGISTER_ADDR | READ_CMD;
+static const uint8_t READ_ACCEL_Z_HIGH_CMD = ACCEL_Z_HIGH_REGISTER_ADDR | READ_CMD;
+static const uint8_t READ_WHOAMI_CMD = WHOAMI_REGISTER_ADDR | READ_CMD;
 
 uint8_t accelXData[2], accelYData[2], accelZData[2];
 uint16_t accelX, accelY, accelZ;
@@ -56,13 +57,12 @@ void readAccelGyroMagnetismTask(void const* arg)
     AccelGyroMagnetismData* data = (AccelGyroMagnetismData*) arg;
     uint32_t prevWakeTime = osKernelSysTick();
 
-    // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
-
     /* Accelerometer and gyroscope active mode on */
-    // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
-    // HAL_SPI_Transmit(&hspi1, &ACTIVATE_ACCEL_CMD, WRITE_CMD_SIZE, CMD_TIMEOUT);
-    // osDelay(3);
-    // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Transmit(&hspi1, &ACTIVATE_ACCEL6_CMD, 1, CMD_TIMEOUT);
+    HAL_SPI_Transmit(&hspi1, &ACTIVATE_ACCEL6_DATA, 1, CMD_TIMEOUT);
+    osDelay(3);
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
     // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
     // HAL_SPI_Transmit(&hspi1, &ACTIVATE_GYRO_CMD, WRITE_CMD_SIZE, CMD_TIMEOUT);
@@ -78,19 +78,17 @@ void readAccelGyroMagnetismTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, READ_ACCEL_GYRO_MAGNETISM);
 
+        //READ------------------------------------------------------
+        accelX = 0;
+        accelY = 0;
+        accelZ = 0;
+
+        /* Get values for X axis */
         HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
-        // //READ------------------------------------------------------
-        // accelX = 0;
-        // accelY = 0;
-        // accelZ = 0;
-
-        // /* Get values for X axis */
-        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        // HAL_SPI_Receive(&hspi1, &accelXData[0], READ_CMD_SIZE, CMD_TIMEOUT);
-        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        // HAL_SPI_Receive(&hspi1, &accelXData[1], READ_CMD_SIZE, CMD_TIMEOUT);
-        // accelX += ((int16_t)accelXData[1] << 8) | accelXData[0];  // Turn the MSB and LSB into a signed 16-bit value
-
+        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        HAL_SPI_Receive(&hspi1, &accelXData[0], 2, CMD_TIMEOUT);
+        HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
+        accelX += ((uint16_t)(accelXData[1] << 8)) | ((uint16_t)accelXData[0]);  // Turn the MSB and LSB into a signed 16-bit value
         // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
         // HAL_SPI_Receive(&hspi1, &accelXData[0], READ_CMD_SIZE, CMD_TIMEOUT);
         // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
@@ -141,11 +139,12 @@ void readAccelGyroMagnetismTask(void const* arg)
         // HAL_SPI_Receive(&hspi1, &accelZData[1], READ_CMD_SIZE, CMD_TIMEOUT);
         // accelZ += ((int16_t)accelZData[1] << 8) | accelZData[0];  // Turn the MSB and LSB into a signed 16-bit value
 
-        // /* Average the values */
+        /* Average the values */
         // accelX /= 3;
         // accelY /= 3;
         // accelZ /= 3;
 
+        HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
         HAL_SPI_Transmit(&hspi1, &READ_WHOAMI_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
         HAL_SPI_Receive(&hspi1, &whoami, READ_CMD_SIZE, CMD_TIMEOUT);
 
@@ -154,9 +153,9 @@ void readAccelGyroMagnetismTask(void const* arg)
 
         /* Writeback */
         osMutexWait(data->mutex_, 0);
-        // data->accelX_ = accelX;
-        // data->accelY_ = accelY;
-        // data->accelZ_ = accelZ;
+        data->accelX_ = accelX;
+        data->accelY_ = accelY;
+        data->accelZ_ = accelZ;
         data->gyroX_ = whoami;
         // data->gyroY_ = gyroY;
         // data->gyroZ_ = gyroZ;
