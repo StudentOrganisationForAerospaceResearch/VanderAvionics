@@ -56,95 +56,95 @@ void readAccelGyroMagnetismTask(void const* arg)
     AccelGyroMagnetismData* data = (AccelGyroMagnetismData*) arg;
     uint32_t prevWakeTime = osKernelSysTick();
 
-    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
+    // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
     /* Accelerometer and gyroscope active mode on */
-    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(&hspi1, &ACTIVATE_ACCEL_CMD, WRITE_CMD_SIZE, CMD_TIMEOUT);
-    osDelay(3);
-    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
+    // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
+    // HAL_SPI_Transmit(&hspi1, &ACTIVATE_ACCEL_CMD, WRITE_CMD_SIZE, CMD_TIMEOUT);
+    // osDelay(3);
+    // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
-    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(&hspi1, &ACTIVATE_GYRO_CMD, WRITE_CMD_SIZE, CMD_TIMEOUT);
-    osDelay(3);
-    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
+    // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
+    // HAL_SPI_Transmit(&hspi1, &ACTIVATE_GYRO_CMD, WRITE_CMD_SIZE, CMD_TIMEOUT);
+    // osDelay(3);
+    // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
     /* Set up 3 wire mode */
-    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(&hspi1, &ACTIVATE_3_WIRE_MODE_CMD, WRITE_CMD_SIZE, CMD_TIMEOUT);
-    osDelay(3);
+    // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
+    // HAL_SPI_Transmit(&hspi1, &ACTIVATE_3_WIRE_MODE_CMD, WRITE_CMD_SIZE, CMD_TIMEOUT);
+    // osDelay(3);
 
     for (;;)
     {
         osDelayUntil(&prevWakeTime, READ_ACCEL_GYRO_MAGNETISM);
 
         HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
-        //READ------------------------------------------------------
-        accelX = 0;
-        accelY = 0;
-        accelZ = 0;
+        // //READ------------------------------------------------------
+        // accelX = 0;
+        // accelY = 0;
+        // accelZ = 0;
 
-        /* Get values for X axis */
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelXData[0], READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelXData[1], READ_CMD_SIZE, CMD_TIMEOUT);
-        accelX += ((int16_t)accelXData[1] << 8) | accelXData[0];  // Turn the MSB and LSB into a signed 16-bit value
+        // /* Get values for X axis */
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelXData[0], READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelXData[1], READ_CMD_SIZE, CMD_TIMEOUT);
+        // accelX += ((int16_t)accelXData[1] << 8) | accelXData[0];  // Turn the MSB and LSB into a signed 16-bit value
 
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelXData[0], READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelXData[1], READ_CMD_SIZE, CMD_TIMEOUT);
-        accelX += ((int16_t)accelXData[1] << 8) | accelXData[0];  // Turn the MSB and LSB into a signed 16-bit value
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelXData[0], READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelXData[1], READ_CMD_SIZE, CMD_TIMEOUT);
+        // accelX += ((int16_t)accelXData[1] << 8) | accelXData[0];  // Turn the MSB and LSB into a signed 16-bit value
 
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelXData[0], READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelXData[1], READ_CMD_SIZE, CMD_TIMEOUT);
-        accelX += ((int16_t)accelXData[1] << 8) | accelXData[0];  // Turn the MSB and LSB into a signed 16-bit value
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelXData[0], READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_X_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelXData[1], READ_CMD_SIZE, CMD_TIMEOUT);
+        // accelX += ((int16_t)accelXData[1] << 8) | accelXData[0];  // Turn the MSB and LSB into a signed 16-bit value
 
-        /* Get values for Y axis */
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Y_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelYData[0], READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Y_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelYData[1], READ_CMD_SIZE, CMD_TIMEOUT);
-        accelY += ((int16_t)accelYData[1] << 8) | accelYData[0];  // Turn the MSB and LSB into a signed 16-bit value
+        // /* Get values for Y axis */
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Y_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelYData[0], READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Y_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelYData[1], READ_CMD_SIZE, CMD_TIMEOUT);
+        // accelY += ((int16_t)accelYData[1] << 8) | accelYData[0];  // Turn the MSB and LSB into a signed 16-bit value
 
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Y_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelYData[0], READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Y_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelYData[1], READ_CMD_SIZE, CMD_TIMEOUT);
-        accelY += ((int16_t)accelYData[1] << 8) | accelYData[0];  // Turn the MSB and LSB into a signed 16-bit value
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Y_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelYData[0], READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Y_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelYData[1], READ_CMD_SIZE, CMD_TIMEOUT);
+        // accelY += ((int16_t)accelYData[1] << 8) | accelYData[0];  // Turn the MSB and LSB into a signed 16-bit value
 
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Y_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelYData[0], READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Y_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelYData[1], READ_CMD_SIZE, CMD_TIMEOUT);
-        accelY += ((int16_t)accelYData[1] << 8) | accelYData[0];  // Turn the MSB and LSB into a signed 16-bit value
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Y_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelYData[0], READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Y_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelYData[1], READ_CMD_SIZE, CMD_TIMEOUT);
+        // accelY += ((int16_t)accelYData[1] << 8) | accelYData[0];  // Turn the MSB and LSB into a signed 16-bit value
 
-        /* Get values for Z axis */
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Z_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelZData[0], READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Z_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelZData[1], READ_CMD_SIZE, CMD_TIMEOUT);
-        accelZ += ((int16_t)accelZData[1] << 8) | accelZData[0];  // Turn the MSB and LSB into a signed 16-bit value
+        // /* Get values for Z axis */
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Z_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelZData[0], READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Z_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelZData[1], READ_CMD_SIZE, CMD_TIMEOUT);
+        // accelZ += ((int16_t)accelZData[1] << 8) | accelZData[0];  // Turn the MSB and LSB into a signed 16-bit value
 
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Z_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelZData[0], READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Z_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelZData[1], READ_CMD_SIZE, CMD_TIMEOUT);
-        accelZ += ((int16_t)accelZData[1] << 8) | accelZData[0];  // Turn the MSB and LSB into a signed 16-bit value
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Z_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelZData[0], READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Z_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelZData[1], READ_CMD_SIZE, CMD_TIMEOUT);
+        // accelZ += ((int16_t)accelZData[1] << 8) | accelZData[0];  // Turn the MSB and LSB into a signed 16-bit value
 
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Z_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelZData[0], READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Z_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &accelZData[1], READ_CMD_SIZE, CMD_TIMEOUT);
-        accelZ += ((int16_t)accelZData[1] << 8) | accelZData[0];  // Turn the MSB and LSB into a signed 16-bit value
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Z_LOW_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelZData[0], READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Transmit(&hspi1, &READ_ACCEL_Z_HIGH_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &accelZData[1], READ_CMD_SIZE, CMD_TIMEOUT);
+        // accelZ += ((int16_t)accelZData[1] << 8) | accelZData[0];  // Turn the MSB and LSB into a signed 16-bit value
 
-        /* Average the values */
-        accelX /= 3;
-        accelY /= 3;
-        accelZ /= 3;
+        // /* Average the values */
+        // accelX /= 3;
+        // accelY /= 3;
+        // accelZ /= 3;
 
         HAL_SPI_Transmit(&hspi1, &READ_WHOAMI_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
         HAL_SPI_Receive(&hspi1, &whoami, READ_CMD_SIZE, CMD_TIMEOUT);
@@ -154,9 +154,9 @@ void readAccelGyroMagnetismTask(void const* arg)
 
         /* Writeback */
         osMutexWait(data->mutex_, 0);
-        data->accelX_ = accelX;
-        data->accelY_ = accelY;
-        data->accelZ_ = accelZ;
+        // data->accelX_ = accelX;
+        // data->accelY_ = accelY;
+        // data->accelZ_ = accelZ;
         data->gyroX_ = whoami;
         // data->gyroY_ = gyroY;
         // data->gyroZ_ = gyroZ;
