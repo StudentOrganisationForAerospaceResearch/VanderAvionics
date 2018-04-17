@@ -145,6 +145,7 @@ void parachutesControlMainDescentRoutine()
 {
     for (;;)
     {
+        osThreadSuspend(osThreadGetId());
     }
 }
 

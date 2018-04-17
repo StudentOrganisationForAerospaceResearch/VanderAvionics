@@ -91,7 +91,10 @@ static osThreadId parachutesControlTaskHandle;
 // Storing data
 static osThreadId logDataTaskHandle;
 static osThreadId transmitDataTaskHandle;
+
 FlightPhase currentFlightPhase = PRELAUNCH;
+static const int FLIGHT_PHASE_DISPLAY_FREQ = 1000;
+static const int FLIGHT_PHASE_BLINK_FREQ = 100;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -411,7 +414,11 @@ void SystemClock_Config(void)
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV8;
+<<<<<<< HEAD
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV8;
+=======
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+>>>>>>> master
 
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
     {
@@ -580,12 +587,24 @@ void StartDefaultTask(void const* argument)
 
     /* USER CODE BEGIN 5 */
     /* Infinite loop */
-    uint32_t prevWakeTime = osKernelSysTick();
+    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 0);
 
     for (;;)
     {
-        osDelayUntil(&prevWakeTime, 250);
-        HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+        osDelay(FLIGHT_PHASE_DISPLAY_FREQ);
+
+        // blink once for PRELAUNCH phase
+        // blink twice for BURN phase
+        // blink 3 times for COAST phase
+        // blink 4 times for DROGUE_DESCENT phase
+        // blink 5 times for MAIN_DESCENT phase
+        for (int i = -1; i < currentFlightPhase; i++)
+        {
+            HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 1);
+            osDelay(FLIGHT_PHASE_BLINK_FREQ);
+            HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 0);
+            osDelay(FLIGHT_PHASE_BLINK_FREQ);
+        }
     }
 
     /* USER CODE END 5 */
