@@ -414,11 +414,7 @@ void SystemClock_Config(void)
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV8;
-<<<<<<< HEAD
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV8;
-=======
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
->>>>>>> master
 
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
     {
@@ -447,7 +443,7 @@ static void MX_SPI1_Init(void)
     hspi1.Init.Direction = SPI_DIRECTION_2LINES;
     hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
     hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
-    hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;  
+    hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
     hspi1.Init.NSS = SPI_NSS_SOFT;
     hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
     hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
@@ -553,14 +549,9 @@ static void MX_GPIO_Init(void)
 
     /*Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(GPIOC, LED1_Pin | LED2_Pin | BARO_CS_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
 
-    /*Configure GPIO pin: XL_CS_Pin*/
-    GPIO_InitStruct.Pin = XL_CS_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pins : LED1_Pin LED2_Pin BARO_CS_Pin */
     GPIO_InitStruct.Pin = LED1_Pin | LED2_Pin | BARO_CS_Pin;
@@ -568,6 +559,13 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : IMU_CS_Pin */
+    GPIO_InitStruct.Pin = IMU_CS_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(IMU_CS_GPIO_Port, &GPIO_InitStruct);
 
     /*Configure GPIO pin : SD_CS_Pin */
     GPIO_InitStruct.Pin = SD_CS_Pin;

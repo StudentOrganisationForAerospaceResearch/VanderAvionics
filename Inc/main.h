@@ -63,21 +63,26 @@
 #define LED1_GPIO_Port GPIOC
 #define LED2_Pin GPIO_PIN_14
 #define LED2_GPIO_Port GPIOC
-
 #define BARO_SPI_MISO_Pin GPIO_PIN_2
 #define BARO_SPI_MISO_GPIO_Port GPIOC
 #define BARO_SPI_MOSI_Pin GPIO_PIN_3
 #define BARO_SPI_MOSI_GPIO_Port GPIOC
+#define IMU_SCK_Pin GPIO_PIN_5
+#define IMU_SCK_GPIO_Port GPIOA
+#define IMU_MISO_Pin GPIO_PIN_6
+#define IMU_MISO_GPIO_Port GPIOA
+#define IMU_MOSI_Pin GPIO_PIN_7
+#define IMU_MOSI_GPIO_Port GPIOA
 #define BARO_CS_Pin GPIO_PIN_4
 #define BARO_CS_GPIO_Port GPIOC
 #define BARO_SPI_SCK_Pin GPIO_PIN_10
 #define BARO_SPI_SCK_GPIO_Port GPIOB
-
+#define IMU_CS_Pin GPIO_PIN_11
+#define IMU_CS_GPIO_Port GPIOB
 #define UART_GND_STATION_TX_Pin GPIO_PIN_9
 #define UART_GND_STATION_TX_GPIO_Port GPIOA
 #define UART_GND_STATION_RX_Pin GPIO_PIN_10
 #define UART_GND_STATION_RX_GPIO_Port GPIOA
-
 #define SD_SPI_SCK_Pin GPIO_PIN_10
 #define SD_SPI_SCK_GPIO_Port GPIOC
 #define SD_SPI_MSIO_Pin GPIO_PIN_11
@@ -86,15 +91,6 @@
 #define SD_SPI_MOSI_GPIO_Port GPIOC
 #define SD_CS_Pin GPIO_PIN_2
 #define SD_CS_GPIO_Port GPIOD
-
-#define XL_SPI_MISO_Pin GPIO_PIN_6
-#define XL_SPI_MISO_GPIO_Port GPIOA
-#define XL_SPI_MOSI_Pin GPIO_PIN_7
-#define XL_SPI_MOSI_GPIO_Port GPIOA
-#define XL_SPI_SCK_Pin GPIO_PIN_5
-#define XL_SPI_SCK_GPIO_Port GPIOA
-#define XL_CS_GPIO_Port GPIOB
-#define XL_CS_Pin GPIO_PIN_11
 
 /* ########################## Assert Selection ############################## */
 /**

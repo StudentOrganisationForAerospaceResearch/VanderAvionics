@@ -56,21 +56,21 @@ void readAccelGyroMagnetismTask(void const* arg)
     AccelGyroMagnetismData* data = (AccelGyroMagnetismData*) arg;
     uint32_t prevWakeTime = osKernelSysTick();
 
-    HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
     /* Accelerometer and gyroscope active mode on */
-    HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&hspi1, &ACTIVATE_ACCEL_CMD, WRITE_CMD_SIZE, CMD_TIMEOUT);
     osDelay(3);
-    HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
-    HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&hspi1, &ACTIVATE_GYRO_CMD, WRITE_CMD_SIZE, CMD_TIMEOUT);
     osDelay(3);
-    HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
     /* Set up 3 wire mode */
-    HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&hspi1, &ACTIVATE_3_WIRE_MODE_CMD, WRITE_CMD_SIZE, CMD_TIMEOUT);
     osDelay(3);
 
@@ -78,7 +78,7 @@ void readAccelGyroMagnetismTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, READ_ACCEL_GYRO_MAGNETISM);
 
-        HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
         //READ------------------------------------------------------
         accelX = 0;
         accelY = 0;
@@ -149,7 +149,7 @@ void readAccelGyroMagnetismTask(void const* arg)
         HAL_SPI_Transmit(&hspi1, &READ_WHOAMI_CMD, READ_CMD_SIZE, CMD_TIMEOUT);
         HAL_SPI_Receive(&hspi1, &whoami, READ_CMD_SIZE, CMD_TIMEOUT);
 
-        HAL_GPIO_WritePin(XL_CS_GPIO_Port, XL_CS_Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
 
         /* Writeback */
