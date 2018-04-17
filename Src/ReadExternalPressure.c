@@ -6,21 +6,21 @@
 #include "ReadExternalPressure.h"
 #include "Data.h"
 
-static const int READ_EXTERNAL_PRESSURE_PERIOD = 1000;
+static const int READ_EXTERNAL_PRESSURE_PERIOD = 100;
 
 static const int CMD_SIZE = 1;
 static const int CMD_TIMEOUT = 150;
+
 static const uint8_t ADC_D1_512_CONV_CMD = 0x42;
 static const uint8_t ADC_D2_512_CONV_CMD = 0x52;
 static const uint8_t ADC_READ_CMD = 0x00;
-static const uint8_t RESET_CMD = 0x1E;
-
 static const uint8_t PROM_READ_CMD_SENS = 0xA2;
 static const uint8_t PROM_READ_CMD_OFF = 0xA4;
 static const uint8_t PROM_READ_CMD_TCS = 0xA6;
 static const uint8_t PROM_READ_CMD_TCO = 0xA8;
 static const uint8_t PROM_READ_CMD_TREF = 0xAA;
 static const uint8_t PROM_READ_CMD_TEMPSENS = 0xAC;
+static const uint8_t RESET_CMD = 0x1E;
 
 static uint8_t dataIn;
 
@@ -34,65 +34,62 @@ void readExternalPressureTask(void const* arg)
     osDelay(3);   // 2.8ms reload after Reset command
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
 
-    uint16_t SENS = 0;
-    uint16_t OFF = 0;
-    uint16_t TCS = 0;
-    uint16_t TCO = 0;
-    uint16_t TREF = 0;
-    uint16_t TEMPSENS = 0;
+    uint16_t C1_SENS = 0;
+    uint16_t C2_OFF = 0;
+    uint16_t C3_TCS = 0;
+    uint16_t C4_TCO = 0;
+    uint16_t C5_TREF = 0;
+    uint16_t C6_TEMPSENS = 0;
 
     // PROM read for calibration coefficients
-    osDelay(5);
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&hspi2, &PROM_READ_CMD_SENS, CMD_SIZE, CMD_TIMEOUT);
     HAL_SPI_TransmitReceive(&hspi2, &ADC_READ_CMD, &dataIn, CMD_SIZE, CMD_TIMEOUT);
-    SENS = dataIn << 8;
+    C1_SENS = dataIn << 8;
     HAL_SPI_TransmitReceive(&hspi2, &ADC_READ_CMD, &dataIn, CMD_SIZE, CMD_TIMEOUT);
-    SENS += dataIn;
+    C1_SENS += dataIn;
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
 
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&hspi2, &PROM_READ_CMD_OFF, CMD_SIZE, CMD_TIMEOUT);
     HAL_SPI_TransmitReceive(&hspi2, &ADC_READ_CMD, &dataIn, CMD_SIZE, CMD_TIMEOUT);
-    OFF = dataIn << 8;
+    C2_OFF = dataIn << 8;
     HAL_SPI_TransmitReceive(&hspi2, &ADC_READ_CMD, &dataIn, CMD_SIZE, CMD_TIMEOUT);
-    OFF += dataIn;
+    C2_OFF += dataIn;
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
 
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&hspi2, &PROM_READ_CMD_TCS, CMD_SIZE, CMD_TIMEOUT);
     HAL_SPI_TransmitReceive(&hspi2, &ADC_READ_CMD, &dataIn, CMD_SIZE, CMD_TIMEOUT);
-    TCS = dataIn << 8;
+    C3_TCS = dataIn << 8;
     HAL_SPI_TransmitReceive(&hspi2, &ADC_READ_CMD, &dataIn, CMD_SIZE, CMD_TIMEOUT);
-    TCS += dataIn;
+    C3_TCS += dataIn;
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
 
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&hspi2, &PROM_READ_CMD_TCO, CMD_SIZE, CMD_TIMEOUT);
     HAL_SPI_TransmitReceive(&hspi2, &ADC_READ_CMD, &dataIn, CMD_SIZE, CMD_TIMEOUT);
-    TCO = dataIn << 8;
+    C4_TCO = dataIn << 8;
     HAL_SPI_TransmitReceive(&hspi2, &ADC_READ_CMD, &dataIn, CMD_SIZE, CMD_TIMEOUT);
-    TCO += dataIn;
+    C4_TCO += dataIn;
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
 
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&hspi2, &PROM_READ_CMD_TREF, CMD_SIZE, CMD_TIMEOUT);
     HAL_SPI_TransmitReceive(&hspi2, &ADC_READ_CMD, &dataIn, CMD_SIZE, CMD_TIMEOUT);
-    TREF = dataIn << 8;
+    C5_TREF = dataIn << 8;
     HAL_SPI_TransmitReceive(&hspi2, &ADC_READ_CMD, &dataIn, CMD_SIZE, CMD_TIMEOUT);
-    TREF += dataIn;
+    C5_TREF += dataIn;
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
 
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&hspi2, &PROM_READ_CMD_TEMPSENS, CMD_SIZE, CMD_TIMEOUT);
     HAL_SPI_TransmitReceive(&hspi2, &ADC_READ_CMD, &dataIn, CMD_SIZE, CMD_TIMEOUT);
-    TEMPSENS = dataIn << 8;
+    C6_TEMPSENS = dataIn << 8;
     HAL_SPI_TransmitReceive(&hspi2, &ADC_READ_CMD, &dataIn, CMD_SIZE, CMD_TIMEOUT);
-    TEMPSENS += dataIn;
+    C6_TEMPSENS += dataIn;
 
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
-
-    osDelay(10);   // 2.8ms reload after Reset command
 
     uint32_t pressureReading;   // Stores a 24 bit value
     uint32_t temperatureReading;   // Stores a 24 bit value
@@ -100,6 +97,7 @@ void readExternalPressureTask(void const* arg)
     for (;;)
     {
         osDelayUntil(&prevWakeTime, READ_EXTERNAL_PRESSURE_PERIOD);
+        // Read D1 pressure
         HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_RESET);
         HAL_SPI_Transmit(&hspi2, &ADC_D1_512_CONV_CMD, CMD_SIZE, CMD_TIMEOUT);
         HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
@@ -122,14 +120,12 @@ void readExternalPressureTask(void const* arg)
 
         HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
 
-        osDelay(10);
-
-        // Read D2
+        // Read D2 temperature
         HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_RESET);
         HAL_SPI_Transmit(&hspi2, &ADC_D2_512_CONV_CMD, CMD_SIZE, CMD_TIMEOUT);
         HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
 
-        osDelay(5); // 1.17ms max conversion time for OSR 512
+        osDelay(2); // 1.17ms max conversion time for OSR 512
 
         HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_RESET);
         HAL_SPI_Transmit(&hspi2, &ADC_READ_CMD, CMD_SIZE, CMD_TIMEOUT);
@@ -147,21 +143,23 @@ void readExternalPressureTask(void const* arg)
 
         HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
 
+        // Default values from the datasheet
         // pressureReading = 6465444;
         // temperatureReading = 8077636;
-         SENS = 46372;
-         OFF = 43981;
-        // TCS = 29059;
-        // TCO = 27842;
-        // TREF = 31553;
-        // TEMPSENS = 28165;
+        // C1_SENS = 46372;
+        // C2_OFF = 43981;
+        // C3_TCS = 29059;
+        // C4_TCO = 27842;
+        // C5_TREF = 31553;
+        // C6_TEMPSENS = 28165;
 
         // calcualte 1st order pressure and temperature (MS5607 1st order algorithm)
-        double dT = temperatureReading-TREF*pow(2,8);
-        double TEMP = 2000+dT*TEMPSENS/pow(2,23);
-        double OFFCALC=OFF*pow(2,17)+dT*TCO/pow(2,6);
-        double SENSCALC=SENS*pow(2,16)+dT*TCS/pow(2,7);
-        double P = (pressureReading*SENSCALC/pow(2,21)-OFFCALC)/pow(2,15);
+        double dT = temperatureReading - C5_TREF * pow(2, 8);
+        double TEMP = 2000 + dT * C6_TEMPSENS / pow(2, 23);
+        double OFF = C2_OFF * pow(2, 17) + dT * C4_TCO / pow(2, 6);
+        double SENS = C1_SENS * pow(2, 16) + dT * C3_TCS / pow(2, 7);
+        double P = (pressureReading * SENS / pow(2, 21) - OFF) / pow(2, 15); // divide by 100 to get mbar
+        double T = (TEMP) / 100; // divide by 100 to get degrees Celcius
 
         osMutexWait(data->mutex_, 0);
         data->externalPressure_ = P;
