@@ -11,7 +11,7 @@
 #include "main.h"
 
 static int SLOW_LOG_DATA_PERIOD = 1000;
-static int FAST_LOG_DATA_PERIOD = 5;
+static int FAST_LOG_DATA_PERIOD = 20;
 
 static FATFS fatfs;
 static FIL file;
@@ -111,7 +111,7 @@ void lowFrequencyLogToSdRoutine(AllData* data, char* buffer, FlightPhase entryPh
     }
 }
 
-void highFrequencyLogToSdRoutine(AllData* data, char* buffer, FlightPhase entryPhase)
+void highFrequencyLogToSdRoutine(AllData* data, char* buffer)
 {
     // Get card mounted
     uint8_t mounted = 0;
@@ -131,19 +131,12 @@ void highFrequencyLogToSdRoutine(AllData* data, char* buffer, FlightPhase entryP
     }
 
     // Card mounted, start writing at high frequency
-    f_open(&file, "SD:VanderAvionics.log", FA_OPEN_APPEND | FA_READ | FA_WRITE);
     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
     uint32_t prevWakeTime = osKernelSysTick();
 
     for (;;)
     {
         osDelayUntil(&prevWakeTime, FAST_LOG_DATA_PERIOD);
-
-        if (currentFlightPhase != entryPhase)
-        {
-            // new phase
-            break;
-        }
 
         if ( currentFlightPhase != BURN &&
                 currentFlightPhase != COAST &&
@@ -155,10 +148,13 @@ void highFrequencyLogToSdRoutine(AllData* data, char* buffer, FlightPhase entryP
 
         buildLogEntry(data, buffer);
 
-        f_puts(buffer, &file);
+        if (f_open(&file, "SD:VanderAvionics.log", FA_OPEN_APPEND | FA_READ | FA_WRITE) == FR_OK)
+        {
+            f_puts(buffer, &file);
+            f_close(&file); // close to save the file
+        }
     }
 
-    f_close(&file); // close to save the file
     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
     f_mount(NULL, "SD:", 1);
 }
@@ -216,7 +212,7 @@ void logDataTask(void const* arg)
             case BURN:
             case COAST:
             case DROGUE_DESCENT:
-                highFrequencyLogToSdRoutine(data, buffer, currentFlightPhase);
+                highFrequencyLogToSdRoutine(data, buffer);
                 break;
 
             case MAIN_DESCENT:
