@@ -5,45 +5,31 @@
 typedef struct
 {
     osMutexId mutex_;
-    float accelX_;
-    float accelY_;
-    float accelZ_;
-    float gyroX_;
-    float gyroY_;
-    float gyroZ_;
-    float magnetoX_;
-    float magnetoY_;
-    float magnetoZ_;
+    int32_t accelX_;
+    int32_t accelY_;
+    int32_t accelZ_;
+    int32_t gyroX_;
+    int32_t gyroY_;
+    int32_t gyroZ_;
+    int32_t magnetoX_;
+    int32_t magnetoY_;
+    int32_t magnetoZ_;
 } AccelGyroMagnetismData;
 
 
 typedef struct
 {
     osMutexId mutex_;
-    int externalPressure_;
-} ExternalPressureData;
-
-
-typedef struct
-{
-    osMutexId mutex_;
-    int externalTemperature_;
-} ExternalTemperatureData;
-
+    int32_t externalPressure_;
+    int32_t externalTemperature_;
+} ExternalPressureTemperatureData;
 
 typedef struct
 {
     osMutexId mutex_;
-    int integratedTemperature_;
-} IntegratedTemperatureData;
-
-
-typedef struct
-{
-    osMutexId mutex_;
-    int latitude_;
-    int longitude_;
-    int altitude_;
+    int32_t latitude_;
+    int32_t longitude_;
+    int32_t altitude_;
     unsigned int epochTimeMsec_;
 } GpsData;
 
@@ -61,15 +47,13 @@ typedef struct
 typedef struct
 {
     AccelGyroMagnetismData* accelGyroMagnetismData_;
-    ExternalPressureData* externalPressureData_;
-    ExternalTemperatureData* externalTemperatureData_;
+    ExternalPressureTemperatureData* externalPressureTemperatureData_;
     GpsData* gpsData_;
-    IntegratedTemperatureData* integratedTemperatureData_;
     OxidizerTankConditionsData* oxidizerTankConditionsData_;
 } AllData;
 
 typedef struct
 {
     AccelGyroMagnetismData* accelGyroMagnetismData_;
-    ExternalPressureData* externalPressureData_;
+    ExternalPressureTemperatureData* externalPressureTemperatureData_;
 } ParachutesControlData;

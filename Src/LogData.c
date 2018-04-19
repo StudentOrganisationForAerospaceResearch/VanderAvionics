@@ -30,17 +30,10 @@ void buildLogEntry(AllData* data, char* buffer)
     int32_t magnetoZ = data->accelGyroMagnetismData_->magnetoZ_;
     osMutexRelease(data->accelGyroMagnetismData_->mutex_);
 
-    osMutexWait(data->externalPressureData_->mutex_, 0);
-    int32_t externalPressure = data->externalPressureData_->externalPressure_;
-    osMutexRelease(data->externalPressureData_->mutex_);
-
-    osMutexWait(data->externalTemperatureData_->mutex_, 0);
-    int32_t externalTemperature = data->externalTemperatureData_->externalTemperature_;
-    osMutexRelease(data->externalTemperatureData_->mutex_);
-
-    osMutexWait(data->integratedTemperatureData_->mutex_, 0);
-    int32_t integratedTemperature = data->integratedTemperatureData_->integratedTemperature_;
-    osMutexRelease(data->integratedTemperatureData_->mutex_);
+    osMutexWait(data->externalPressureTemperatureData_->mutex_, 0);
+    int32_t externalPressure = data->externalPressureTemperatureData_->externalPressure_;
+    int32_t externalTemperature = data->externalPressureTemperatureData_->externalTemperature_;
+    osMutexRelease(data->externalPressureTemperatureData_->mutex_);
 
     osMutexWait(data->gpsData_->mutex_, 0);
     int32_t altitude = data->gpsData_->altitude_;
@@ -56,7 +49,7 @@ void buildLogEntry(AllData* data, char* buffer)
 
     sprintf(
         buffer,
-        "%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld\n",
+        "%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld\n",
         accelX,
         accelY,
         accelZ,
@@ -68,7 +61,6 @@ void buildLogEntry(AllData* data, char* buffer)
         magnetoZ,
         externalPressure,
         externalTemperature,
-        integratedTemperature,
         altitude,
         epochTimeMsec,
         latitude,
@@ -177,7 +169,6 @@ void logDataTask(void const* arg)
         "magnetoZ,"
         "externalPressure,"
         "externalTemperature,"
-        "integratedTemperature,"
         "altitude,"
         "epochTimeMsec,"
         "latitude,"

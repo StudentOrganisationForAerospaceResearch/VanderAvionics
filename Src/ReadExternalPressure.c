@@ -6,7 +6,7 @@
 #include "ReadExternalPressure.h"
 #include "Data.h"
 
-static const int READ_EXTERNAL_PRESSURE_PERIOD = 1000;
+static const int READ_EXTERNAL_PRESSURE_TEMPERATURE_PERIOD = 1000;
 
 static const int CMD_SIZE = 1;
 static const int CMD_TIMEOUT = 150;
@@ -24,9 +24,9 @@ static const uint8_t RESET_CMD = 0x1E;
 
 static uint8_t dataIn;
 
-void readExternalPressureTask(void const* arg)
+void readExternalPressureTemperatureTask(void const* arg)
 {
-    ExternalPressureData* data = (ExternalPressureData*) arg;
+    ExternalPressureTemperatureData* data = (ExternalPressureTemperatureData*) arg;
     uint32_t prevWakeTime = osKernelSysTick();
 
     HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_RESET);
@@ -96,7 +96,7 @@ void readExternalPressureTask(void const* arg)
 
     for (;;)
     {
-        osDelayUntil(&prevWakeTime, READ_EXTERNAL_PRESSURE_PERIOD);
+        osDelayUntil(&prevWakeTime, READ_EXTERNAL_PRESSURE_TEMPERATURE_PERIOD);
         // Read D1 pressure
         HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_RESET);
         HAL_SPI_Transmit(&hspi2, &ADC_D1_512_CONV_CMD, CMD_SIZE, CMD_TIMEOUT);
@@ -156,8 +156,8 @@ void readExternalPressureTask(void const* arg)
         double T = (TEMP) / 100; // divide by 100 to get degrees Celcius
 
         osMutexWait(data->mutex_, 0);
-        data->externalPressure_ = (int) P;
-        // add temperature variable here
+        data->externalPressure_ = (int32_t) P;
+        data->externalTemperature_ = (int32_t) T;
         osMutexRelease(data->mutex_);
     }
 }

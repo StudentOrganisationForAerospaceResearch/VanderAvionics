@@ -2,5 +2,5 @@
 
 extern SPI_HandleTypeDef hspi2;
 
-void readExternalPressureTask(void const* arg);
+void readExternalPressureTemperatureTask(void const* arg);
 

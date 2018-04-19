@@ -28,21 +28,21 @@ int32_t readAccel(AccelGyroMagnetismData* data)
     return accelMagnitude;
 }
 
-int32_t readPressure(ExternalPressureData* data)
+int32_t readPressure(ExternalPressureTemperatureData* data)
 {
     osMutexWait(data->mutex_, 0);
-    int32_t pressure = data->externalPressure_;
+    int32_t externalPressure = data->externalPressure_;
     osMutexRelease(data->mutex_);
 
-    return (int32_t)pressure;
+    return (int32_t)externalPressure;
 }
 
 void filterSensors(int32_t current_accel, int32_t current_pressure, int32_t positionVector[3])
 {
     // TODO
-    positionVector[0] = 0.f;
-    positionVector[1] = 0.f;
-    positionVector[2] = 0.f;
+    positionVector[0] = 0;
+    positionVector[1] = 0;
+    positionVector[2] = 0;
 }
 
 int32_t detectApogee(int32_t positionVector[3])
@@ -88,7 +88,7 @@ void parachutesControlPrelaunchRoutine()
  */
 void parachutesControlAscentRoutine(
     AccelGyroMagnetismData* accelGyroMagnetismData,
-    ExternalPressureData* externalPressureData
+    ExternalPressureTemperatureData* externalPressureTemperatureData
 )
 {
     uint32_t prevWakeTime = osKernelSysTick();
@@ -99,7 +99,7 @@ void parachutesControlAscentRoutine(
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
         int32_t currentAccel = readAccel(accelGyroMagnetismData);
-        int32_t currentPressure = readPressure(externalPressureData);
+        int32_t currentPressure = readPressure(externalPressureTemperatureData);
 
         filterSensors(currentAccel, currentPressure, positionVector);
 
@@ -165,7 +165,7 @@ void parachutesControlTask(void const* arg)
             case COAST:
                 parachutesControlAscentRoutine(
                     data->accelGyroMagnetismData_,
-                    data->externalPressureData_
+                    data->externalPressureTemperatureData_
                 );
                 break;
 
