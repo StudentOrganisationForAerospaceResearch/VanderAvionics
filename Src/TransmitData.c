@@ -9,10 +9,10 @@
 static int TRANSMIT_DATA_PERIOD = 250;
 
 void transmitData(
-    int altitude,
-    int epochTimeMsec,
-    int latitude,
-    int longitude,
+    int32_t altitude,
+    int32_t epochTimeMsec,
+    int32_t latitude,
+    int32_t longitude,
     int32_t pressure,
     int32_t temperature,
     FlightPhase phase)
@@ -31,10 +31,10 @@ void transmitDataTask(void const* arg)
         osDelayUntil(&prevWakeTime, TRANSMIT_DATA_PERIOD);
 
         osMutexWait(data->gpsData_->mutex_, 0);
-        int altitude = data->gpsData_->altitude_;
-        int epochTimeMsec = data->gpsData_->epochTimeMsec_;
-        int latitude = data->gpsData_->latitude_;
-        int longitude = data->gpsData_->longitude_;
+        int32_t altitude = data->gpsData_->altitude_;
+        int32_t epochTimeMsec = data->gpsData_->epochTimeMsec_;
+        int32_t latitude = data->gpsData_->latitude_;
+        int32_t longitude = data->gpsData_->longitude_;
         osMutexRelease(data->gpsData_->mutex_);
 
         osMutexWait(data->oxidizerTankConditionsData_->mutex_, 0);

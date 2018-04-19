@@ -31,7 +31,7 @@ int32_t readAccel(AccelGyroMagnetismData* data)
 int32_t readPressure(ExternalPressureData* data)
 {
     osMutexWait(data->mutex_, 0);
-    int pressure = data->externalPressure_;
+    int32_t pressure = data->externalPressure_;
     osMutexRelease(data->mutex_);
 
     return (int32_t)pressure;
@@ -45,7 +45,7 @@ void filterSensors(int32_t current_accel, int32_t current_pressure, int32_t posi
     positionVector[2] = 0.f;
 }
 
-int detectApogee(int32_t positionVector[3])
+int32_t detectApogee(int32_t positionVector[3])
 {
     // TODO
     return 0;
