@@ -19,15 +19,15 @@ static FIL file;
 void buildLogEntry(AllData* data, char* buffer)
 {
     osMutexWait(data->accelGyroMagnetismData_->mutex_, 0);
-    float accelX = data->accelGyroMagnetismData_->accelX_;
-    float accelY = data->accelGyroMagnetismData_->accelY_;
-    float accelZ = data->accelGyroMagnetismData_->accelZ_;
-    float gyroX = data->accelGyroMagnetismData_->gyroX_;
-    float gyroY = data->accelGyroMagnetismData_->gyroY_;
-    float gyroZ = data->accelGyroMagnetismData_->gyroZ_;
-    float magnetoX = data->accelGyroMagnetismData_->magnetoX_;
-    float magnetoY = data->accelGyroMagnetismData_->magnetoY_;
-    float magnetoZ = data->accelGyroMagnetismData_->magnetoZ_;
+    int accelX = data->accelGyroMagnetismData_->accelX_;
+    int accelY = data->accelGyroMagnetismData_->accelY_;
+    int accelZ = data->accelGyroMagnetismData_->accelZ_;
+    int gyroX = data->accelGyroMagnetismData_->gyroX_;
+    int gyroY = data->accelGyroMagnetismData_->gyroY_;
+    int gyroZ = data->accelGyroMagnetismData_->gyroZ_;
+    int magnetoX = data->accelGyroMagnetismData_->magnetoX_;
+    int magnetoY = data->accelGyroMagnetismData_->magnetoY_;
+    int magnetoZ = data->accelGyroMagnetismData_->magnetoZ_;
     osMutexRelease(data->accelGyroMagnetismData_->mutex_);
 
     osMutexWait(data->externalPressureData_->mutex_, 0);
@@ -50,13 +50,13 @@ void buildLogEntry(AllData* data, char* buffer)
     osMutexRelease(data->gpsData_->mutex_);
 
     osMutexWait(data->oxidizerTankConditionsData_->mutex_, 0);
-    float pressure = data->oxidizerTankConditionsData_->pressure_;
-    float temperature = data->oxidizerTankConditionsData_->temperature_;
+    int pressure = data->oxidizerTankConditionsData_->pressure_;
+    int temperature = data->oxidizerTankConditionsData_->temperature_;
     osMutexRelease(data->oxidizerTankConditionsData_->mutex_);
 
     sprintf(
         buffer,
-        "%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d,%d,%d,%d,%d,%d,%f,%f,%d\n",
+        "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
         accelX,
         accelY,
         accelZ,

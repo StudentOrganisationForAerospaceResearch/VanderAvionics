@@ -13,8 +13,8 @@ void transmitData(
     int epochTimeMsec,
     int latitude,
     int longitude,
-    float pressure,
-    float temperature,
+    int pressure,
+    int temperature,
     FlightPhase phase)
 {
     // TODO
@@ -38,8 +38,8 @@ void transmitDataTask(void const* arg)
         osMutexRelease(data->gpsData_->mutex_);
 
         osMutexWait(data->oxidizerTankConditionsData_->mutex_, 0);
-        float pressure = data->oxidizerTankConditionsData_->pressure_;
-        float temperature = data->oxidizerTankConditionsData_->temperature_;
+        int pressure = data->oxidizerTankConditionsData_->pressure_;
+        int temperature = data->oxidizerTankConditionsData_->temperature_;
         osMutexRelease(data->oxidizerTankConditionsData_->mutex_);
 
         transmitData(

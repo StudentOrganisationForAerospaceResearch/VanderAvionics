@@ -10,15 +10,15 @@
 
 static int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
 
-float readAccel(AccelGyroMagnetismData* data)
+int readAccel(AccelGyroMagnetismData* data)
 {
     osMutexWait(data->mutex_, 0);
-    float accelX = data->accelX_;
-    float accelY = data->accelY_;
-    float accelZ = data->accelZ_;
+    int accelX = data->accelX_;
+    int accelY = data->accelY_;
+    int accelZ = data->accelZ_;
     osMutexRelease(data->mutex_);
 
-    float accelMagnitude =
+    int accelMagnitude =
         sqrt(
             accelX * accelX +
             accelY * accelY +
@@ -28,16 +28,16 @@ float readAccel(AccelGyroMagnetismData* data)
     return accelMagnitude;
 }
 
-float readPressure(ExternalPressureData* data)
+int readPressure(ExternalPressureData* data)
 {
     osMutexWait(data->mutex_, 0);
     int pressure = data->externalPressure_;
     osMutexRelease(data->mutex_);
 
-    return (float)pressure;
+    return (int)pressure;
 }
 
-void filterSensors(float current_accel, float current_pressure, float positionVector[3])
+void filterSensors(int current_accel, int current_pressure, int positionVector[3])
 {
     // TODO
     positionVector[0] = 0.f;
@@ -45,7 +45,7 @@ void filterSensors(float current_accel, float current_pressure, float positionVe
     positionVector[2] = 0.f;
 }
 
-int detectApogee(float positionVector[3])
+int detectApogee(int positionVector[3])
 {
     // TODO
     return 0;
@@ -92,14 +92,14 @@ void parachutesControlAscentRoutine(
 )
 {
     uint32_t prevWakeTime = osKernelSysTick();
-    float positionVector[3];
+    int positionVector[3];
 
     for (;;)
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
-        float currentAccel = readAccel(accelGyroMagnetismData);
-        float currentPressure = readPressure(externalPressureData);
+        int currentAccel = readAccel(accelGyroMagnetismData);
+        int currentPressure = readPressure(externalPressureData);
 
         filterSensors(currentAccel, currentPressure, positionVector);
 
