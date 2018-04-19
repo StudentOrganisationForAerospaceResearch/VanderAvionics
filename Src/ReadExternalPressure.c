@@ -6,7 +6,7 @@
 #include "ReadExternalPressure.h"
 #include "Data.h"
 
-static const int READ_EXTERNAL_PRESSURE_PERIOD = 100;
+static const int READ_EXTERNAL_PRESSURE_PERIOD = 1000;
 
 static const int CMD_SIZE = 1;
 static const int CMD_TIMEOUT = 150;
@@ -144,25 +144,20 @@ void readExternalPressureTask(void const* arg)
         HAL_GPIO_WritePin(BARO_CS_GPIO_Port, BARO_CS_Pin, GPIO_PIN_SET);
 
         // Default values from the datasheet
-        // pressureReading = 6465444;
-        // temperatureReading = 8077636;
         // C1_SENS = 46372;
         // C2_OFF = 43981;
-        // C3_TCS = 29059;
-        // C4_TCO = 27842;
-        // C5_TREF = 31553;
-        // C6_TEMPSENS = 28165;
 
         // calcualte 1st order pressure and temperature (MS5607 1st order algorithm)
         double dT = temperatureReading - C5_TREF * pow(2, 8);
         double TEMP = 2000 + dT * C6_TEMPSENS / pow(2, 23);
         double OFF = C2_OFF * pow(2, 17) + dT * C4_TCO / pow(2, 6);
         double SENS = C1_SENS * pow(2, 16) + dT * C3_TCS / pow(2, 7);
-        double P = (pressureReading * SENS / pow(2, 21) - OFF) / pow(2, 15); // divide by 100 to get mbar
+        double P = (pressureReading * SENS / pow(2, 21) - OFF) / pow(2, 15) / 100; // divide by 100 to get mbar
         double T = (TEMP) / 100; // divide by 100 to get degrees Celcius
 
         osMutexWait(data->mutex_, 0);
-        data->externalPressure_ = P;
+        data->externalPressure_ = (int) P;
+        // add temperature variable here
         osMutexRelease(data->mutex_);
     }
 }
