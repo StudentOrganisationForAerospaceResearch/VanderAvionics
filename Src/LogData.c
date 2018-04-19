@@ -19,44 +19,44 @@ static FIL file;
 void buildLogEntry(AllData* data, char* buffer)
 {
     osMutexWait(data->accelGyroMagnetismData_->mutex_, 0);
-    float accelX = data->accelGyroMagnetismData_->accelX_;
-    float accelY = data->accelGyroMagnetismData_->accelY_;
-    float accelZ = data->accelGyroMagnetismData_->accelZ_;
-    float gyroX = data->accelGyroMagnetismData_->gyroX_;
-    float gyroY = data->accelGyroMagnetismData_->gyroY_;
-    float gyroZ = data->accelGyroMagnetismData_->gyroZ_;
-    float magnetoX = data->accelGyroMagnetismData_->magnetoX_;
-    float magnetoY = data->accelGyroMagnetismData_->magnetoY_;
-    float magnetoZ = data->accelGyroMagnetismData_->magnetoZ_;
+    int32_t accelX = data->accelGyroMagnetismData_->accelX_;
+    int32_t accelY = data->accelGyroMagnetismData_->accelY_;
+    int32_t accelZ = data->accelGyroMagnetismData_->accelZ_;
+    int32_t gyroX = data->accelGyroMagnetismData_->gyroX_;
+    int32_t gyroY = data->accelGyroMagnetismData_->gyroY_;
+    int32_t gyroZ = data->accelGyroMagnetismData_->gyroZ_;
+    int32_t magnetoX = data->accelGyroMagnetismData_->magnetoX_;
+    int32_t magnetoY = data->accelGyroMagnetismData_->magnetoY_;
+    int32_t magnetoZ = data->accelGyroMagnetismData_->magnetoZ_;
     osMutexRelease(data->accelGyroMagnetismData_->mutex_);
 
     osMutexWait(data->externalPressureData_->mutex_, 0);
-    int externalPressure = data->externalPressureData_->externalPressure_;
+    int32_t externalPressure = data->externalPressureData_->externalPressure_;
     osMutexRelease(data->externalPressureData_->mutex_);
 
     osMutexWait(data->externalTemperatureData_->mutex_, 0);
-    int externalTemperature = data->externalTemperatureData_->externalTemperature_;
+    int32_t externalTemperature = data->externalTemperatureData_->externalTemperature_;
     osMutexRelease(data->externalTemperatureData_->mutex_);
 
     osMutexWait(data->integratedTemperatureData_->mutex_, 0);
-    int integratedTemperature = data->integratedTemperatureData_->integratedTemperature_;
+    int32_t integratedTemperature = data->integratedTemperatureData_->integratedTemperature_;
     osMutexRelease(data->integratedTemperatureData_->mutex_);
 
     osMutexWait(data->gpsData_->mutex_, 0);
-    int altitude = data->gpsData_->altitude_;
-    int epochTimeMsec = data->gpsData_->epochTimeMsec_;
-    int latitude = data->gpsData_->latitude_;
-    int longitude = data->gpsData_->longitude_;
+    int32_t altitude = data->gpsData_->altitude_;
+    int32_t epochTimeMsec = data->gpsData_->epochTimeMsec_;
+    int32_t latitude = data->gpsData_->latitude_;
+    int32_t longitude = data->gpsData_->longitude_;
     osMutexRelease(data->gpsData_->mutex_);
 
     osMutexWait(data->oxidizerTankConditionsData_->mutex_, 0);
-    float pressure = data->oxidizerTankConditionsData_->pressure_;
-    float temperature = data->oxidizerTankConditionsData_->temperature_;
+    int32_t pressure = data->oxidizerTankConditionsData_->pressure_;
+    int32_t temperature = data->oxidizerTankConditionsData_->temperature_;
     osMutexRelease(data->oxidizerTankConditionsData_->mutex_);
 
     sprintf(
         buffer,
-        "%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d,%d,%d,%d,%d,%d,%f,%f,%d\n",
+        "%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld\n",
         accelX,
         accelY,
         accelZ,
