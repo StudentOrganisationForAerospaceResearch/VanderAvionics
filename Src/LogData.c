@@ -19,15 +19,15 @@ static FIL file;
 void buildLogEntry(AllData* data, char* buffer)
 {
     osMutexWait(data->accelGyroMagnetismData_->mutex_, 0);
-    int accelX = data->accelGyroMagnetismData_->accelX_;
-    int accelY = data->accelGyroMagnetismData_->accelY_;
-    int accelZ = data->accelGyroMagnetismData_->accelZ_;
-    int gyroX = data->accelGyroMagnetismData_->gyroX_;
-    int gyroY = data->accelGyroMagnetismData_->gyroY_;
-    int gyroZ = data->accelGyroMagnetismData_->gyroZ_;
-    int magnetoX = data->accelGyroMagnetismData_->magnetoX_;
-    int magnetoY = data->accelGyroMagnetismData_->magnetoY_;
-    int magnetoZ = data->accelGyroMagnetismData_->magnetoZ_;
+    int32_t accelX = data->accelGyroMagnetismData_->accelX_;
+    int32_t accelY = data->accelGyroMagnetismData_->accelY_;
+    int32_t accelZ = data->accelGyroMagnetismData_->accelZ_;
+    int32_t gyroX = data->accelGyroMagnetismData_->gyroX_;
+    int32_t gyroY = data->accelGyroMagnetismData_->gyroY_;
+    int32_t gyroZ = data->accelGyroMagnetismData_->gyroZ_;
+    int32_t magnetoX = data->accelGyroMagnetismData_->magnetoX_;
+    int32_t magnetoY = data->accelGyroMagnetismData_->magnetoY_;
+    int32_t magnetoZ = data->accelGyroMagnetismData_->magnetoZ_;
     osMutexRelease(data->accelGyroMagnetismData_->mutex_);
 
     osMutexWait(data->externalPressureData_->mutex_, 0);
@@ -50,13 +50,13 @@ void buildLogEntry(AllData* data, char* buffer)
     osMutexRelease(data->gpsData_->mutex_);
 
     osMutexWait(data->oxidizerTankConditionsData_->mutex_, 0);
-    int pressure = data->oxidizerTankConditionsData_->pressure_;
-    int temperature = data->oxidizerTankConditionsData_->temperature_;
+    int32_t pressure = data->oxidizerTankConditionsData_->pressure_;
+    int32_t temperature = data->oxidizerTankConditionsData_->temperature_;
     osMutexRelease(data->oxidizerTankConditionsData_->mutex_);
 
     sprintf(
         buffer,
-        "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        "%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%d,%d,%d,%d,%d,%d,%d,%ld,%ld,%d\n",
         accelX,
         accelY,
         accelZ,
