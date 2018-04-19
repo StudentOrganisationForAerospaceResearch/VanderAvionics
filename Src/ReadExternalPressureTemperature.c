@@ -3,7 +3,7 @@
 #include "cmsis_os.h"
 #include "math.h"
 
-#include "ReadExternalPressure.h"
+#include "ReadExternalPressureTemperature.h"
 #include "Data.h"
 
 static const int READ_EXTERNAL_PRESSURE_TEMPERATURE_PERIOD = 1000;

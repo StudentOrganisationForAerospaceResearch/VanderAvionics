@@ -62,10 +62,8 @@ C_SOURCES = \
   Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
   Src/stm32f4xx_hal_msp.c \
   Src/system_stm32f4xx.c \
-  Src/ReadExternalTemperature.c \
-  Src/ReadIntegratedTemperature.c \
   Src/freertos.c \
-  Src/ReadExternalPressure.c \
+  Src/ReadExternalPressureTemperature.c \
   Src/MonitorForEmergencyShutoff.c \
   Src/ReadAccelGyroMagnetism.c \
   Src/ReadGps.c \
