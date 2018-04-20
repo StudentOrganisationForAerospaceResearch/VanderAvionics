@@ -30,10 +30,10 @@ void buildLogEntry(AllData* data, char* buffer)
     int32_t magnetoZ = data->accelGyroMagnetismData_->magnetoZ_;
     osMutexRelease(data->accelGyroMagnetismData_->mutex_);
 
-    osMutexWait(data->externalPressureTemperatureData_->mutex_, 0);
-    int32_t externalPressure = data->externalPressureTemperatureData_->externalPressure_;
-    int32_t externalTemperature = data->externalPressureTemperatureData_->externalTemperature_;
-    osMutexRelease(data->externalPressureTemperatureData_->mutex_);
+    osMutexWait(data->barometerData_->mutex_, 0);
+    int32_t pressure = data->barometerData_->pressure_;
+    int32_t temperature = data->barometerData_->temperature_;
+    osMutexRelease(data->barometerData_->mutex_);
 
     osMutexWait(data->gpsData_->mutex_, 0);
     int32_t altitude = data->gpsData_->altitude_;
@@ -43,8 +43,8 @@ void buildLogEntry(AllData* data, char* buffer)
     osMutexRelease(data->gpsData_->mutex_);
 
     osMutexWait(data->oxidizerTankConditionsData_->mutex_, 0);
-    int32_t pressure = data->oxidizerTankConditionsData_->pressure_;
-    int32_t temperature = data->oxidizerTankConditionsData_->temperature_;
+    int32_t tankPressure = data->oxidizerTankConditionsData_->pressure_;
+    int32_t tankTemperature = data->oxidizerTankConditionsData_->temperature_;
     osMutexRelease(data->oxidizerTankConditionsData_->mutex_);
 
     sprintf(
@@ -59,14 +59,14 @@ void buildLogEntry(AllData* data, char* buffer)
         magnetoX,
         magnetoY,
         magnetoZ,
-        externalPressure,
-        externalTemperature,
+        pressure,
+        temperature,
         altitude,
         epochTimeMsec,
         latitude,
         longitude,
-        pressure,
-        temperature,
+        tankPressure,
+        tankTemperature,
         currentFlightPhase
     );
 }
@@ -167,14 +167,14 @@ void logDataTask(void const* arg)
         "magnetoX,"
         "magnetoY,"
         "magnetoZ,"
-        "externalPressure,"
-        "externalTemperature,"
+        "pressure,"
+        "temperature,"
         "altitude,"
         "epochTimeMsec,"
         "latitude,"
         "longitude,"
-        "pressure,"
-        "temperature,"
+        "tankPressure,"
+        "tankTemperature,"
         "currentFlightPhase\n"
     );
 

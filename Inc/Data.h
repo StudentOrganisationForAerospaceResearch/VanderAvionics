@@ -20,9 +20,9 @@ typedef struct
 typedef struct
 {
     osMutexId mutex_;
-    int32_t externalPressure_;
-    int32_t externalTemperature_;
-} ExternalPressureTemperatureData;
+    int32_t pressure_;
+    int32_t temperature_;
+} BarometerData;
 
 typedef struct
 {
@@ -37,8 +37,8 @@ typedef struct
 typedef struct
 {
     osMutexId mutex_;
-    float pressure_;
-    float temperature_;
+    int32_t pressure_;
+    int32_t temperature_;
 } OxidizerTankConditionsData;
 
 
@@ -47,7 +47,7 @@ typedef struct
 typedef struct
 {
     AccelGyroMagnetismData* accelGyroMagnetismData_;
-    ExternalPressureTemperatureData* externalPressureTemperatureData_;
+    BarometerData* barometerData_;
     GpsData* gpsData_;
     OxidizerTankConditionsData* oxidizerTankConditionsData_;
 } AllData;
@@ -55,5 +55,5 @@ typedef struct
 typedef struct
 {
     AccelGyroMagnetismData* accelGyroMagnetismData_;
-    ExternalPressureTemperatureData* externalPressureTemperatureData_;
+    BarometerData* barometerData_;
 } ParachutesControlData;

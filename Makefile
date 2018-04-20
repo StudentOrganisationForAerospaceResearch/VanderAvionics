@@ -63,7 +63,7 @@ C_SOURCES = \
   Src/stm32f4xx_hal_msp.c \
   Src/system_stm32f4xx.c \
   Src/freertos.c \
-  Src/ReadExternalPressureTemperature.c \
+  Src/ReadBarometer.c \
   Src/MonitorForEmergencyShutoff.c \
   Src/ReadAccelGyroMagnetism.c \
   Src/ReadGps.c \

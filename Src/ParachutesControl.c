@@ -28,13 +28,13 @@ int32_t readAccel(AccelGyroMagnetismData* data)
     return accelMagnitude;
 }
 
-int32_t readPressure(ExternalPressureTemperatureData* data)
+int32_t readPressure(BarometerData* data)
 {
     osMutexWait(data->mutex_, 0);
-    int32_t externalPressure = data->externalPressure_;
+    int32_t pressure = data->pressure_;
     osMutexRelease(data->mutex_);
 
-    return (int32_t)externalPressure;
+    return (int32_t)pressure;
 }
 
 void filterSensors(int32_t current_accel, int32_t current_pressure, int32_t positionVector[3])
@@ -88,7 +88,7 @@ void parachutesControlPrelaunchRoutine()
  */
 void parachutesControlAscentRoutine(
     AccelGyroMagnetismData* accelGyroMagnetismData,
-    ExternalPressureTemperatureData* externalPressureTemperatureData
+    BarometerData* barometerData
 )
 {
     uint32_t prevWakeTime = osKernelSysTick();
@@ -99,7 +99,7 @@ void parachutesControlAscentRoutine(
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
         int32_t currentAccel = readAccel(accelGyroMagnetismData);
-        int32_t currentPressure = readPressure(externalPressureTemperatureData);
+        int32_t currentPressure = readPressure(barometerData);
 
         filterSensors(currentAccel, currentPressure, positionVector);
 
@@ -165,7 +165,7 @@ void parachutesControlTask(void const* arg)
             case COAST:
                 parachutesControlAscentRoutine(
                     data->accelGyroMagnetismData_,
-                    data->externalPressureTemperatureData_
+                    data->barometerData_
                 );
                 break;
 
