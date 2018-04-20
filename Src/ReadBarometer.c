@@ -100,8 +100,9 @@ void readBarometerTask(void const* arg)
         double TEMP = 2000 + dT * c6TEMPSENS / pow(2, 23);
         double OFF = c2OFF * pow(2, 17) + dT * c4TCO / pow(2, 6);
         double SENS = c1SENS * pow(2, 16) + dT * c3TCS / pow(2, 7);
-        double P = (pressureReading * SENS / pow(2, 21) - OFF) / pow(2, 15) / 100; // divide by 100 to get mbar
-        double T = (TEMP) / 100; // divide by 100 to get degrees Celcius
+        // P and T were not divided by 100 to keep the decimal places
+        double P = (pressureReading * SENS / pow(2, 21) - OFF) / pow(2, 15); // need to divide P by 100 to get mbar
+        double T = (TEMP); // need to divide T by 100 to get degrees Celcius
 
         osMutexWait(data->mutex_, 0);
         data->pressure_ = (int32_t) P;
