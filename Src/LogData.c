@@ -49,7 +49,7 @@ void buildLogEntry(AllData* data, char* buffer)
 
     sprintf(
         buffer,
-        "%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld\n",
+        "%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%d\n",
         accelX,
         accelY,
         accelZ,
