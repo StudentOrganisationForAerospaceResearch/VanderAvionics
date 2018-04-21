@@ -53,10 +53,8 @@
 /* USER CODE BEGIN Includes */
 #include <stdlib.h>
 #include "ReadAccelGyroMagnetism.h"
-#include "ReadExternalPressure.h"
-#include "ReadExternalTemperature.h"
+#include "ReadBarometer.h"
 #include "ReadGps.h"
-#include "ReadIntegratedTemperature.h"
 #include "ReadOxidizerTankConditions.h"
 #include "MonitorForEmergencyShutoff.h"
 #include "EngineControl.h"
@@ -78,10 +76,8 @@ osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 static osThreadId readAccelGyroMagnetismTaskHandle;
-static osThreadId readExternalPressureTaskHandle;
-static osThreadId readExternalTemperatureTaskHandle;
+static osThreadId readBarometerTaskHandle;
 static osThreadId readGpsTaskHandle;
-static osThreadId readIntegratedTemperatureTaskHandle;
 static osThreadId readOxidizerTankConditionsTaskHandle;
 // Controls that will perform actions
 static osThreadId monitorForEmergencyShutoffTaskHandle;
@@ -148,67 +144,54 @@ int main(void)
     // data primitive structs
     AccelGyroMagnetismData* accelGyroMagnetismData =
         malloc(sizeof(AccelGyroMagnetismData));
-    ExternalPressureData* externalPressureData =
-        malloc(sizeof(ExternalPressureData));
-    ExternalTemperatureData* externalTemperatureData =
-        malloc(sizeof(ExternalTemperatureData));
+    BarometerData* barometerData =
+        malloc(sizeof(BarometerData));
     GpsData* gpsData =
         malloc(sizeof(GpsData));
-    IntegratedTemperatureData* integratedTemperatureData =
-        malloc(sizeof(IntegratedTemperatureData));
     OxidizerTankConditionsData* oxidizerTankConditionsData =
         malloc(sizeof(OxidizerTankConditionsData));
 
     osMutexDef(ACCEL_GYRO_MAGNETISM_DATA_MUTEX);
     accelGyroMagnetismData->mutex_ = osMutexCreate(osMutex(ACCEL_GYRO_MAGNETISM_DATA_MUTEX));
-    accelGyroMagnetismData->accelX_ = -1.f;
-    accelGyroMagnetismData->accelY_ = -2.f;
-    accelGyroMagnetismData->accelZ_ = -3.f;
-    accelGyroMagnetismData->gyroX_ = -4.f;
-    accelGyroMagnetismData->gyroY_ = -5.f;
-    accelGyroMagnetismData->gyroZ_ = -6.f;
-    accelGyroMagnetismData->magnetoX_ = -7.f;
-    accelGyroMagnetismData->magnetoY_ = -8.f;
-    accelGyroMagnetismData->magnetoZ_ = -9.f;
+    accelGyroMagnetismData->accelX_ = -1;
+    accelGyroMagnetismData->accelY_ = -2;
+    accelGyroMagnetismData->accelZ_ = -3;
+    accelGyroMagnetismData->gyroX_ = -4;
+    accelGyroMagnetismData->gyroY_ = -5;
+    accelGyroMagnetismData->gyroZ_ = -6;
+    accelGyroMagnetismData->magnetoX_ = -7;
+    accelGyroMagnetismData->magnetoY_ = -8;
+    accelGyroMagnetismData->magnetoZ_ = -9;
 
-    osMutexDef(EXTERNAL_PRESSURE_DATA_MUTEX);
-    externalPressureData->mutex_ = osMutexCreate(osMutex(EXTERNAL_PRESSURE_DATA_MUTEX));
-    externalPressureData->externalPressure_ = -10;
-
-    osMutexDef(EXTERNAL_TEMPERATURE_DATA_MUTEX);
-    externalTemperatureData->mutex_ = osMutexCreate(osMutex(EXTERNAL_TEMPERATURE_DATA_MUTEX));
-    externalTemperatureData->externalTemperature_ = -11;
-
-    osMutexDef(INTEGRATED_TEMPERATURE_DATA_MUTEX);
-    integratedTemperatureData->mutex_ = osMutexCreate(osMutex(INTEGRATED_TEMPERATURE_DATA_MUTEX));
-    integratedTemperatureData->integratedTemperature_ = -12;
+    osMutexDef(BAROMETER_DATA_MUTEX);
+    barometerData->mutex_ = osMutexCreate(osMutex(BAROMETER_DATA_MUTEX));
+    barometerData->pressure_ = -10;
+    barometerData->temperature_ = -11;
 
     osMutexDef(GPS_DATA_MUTEX);
     gpsData->mutex_ = osMutexCreate(osMutex(GPS_DATA_MUTEX));
-    gpsData->altitude_ = -13;
-    gpsData->epochTimeMsec_ = -14;
-    gpsData->latitude_ = -15;
-    gpsData->longitude_ = -16;
+    gpsData->altitude_ = -12;
+    gpsData->epochTimeMsec_ = -13;
+    gpsData->latitude_ = -14;
+    gpsData->longitude_ = -15;
 
     osMutexDef(OXIDIZER_TANK_CONDITIONS_DATA_MUTEX);
     oxidizerTankConditionsData->mutex_ = osMutexCreate(osMutex(OXIDIZER_TANK_CONDITIONS_DATA_MUTEX));
-    oxidizerTankConditionsData->pressure_ = -17.f;
-    oxidizerTankConditionsData->temperature_ = -18.f;
+    oxidizerTankConditionsData->pressure_ = -16;
+    oxidizerTankConditionsData->temperature_ = -17;
 
     // data containers
     AllData* allData =
         malloc(sizeof(AllData));
     allData->accelGyroMagnetismData_ = accelGyroMagnetismData;
-    allData->externalPressureData_ = externalPressureData;
-    allData->externalTemperatureData_ = externalTemperatureData;
+    allData->barometerData_ = barometerData;
     allData->gpsData_ = gpsData;
-    allData->integratedTemperatureData_ = integratedTemperatureData;
     allData->oxidizerTankConditionsData_ = oxidizerTankConditionsData;
 
     ParachutesControlData* parachutesControlData =
         malloc(sizeof(ParachutesControlData));
     parachutesControlData->accelGyroMagnetismData_ = accelGyroMagnetismData;
-    parachutesControlData->externalPressureData_ = externalPressureData;
+    parachutesControlData->barometerData_ = barometerData;
     /* USER CODE END 2 */
 
     /* USER CODE BEGIN RTOS_MUTEX */
@@ -240,34 +223,14 @@ int main(void)
         osThreadCreate(osThread(readAccelGyroMagnetismThread), accelGyroMagnetismData);
 
     osThreadDef(
-        readExternalPressureThread,
-        readExternalPressureTask,
+        readBarometerThread,
+        readBarometerTask,
         osPriorityNormal,
         1,
         configMINIMAL_STACK_SIZE
     );
-    readExternalPressureTaskHandle =
-        osThreadCreate(osThread(readExternalPressureThread), externalPressureData);
-
-    osThreadDef(
-        readExternalTemperatureThread,
-        readExternalTemperatureTask,
-        osPriorityLow,
-        1,
-        configMINIMAL_STACK_SIZE
-    );
-    readExternalTemperatureTaskHandle =
-        osThreadCreate(osThread(readExternalTemperatureThread), externalTemperatureData);
-
-    osThreadDef(
-        readIntegratedTemperatureThread,
-        readIntegratedTemperatureTask,
-        osPriorityLow,
-        1,
-        configMINIMAL_STACK_SIZE
-    );
-    readIntegratedTemperatureTaskHandle =
-        osThreadCreate(osThread(readIntegratedTemperatureThread), integratedTemperatureData);
+    readBarometerTaskHandle =
+        osThreadCreate(osThread(readBarometerThread), barometerData);
 
     osThreadDef(
         readGpsThread,
@@ -361,10 +324,8 @@ int main(void)
     }
 
     free(accelGyroMagnetismData);
-    free(externalPressureData);
-    free(externalTemperatureData);
+    free(barometerData);
     free(gpsData);
-    free(integratedTemperatureData);
     free(oxidizerTankConditionsData);
     free(allData);
     free(parachutesControlData);
@@ -442,7 +403,7 @@ static void MX_SPI2_Init(void)
     hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
     hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
     hspi2.Init.NSS = SPI_NSS_SOFT;
-    hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+    hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
     hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
     hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
     hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;

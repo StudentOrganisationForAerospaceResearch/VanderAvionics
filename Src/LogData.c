@@ -30,17 +30,10 @@ void buildLogEntry(AllData* data, char* buffer)
     int32_t magnetoZ = data->accelGyroMagnetismData_->magnetoZ_;
     osMutexRelease(data->accelGyroMagnetismData_->mutex_);
 
-    osMutexWait(data->externalPressureData_->mutex_, 0);
-    int32_t externalPressure = data->externalPressureData_->externalPressure_;
-    osMutexRelease(data->externalPressureData_->mutex_);
-
-    osMutexWait(data->externalTemperatureData_->mutex_, 0);
-    int32_t externalTemperature = data->externalTemperatureData_->externalTemperature_;
-    osMutexRelease(data->externalTemperatureData_->mutex_);
-
-    osMutexWait(data->integratedTemperatureData_->mutex_, 0);
-    int32_t integratedTemperature = data->integratedTemperatureData_->integratedTemperature_;
-    osMutexRelease(data->integratedTemperatureData_->mutex_);
+    osMutexWait(data->barometerData_->mutex_, 0);
+    int32_t pressure = data->barometerData_->pressure_;
+    int32_t temperature = data->barometerData_->temperature_;
+    osMutexRelease(data->barometerData_->mutex_);
 
     osMutexWait(data->gpsData_->mutex_, 0);
     int32_t altitude = data->gpsData_->altitude_;
@@ -50,13 +43,13 @@ void buildLogEntry(AllData* data, char* buffer)
     osMutexRelease(data->gpsData_->mutex_);
 
     osMutexWait(data->oxidizerTankConditionsData_->mutex_, 0);
-    int32_t pressure = data->oxidizerTankConditionsData_->pressure_;
-    int32_t temperature = data->oxidizerTankConditionsData_->temperature_;
+    int32_t tankPressure = data->oxidizerTankConditionsData_->pressure_;
+    int32_t tankTemperature = data->oxidizerTankConditionsData_->temperature_;
     osMutexRelease(data->oxidizerTankConditionsData_->mutex_);
 
     sprintf(
         buffer,
-        "%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld\n",
+        "%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld\n",
         accelX,
         accelY,
         accelZ,
@@ -66,15 +59,14 @@ void buildLogEntry(AllData* data, char* buffer)
         magnetoX,
         magnetoY,
         magnetoZ,
-        externalPressure,
-        externalTemperature,
-        integratedTemperature,
+        pressure,
+        temperature,
         altitude,
         epochTimeMsec,
         latitude,
         longitude,
-        pressure,
-        temperature,
+        tankPressure,
+        tankTemperature,
         currentFlightPhase
     );
 }
@@ -175,15 +167,14 @@ void logDataTask(void const* arg)
         "magnetoX,"
         "magnetoY,"
         "magnetoZ,"
-        "externalPressure,"
-        "externalTemperature,"
-        "integratedTemperature,"
+        "pressure,"
+        "temperature,"
         "altitude,"
         "epochTimeMsec,"
         "latitude,"
         "longitude,"
-        "pressure,"
-        "temperature,"
+        "tankPressure,"
+        "tankTemperature,"
         "currentFlightPhase\n"
     );
 
