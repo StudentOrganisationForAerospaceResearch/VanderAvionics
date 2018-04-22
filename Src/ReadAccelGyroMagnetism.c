@@ -21,21 +21,26 @@ static const int CMD_TIMEOUT = 150;
 #define GYRO_X_G_LOW_REGISTER_ADDR 0x18
 #define ACCEL_X_LOW_REGISTER_ADDR 0x28
 
+#define CTRL_REGISTER6_ADDR 0x20 // CTRL_REG6_XL (20h)
+
 // Full Commands
 static const uint8_t ACTIVATE_REG8_CMD = CTRL_REGISTER_8_ADDR;
 static const uint8_t ACTIVATE_REG8_DATA = 0x8C;
 
 static const uint8_t ACTIVATE_G1_CMD = G1_CTRL_REGISTER_ADDR;
-static const uint8_t ACTIVATE_G1_DATA = 0x60;
+static const uint8_t ACTIVATE_G1_DATA = 0x68;
+
+static const uint8_t ACTIVATE_REG6_CMD = CTRL_REGISTER6_ADDR;
+static const uint8_t ACTIVATE_REG6_DATA = 0x00;
 
 static const uint8_t READ_GYRO_X_G_LOW_CMD = GYRO_X_G_LOW_REGISTER_ADDR | READ_CMD;
 static const uint8_t READ_ACCEL_X_LOW_CMD = ACCEL_X_LOW_REGISTER_ADDR | READ_CMD;
 // static const uint8_t READ_WHOAMI_CMD = WHOAMI_REGISTER_ADDR | READ_CMD;
 
 uint8_t accelData[6], gyroData[6], temp[30];
-uint16_t accelX, accelY, accelZ;
-uint16_t gyroX, gyroY, gyroZ;
-uint16_t magnetX, magnetY, magnetZ;
+int16_t accelX, accelY, accelZ;
+int16_t gyroX, gyroY, gyroZ;
+int16_t magnetX, magnetY, magnetZ;
 uint8_t whoami;
 
 void readAccelGyroMagnetismTask(void const* arg)
@@ -43,8 +48,14 @@ void readAccelGyroMagnetismTask(void const* arg)
     AccelGyroMagnetismData* data = (AccelGyroMagnetismData*) arg;
     uint32_t prevWakeTime = osKernelSysTick();
     int counter = 0;
+    int whoami = 0;
 
     osDelayUntil(&prevWakeTime, READ_ACCEL_GYRO_MAGNETISM);
+
+    // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
+    // HAL_SPI_Transmit(&hspi1, &ACTIVATE_REG6_CMD, 1, CMD_TIMEOUT);
+    // HAL_SPI_Transmit(&hspi1, &ACTIVATE_REG6_DATA, 1, CMD_TIMEOUT);
+    // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
     HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&hspi1, &READ_GYRO_X_G_LOW_CMD, 1, CMD_TIMEOUT);
@@ -82,6 +93,7 @@ void readAccelGyroMagnetismTask(void const* arg)
         accelY = (accelData[3] << 8) | (accelData[2]);
         accelZ = (accelData[5] << 8) | (accelData[4]);
 
+
         /* Writeback */
         osMutexWait(data->mutex_, 0);
         data->accelX_ = accelX;
@@ -91,7 +103,7 @@ void readAccelGyroMagnetismTask(void const* arg)
         data->gyroY_ = gyroY;
         data->gyroZ_ = gyroZ;
         data->magnetoX_ = whoami;
-        data->magnetoY_ = counter++;
+        //data->magnetoY_ = magnetY;
         // data->magnetoZ_ = magnetZ;
         osMutexRelease(data->mutex_);
     }
