@@ -108,20 +108,23 @@ void engineControlBurnRoutine()
  */
 void engineControlCoastRoutine()
 {
-    uint32_t prevWakeTime = osKernelSysTick();
+    // uint32_t prevWakeTime = osKernelSysTick();
 
-    for (;;)
-    {
-        osDelayUntil(&prevWakeTime, COAST_PHASE_PERIOD);
-        closeInjectionValve();
-        closeVentValve();
+    // for (;;)
+    // {
+    //     osDelayUntil(&prevWakeTime, COAST_PHASE_PERIOD);
+    //     closeInjectionValve();
+    //     closeVentValve();
 
-        // Wait for the coast phase to end
-        if (currentFlightPhase > COAST)
-        {
-            return;
-        }
-    }
+    //     // Wait for the coast phase to end
+    //     if (currentFlightPhase > COAST)
+    //     {
+    //         return;
+    //     }
+    // }
+    osDelay(BURN_DURATION);
+    currentFlightPhase = DROGUE_DESCENT;
+    return;
 }
 
 /**

@@ -11,7 +11,7 @@
 #include "main.h"
 
 static int SLOW_LOG_DATA_PERIOD = 1000;
-static int FAST_LOG_DATA_PERIOD = 20;
+static int FAST_LOG_DATA_PERIOD = 50;
 
 static FATFS fatfs;
 static FIL file;
