@@ -25,77 +25,56 @@ BUILD_DIR = build
 # source
 ######################################
 C_SOURCES = \
-  tm_fatfs/Src/fatfs_sd.c \
-  tm_fatfs/Src/syscall.c \
-  tm_fatfs/Src/diskio.c \
-  tm_fatfs/Src/tm_stm32_spi.c \
-  tm_fatfs/Src/tm_stm32_gpio.c \
-  tm_fatfs/Src/ccsbcs.c \
-  tm_fatfs/Src/tm_stm32_fatfs.c \
-  tm_fatfs/Src/tm_stm32_delay.c \
-  tm_fatfs/Src/ff.c \
-  tm_fatfs/Src/tm_stm32_rcc.c \
-  Src/freertos.c \
-  Src/ReadAccelGyroMagnetism.c \
-  Src/EngineControl.c \
-  Src/ParachutesControl.c \
-  Src/stm32f4xx_hal_msp.c \
-  Src/MonitorForEmergencyShutoff.c \
-  Src/ReadGps.c \
-  Src/TransmitData.c \
-  Src/main.c \
-  Src/LogData.c \
-  Src/ReadOxidizerTankConditions.c \
-  Src/ReadExternalTemperature.c \
-  Src/system_stm32f4xx.c \
-  Src/ReadExternalPressure.c \
-  Src/ReadIntegratedTemperature.c \
-  Src/stm32f4xx_it.c \
-  Src/stm32f4xx_hal_timebase_TIM.c \
-  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c \
-  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
-  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
-  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
-  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c \
-  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
-  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c \
-  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c \
-  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
-  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
-  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c \
-  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c \
-  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c \
-  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c \
   Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
   Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
-  Middlewares/Third_Party/FreeRTOS/Source/queue.c \
+  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c \
+  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c \
+  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c \
+  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c \
+  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c \
+  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c \
+  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c \
+  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c \
+  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
+  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
+  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
+  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
+  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
+  Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
+  Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
   Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
   Middlewares/Third_Party/FreeRTOS/Source/list.c \
+  Middlewares/Third_Party/FreeRTOS/Source/queue.c \
   Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
-  Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
   Middlewares/Third_Party/FreeRTOS/Source/timers.c \
-  Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
-<<<<<<< HEAD
-  Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
-  Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c  
-=======
   Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
-  Src/stm32f4xx_hal_msp.c \
-  Src/system_stm32f4xx.c \
-  Src/freertos.c \
-  Src/ReadBarometer.c \
-  Src/MonitorForEmergencyShutoff.c \
-  Src/ReadAccelGyroMagnetism.c \
-  Src/ReadGps.c \
-  Src/TransmitData.c \
+  Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
+  Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
   Src/EngineControl.c \
+  Src/freertos.c \
+  Src/LogData.c \
+  Src/main.c \
+  Src/MonitorForEmergencyShutoff.c \
+  Src/ParachutesControl.c \
+  Src/ReadAccelGyroMagnetism.c \
+  Src/ReadBarometer.c \
+  Src/ReadGps.c \
+  Src/ReadOxidizerTankConditions.c \
+  Src/stm32f4xx_hal_msp.c \
   Src/stm32f4xx_hal_timebase_TIM.c \
   Src/stm32f4xx_it.c \
-  Src/LogData.c \
-  Src/ParachutesControl.c \
-  Src/ReadOxidizerTankConditions.c \
-  Src/main.c  
->>>>>>> master
+  Src/system_stm32f4xx.c \
+  Src/TransmitData.c \
+  tm_fatfs/Src/ccsbcs.c \
+  tm_fatfs/Src/diskio.c \
+  tm_fatfs/Src/fatfs_sd.c \
+  tm_fatfs/Src/ff.c \
+  tm_fatfs/Src/syscall.c \
+  tm_fatfs/Src/tm_stm32_delay.c \
+  tm_fatfs/Src/tm_stm32_fatfs.c \
+  tm_fatfs/Src/tm_stm32_gpio.c \
+  tm_fatfs/Src/tm_stm32_rcc.c \
+  tm_fatfs/Src/tm_stm32_spi.c  
 ASM_SOURCES = \
   startup/startup_stm32f405xx.s
 
@@ -118,16 +97,16 @@ AS_DEFS =
 C_DEFS = -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F405xx -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F405xx
 # includes for gcc
 AS_INCLUDES =
-C_INCLUDES = -IInc
-C_INCLUDES += -Itm_fatfs/Inc
-C_INCLUDES += -ISrc
+C_INCLUDES = -IDrivers/CMSIS/Device/ST/STM32F4xx/Include
+C_INCLUDES += -IDrivers/CMSIS/Include
 C_INCLUDES += -IDrivers/STM32F4xx_HAL_Driver/Inc
 C_INCLUDES += -IDrivers/STM32F4xx_HAL_Driver/Inc/Legacy
-C_INCLUDES += -IDrivers/CMSIS/Include
-C_INCLUDES += -IDrivers/CMSIS/Device/ST/STM32F4xx/Include
+C_INCLUDES += -IInc
+C_INCLUDES += -IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS
 C_INCLUDES += -IMiddlewares/Third_Party/FreeRTOS/Source/include
 C_INCLUDES += -IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
-C_INCLUDES += -IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS
+C_INCLUDES += -ISrc
+C_INCLUDES += -Itm_fatfs/Inc
 # compile gcc flags
 ASFLAGS = -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 CFLAGS = -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
