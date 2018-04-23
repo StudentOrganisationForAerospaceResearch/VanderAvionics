@@ -75,8 +75,27 @@ C_SOURCES = \
   Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
   Middlewares/Third_Party/FreeRTOS/Source/timers.c \
   Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
+<<<<<<< HEAD
   Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
   Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c  
+=======
+  Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
+  Src/stm32f4xx_hal_msp.c \
+  Src/system_stm32f4xx.c \
+  Src/freertos.c \
+  Src/ReadBarometer.c \
+  Src/MonitorForEmergencyShutoff.c \
+  Src/ReadAccelGyroMagnetism.c \
+  Src/ReadGps.c \
+  Src/TransmitData.c \
+  Src/EngineControl.c \
+  Src/stm32f4xx_hal_timebase_TIM.c \
+  Src/stm32f4xx_it.c \
+  Src/LogData.c \
+  Src/ParachutesControl.c \
+  Src/ReadOxidizerTankConditions.c \
+  Src/main.c  
+>>>>>>> master
 ASM_SOURCES = \
   startup/startup_stm32f405xx.s
 
@@ -126,7 +145,7 @@ LDSCRIPT = STM32F405RGTx_FLASH.ld
 # libraries
 LIBS = -lc -lm -lnosys
 LIBDIR =
-LDFLAGS = -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -specs=nano.specs -u _printf_float -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections 
+LDFLAGS = -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
