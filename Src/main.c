@@ -87,7 +87,7 @@ static osThreadId parachutesControlTaskHandle;
 static osThreadId logDataTaskHandle;
 static osThreadId transmitDataTaskHandle;
 
-FlightPhase currentFlightPhase = PRELAUNCH;
+FlightPhase currentFlightPhase = BURN;
 static const int FLIGHT_PHASE_DISPLAY_FREQ = 1000;
 static const int FLIGHT_PHASE_BLINK_FREQ = 100;
 /* USER CODE END PV */
