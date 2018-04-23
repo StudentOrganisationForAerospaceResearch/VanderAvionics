@@ -91,7 +91,7 @@ void lowFrequencyLogToSdRoutine(AllData* data, char* buffer, FlightPhase entryPh
         {
             HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
 
-            if (f_open(&file, "SD:VanderAvionics.log", FA_OPEN_APPEND | FA_READ | FA_WRITE) == FR_OK)
+            if (f_open(&file, "SD:VanderAvionics.csv", FA_OPEN_APPEND | FA_READ | FA_WRITE) == FR_OK)
             {
                 f_puts(buffer, &file);
                 f_close(&file);
@@ -140,7 +140,7 @@ void highFrequencyLogToSdRoutine(AllData* data, char* buffer)
 
         buildLogEntry(data, buffer);
 
-        if (f_open(&file, "SD:VanderAvionics.log", FA_OPEN_APPEND | FA_READ | FA_WRITE) == FR_OK)
+        if (f_open(&file, "SD:VanderAvionics.csv", FA_OPEN_APPEND | FA_READ | FA_WRITE) == FR_OK)
         {
             f_puts(buffer, &file);
             f_close(&file); // close to save the file
@@ -182,7 +182,7 @@ void logDataTask(void const* arg)
     {
         HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
 
-        if (f_open(&file, "SD:VanderAvionics.log", FA_OPEN_APPEND | FA_READ | FA_WRITE) == FR_OK)
+        if (f_open(&file, "SD:VanderAvionics.csv", FA_OPEN_APPEND | FA_READ | FA_WRITE) == FR_OK)
         {
             f_puts(buffer, &file);
             f_close(&file);

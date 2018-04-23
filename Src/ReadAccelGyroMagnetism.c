@@ -15,7 +15,7 @@ static const int CMD_TIMEOUT = 150;
 
 // Register addresses
 #define G1_CTRL_REGISTER_ADDR 0x10 // CTRL_REG1_G (10h)
-#define CTRL_REGISTER_8_ADDR 0x22 // CTRL_REG8 (22h)
+#define XL6_CTRL_REGISTER_ADDR 0x20 // CTRL_REG6_XL (20h)
 #define WHOAMI_REGISTER_ADDR 0x0F // CTRL_REG8 (22h)
 
 #define GYRO_X_G_LOW_REGISTER_ADDR 0x18
@@ -23,19 +23,21 @@ static const int CMD_TIMEOUT = 150;
 
 #define CTRL_REGISTER6_ADDR 0x20 // CTRL_REG6_XL (20h)
 
+#define GYRO_SCALE 245
+#define ACCEL_SCALE 2
+
 // Full Commands
-static const uint8_t ACTIVATE_REG8_CMD = CTRL_REGISTER_8_ADDR;
-static const uint8_t ACTIVATE_REG8_DATA = 0x8C;
+static const uint8_t ACTIVATE_GYRO_ACCEL_CMD = G1_CTRL_REGISTER_ADDR;
+// 011 11 0 00 -> ODR 119, 2000 DPS
+static const uint8_t ACTIVATE_GYRO_ACCEL_DATA = 0x68;
 
-static const uint8_t ACTIVATE_G1_CMD = G1_CTRL_REGISTER_ADDR;
-static const uint8_t ACTIVATE_G1_DATA = 0x68;
-
-static const uint8_t ACTIVATE_REG6_CMD = CTRL_REGISTER6_ADDR;
-static const uint8_t ACTIVATE_REG6_DATA = 0x00;
+static const uint8_t SET_ACCEL_SCALE_CMD = XL6_CTRL_REGISTER_ADDR;
+// 011 01 0 00 -> ODR 119, +/- 16G
+static const uint8_t SET_ACCEL_SCALE_DATA = 0x68;
 
 static const uint8_t READ_GYRO_X_G_LOW_CMD = GYRO_X_G_LOW_REGISTER_ADDR | READ_CMD;
 static const uint8_t READ_ACCEL_X_LOW_CMD = ACCEL_X_LOW_REGISTER_ADDR | READ_CMD;
-// static const uint8_t READ_WHOAMI_CMD = WHOAMI_REGISTER_ADDR | READ_CMD;
+static const uint8_t READ_WHOAMI_CMD = WHOAMI_REGISTER_ADDR | READ_CMD;
 
 uint8_t accelData[6], gyroData[6], temp[30];
 int16_t accelX, accelY, accelZ;
@@ -50,27 +52,27 @@ void readAccelGyroMagnetismTask(void const* arg)
     int counter = 0;
     int whoami = 0;
 
-    osDelayUntil(&prevWakeTime, READ_ACCEL_GYRO_MAGNETISM);
-
-    // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
-    // HAL_SPI_Transmit(&hspi1, &ACTIVATE_REG6_CMD, 1, CMD_TIMEOUT);
-    // HAL_SPI_Transmit(&hspi1, &ACTIVATE_REG6_DATA, 1, CMD_TIMEOUT);
-    // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
+    osDelay(1000);
 
     HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&hspi1, &READ_GYRO_X_G_LOW_CMD, 1, CMD_TIMEOUT);
     HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
     HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(&hspi1, &ACTIVATE_G1_CMD, 1, CMD_TIMEOUT);
-    HAL_SPI_Transmit(&hspi1, &ACTIVATE_G1_DATA, 1, CMD_TIMEOUT);
+    HAL_SPI_Transmit(&hspi1, &ACTIVATE_GYRO_ACCEL_CMD, 1, CMD_TIMEOUT);
+    HAL_SPI_Transmit(&hspi1, &ACTIVATE_GYRO_ACCEL_DATA, 1, CMD_TIMEOUT);
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
+
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Transmit(&hspi1, &SET_ACCEL_SCALE_CMD, 1, CMD_TIMEOUT);
+    HAL_SPI_Transmit(&hspi1, &SET_ACCEL_SCALE_DATA, 1, CMD_TIMEOUT);
     HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
     /* Read WHO AM I register for verifcation, should read 104. */
-    // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
-    // HAL_SPI_Transmit(&hspi1, &READ_WHOAMI_CMD, 1, CMD_TIMEOUT);
-    // HAL_SPI_Receive(&hspi1, &whoami, 1, CMD_TIMEOUT);
-    // HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Transmit(&hspi1, &READ_WHOAMI_CMD, 1, CMD_TIMEOUT);
+    HAL_SPI_Receive(&hspi1, &whoami, 1, CMD_TIMEOUT);
+    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
     for (;;)
     {
