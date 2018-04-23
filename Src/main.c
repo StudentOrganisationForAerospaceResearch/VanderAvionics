@@ -512,7 +512,7 @@ static void MX_GPIO_Init(void)
     HAL_GPIO_WritePin(GPIOC, LED1_Pin | LED2_Pin | BARO_CS_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, MAG_CS_Pin | IMU_CS_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(THERM_CS_GPIO_Port, THERM_CS_Pin, GPIO_PIN_RESET);
@@ -524,12 +524,12 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : IMU_CS_Pin */
-    GPIO_InitStruct.Pin = IMU_CS_Pin;
+    /*Configure GPIO pins : MAG_CS_Pin IMU_CS_Pin */
+    GPIO_InitStruct.Pin = MAG_CS_Pin | IMU_CS_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(IMU_CS_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /*Configure GPIO pin : THERM_CS_Pin */
     GPIO_InitStruct.Pin = THERM_CS_Pin;

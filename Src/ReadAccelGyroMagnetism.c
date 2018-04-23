@@ -6,33 +6,49 @@
 
 #include "Data.h"
 
-static int READ_ACCEL_GYRO_MAGNETISM = 200;
+static int READ_ACCEL_GYRO_MAGNETISM = 20;
 
 static const int CMD_TIMEOUT = 150;
 
-#define READ_CMD 0x80;
-#define WRITE_CMD 0x00;
+#define READ_CMD_MASK 0x80
+#define WRITE_CMD_MASK 0x00
+#define ACCEL_GYRO_MASK 0x00
+#define MAGNETO_MASK 0x40
 
 // Register addresses
 #define G1_CTRL_REGISTER_ADDR 0x10 // CTRL_REG1_G (10h)
 #define XL6_CTRL_REGISTER_ADDR 0x20 // CTRL_REG6_XL (20h)
-#define WHOAMI_REGISTER_ADDR 0x0F // CTRL_REG8 (22h)
+#define M1_CTRL_REGISTER_ADDR 0x22 // CTRL_REG1_M (20h)
+#define M3_CTRL_REGISTER_ADDR 0x22 // CTRL_REG3_M (22h)
+// #define WHOAMI_REGISTER_ADDR 0x0F
+// #define WHOAMIM_REGISTER_ADDR 0x0F
 
 #define GYRO_X_G_LOW_REGISTER_ADDR 0x18
 #define ACCEL_X_LOW_REGISTER_ADDR 0x28
+#define MAGNETO_X_LOW_REGISTER_ADDR 0x28
 
 // Full Commands
-static const uint8_t ACTIVATE_GYRO_ACCEL_CMD = G1_CTRL_REGISTER_ADDR | WRITE_CMD;
+static const uint8_t ACTIVATE_GYRO_ACCEL_CMD = G1_CTRL_REGISTER_ADDR | WRITE_CMD_MASK | ACCEL_GYRO_MASK;
 // 011 11 0 00 -> ODR 119, 2000 DPS
-static const uint8_t ACTIVATE_GYRO_ACCEL_DATA = 0x68 | WRITE_CMD;
+static const uint8_t ACTIVATE_GYRO_ACCEL_DATA = 0x68 | WRITE_CMD_MASK | ACCEL_GYRO_MASK;
 
-static const uint8_t SET_ACCEL_SCALE_CMD = XL6_CTRL_REGISTER_ADDR | WRITE_CMD;
+static const uint8_t SET_ACCEL_SCALE_CMD = XL6_CTRL_REGISTER_ADDR | WRITE_CMD_MASK | ACCEL_GYRO_MASK;
 // 011 01 0 00 -> ODR 119, +/- 16G
-static const uint8_t SET_ACCEL_SCALE_DATA = 0x68 | WRITE_CMD;
+static const uint8_t SET_ACCEL_SCALE_DATA = 0x68;
 
-static const uint8_t READ_GYRO_X_G_LOW_CMD = GYRO_X_G_LOW_REGISTER_ADDR | READ_CMD;
-static const uint8_t READ_ACCEL_X_LOW_CMD = ACCEL_X_LOW_REGISTER_ADDR | READ_CMD;
-static const uint8_t READ_WHOAMI_CMD = WHOAMI_REGISTER_ADDR | READ_CMD;
+static const uint8_t SET_MAGNETO_ODR_CMD = M1_CTRL_REGISTER_ADDR | WRITE_CMD_MASK | MAGNETO_MASK;
+// 0 00 100 0 0 -> temp comp disabled, low performance mode, 10 ODR, fast ODR disabled, self-test disabled
+static const uint8_t SET_MAGNETO_ODR_DATA = 0x10;
+
+static const uint8_t ACTIVATE_MAGNETO_CMD = M3_CTRL_REGISTER_ADDR | WRITE_CMD_MASK | MAGNETO_MASK;
+// 1 0 0 00 1 00 -> I2C Disable, Low power mode disabled, SPI read write enable, Continuous-conversion mode
+static const uint8_t ACTIVATE_MAGNETO_DATA = 0x84;
+
+static const uint8_t READ_GYRO_X_G_LOW_CMD = GYRO_X_G_LOW_REGISTER_ADDR | READ_CMD_MASK | ACCEL_GYRO_MASK;
+static const uint8_t READ_ACCEL_X_LOW_CMD = ACCEL_X_LOW_REGISTER_ADDR | READ_CMD_MASK | ACCEL_GYRO_MASK;
+static const uint8_t READ_MAGNETO_X_LOW_CMD = MAGNETO_X_LOW_REGISTER_ADDR | READ_CMD_MASK | MAGNETO_MASK;
+// static const uint8_t READ_WHOAMI_CMD = WHOAMI_REGISTER_ADDR | READ_CMD_MASK | ACCEL_GYRO_MASK;
+// static const uint8_t READ_WHOAMIM_CMD = WHOAMIM_REGISTER_ADDR | READ_CMD_MASK | MAGNETO_MASK;
 
 void readAccelGyroMagnetismTask(void const* arg)
 {
@@ -50,21 +66,27 @@ void readAccelGyroMagnetismTask(void const* arg)
     HAL_SPI_Transmit(&hspi1, &ACTIVATE_GYRO_ACCEL_DATA, 1, CMD_TIMEOUT);
     HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
-    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(&hspi1, &SET_ACCEL_SCALE_CMD, 1, CMD_TIMEOUT);
-    HAL_SPI_Transmit(&hspi1, &SET_ACCEL_SCALE_DATA, 1, CMD_TIMEOUT);
-    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Transmit(&hspi1, &ACTIVATE_MAGNETO_CMD, 1, CMD_TIMEOUT);
+    HAL_SPI_Transmit(&hspi1, &ACTIVATE_MAGNETO_DATA, 1, CMD_TIMEOUT);
+    HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_SET);
 
-    uint8_t whoami;
+    HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Transmit(&hspi1, &SET_MAGNETO_ODR_CMD, 1, CMD_TIMEOUT);
+    HAL_SPI_Transmit(&hspi1, &SET_MAGNETO_ODR_DATA, 1, CMD_TIMEOUT);
+    HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_SET);
+
     /* Read WHO AM I register for verification, should read 104. */
-    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(&hspi1, &READ_WHOAMI_CMD, 1, CMD_TIMEOUT);
-    HAL_SPI_Receive(&hspi1, &whoami, 1, CMD_TIMEOUT);
-    HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
+    // uint8_t whoami;
+    // HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_RESET);
+    // HAL_SPI_Transmit(&hspi1, &READ_WHOAMIM_CMD, 1, CMD_TIMEOUT);
+    // HAL_SPI_Receive(&hspi1, &whoami, 1, CMD_TIMEOUT);
+    // HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_SET);
 
     uint8_t dataBuffer[6];
     int16_t accelX, accelY, accelZ;
     int16_t gyroX, gyroY, gyroZ;
+    int16_t magnetoX, magnetoY, magnetoZ;
 
     for (;;)
     {
@@ -87,6 +109,13 @@ void readAccelGyroMagnetismTask(void const* arg)
         accelY = (dataBuffer[3] << 8) | (dataBuffer[2]);
         accelZ = (dataBuffer[5] << 8) | (dataBuffer[4]);
 
+        HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_RESET);
+        HAL_SPI_Transmit(&hspi1, &READ_MAGNETO_X_LOW_CMD, 1, CMD_TIMEOUT);
+        HAL_SPI_Receive(&hspi1, &dataBuffer[0], 6, CMD_TIMEOUT);
+        HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_SET);
+        magnetoX = (dataBuffer[1] << 8) | (dataBuffer[0]);
+        magnetoY = (dataBuffer[3] << 8) | (dataBuffer[2]);
+        magnetoZ = (dataBuffer[5] << 8) | (dataBuffer[4]);
 
         /* Writeback */
         osMutexWait(data->mutex_, 0);
@@ -96,9 +125,9 @@ void readAccelGyroMagnetismTask(void const* arg)
         data->gyroX_ = gyroX;
         data->gyroY_ = gyroY;
         data->gyroZ_ = gyroZ;
-        data->magnetoX_ = whoami;
-        //data->magnetoY_ = magnetY;
-        // data->magnetoZ_ = magnetZ;
+        data->magnetoX_ = magnetoX;
+        data->magnetoY_ = magnetoY;
+        data->magnetoZ_ = magnetoZ;
         osMutexRelease(data->mutex_);
     }
 }
