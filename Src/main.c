@@ -220,7 +220,7 @@ int main(void)
         readAccelGyroMagnetismTask,
         osPriorityNormal,
         1,
-        configMINIMAL_STACK_SIZE
+        configMINIMAL_STACK_SIZE * 3
     );
     readAccelGyroMagnetismTaskHandle =
         osThreadCreate(osThread(readAccelGyroMagnetismThread), accelGyroMagnetismData);
@@ -230,7 +230,7 @@ int main(void)
         readBarometerTask,
         osPriorityNormal,
         1,
-        configMINIMAL_STACK_SIZE
+        configMINIMAL_STACK_SIZE * 3
     );
     readBarometerTaskHandle =
         osThreadCreate(osThread(readBarometerThread), barometerData);

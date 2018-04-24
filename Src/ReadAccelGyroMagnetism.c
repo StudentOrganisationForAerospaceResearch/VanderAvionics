@@ -123,7 +123,11 @@ void readAccelGyroMagnetismTask(void const* arg)
         magnetoZ = (dataBuffer[5] << 8) | (dataBuffer[4]);
 
         /* Writeback */
-        osMutexWait(data->mutex_, 0);
+        if (osMutexWait(data->mutex_, 0) != osOK)
+        {
+            continue;
+        }
+
         data->accelX_ = accelX;
         data->accelY_ = accelY;
         data->accelZ_ = accelZ;

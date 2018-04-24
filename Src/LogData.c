@@ -18,34 +18,62 @@ static FIL file;
 
 void buildLogEntry(AllData* data, char* buffer)
 {
-    osMutexWait(data->accelGyroMagnetismData_->mutex_, 0);
-    int32_t accelX = data->accelGyroMagnetismData_->accelX_;
-    int32_t accelY = data->accelGyroMagnetismData_->accelY_;
-    int32_t accelZ = data->accelGyroMagnetismData_->accelZ_;
-    int32_t gyroX = data->accelGyroMagnetismData_->gyroX_;
-    int32_t gyroY = data->accelGyroMagnetismData_->gyroY_;
-    int32_t gyroZ = data->accelGyroMagnetismData_->gyroZ_;
-    int32_t magnetoX = data->accelGyroMagnetismData_->magnetoX_;
-    int32_t magnetoY = data->accelGyroMagnetismData_->magnetoY_;
-    int32_t magnetoZ = data->accelGyroMagnetismData_->magnetoZ_;
-    osMutexRelease(data->accelGyroMagnetismData_->mutex_);
 
-    osMutexWait(data->barometerData_->mutex_, 0);
-    int32_t pressure = data->barometerData_->pressure_;
-    int32_t temperature = data->barometerData_->temperature_;
-    osMutexRelease(data->barometerData_->mutex_);
+    int32_t accelX = -1;
+    int32_t accelY = -1;
+    int32_t accelZ = -1;
+    int32_t gyroX = -1;
+    int32_t gyroY = -1;
+    int32_t gyroZ = -1;
+    int32_t magnetoX = -1;
+    int32_t magnetoY = -1;
+    int32_t magnetoZ = -1;
+    int32_t pressure = -1;
+    int32_t temperature = -1;
+    int32_t altitude = -1;
+    int32_t epochTimeMsec = -1;
+    int32_t latitude = -1;
+    int32_t longitude = -1;
+    int32_t tankPressure = -1;
+    int32_t tankTemperature = -1;
 
-    osMutexWait(data->gpsData_->mutex_, 0);
-    int32_t altitude = data->gpsData_->altitude_;
-    int32_t epochTimeMsec = data->gpsData_->epochTimeMsec_;
-    int32_t latitude = data->gpsData_->latitude_;
-    int32_t longitude = data->gpsData_->longitude_;
-    osMutexRelease(data->gpsData_->mutex_);
+    if (osMutexWait(data->accelGyroMagnetismData_->mutex_, 0) == osOK)
+    {
+        accelX = data->accelGyroMagnetismData_->accelX_;
+        accelY = data->accelGyroMagnetismData_->accelY_;
+        accelZ = data->accelGyroMagnetismData_->accelZ_;
+        gyroX = data->accelGyroMagnetismData_->gyroX_;
+        gyroY = data->accelGyroMagnetismData_->gyroY_;
+        gyroZ = data->accelGyroMagnetismData_->gyroZ_;
+        magnetoX = data->accelGyroMagnetismData_->magnetoX_;
+        magnetoY = data->accelGyroMagnetismData_->magnetoY_;
+        magnetoZ = data->accelGyroMagnetismData_->magnetoZ_;
+        osMutexRelease(data->accelGyroMagnetismData_->mutex_);
+    }
 
-    osMutexWait(data->oxidizerTankConditionsData_->mutex_, 0);
-    int32_t tankPressure = data->oxidizerTankConditionsData_->pressure_;
-    int32_t tankTemperature = data->oxidizerTankConditionsData_->temperature_;
-    osMutexRelease(data->oxidizerTankConditionsData_->mutex_);
+
+    if (osMutexWait(data->barometerData_->mutex_, 0) == osOK)
+    {
+        pressure = data->barometerData_->pressure_;
+        temperature = data->barometerData_->temperature_;
+        osMutexRelease(data->barometerData_->mutex_);
+    }
+
+    if (osMutexWait(data->gpsData_->mutex_, 0) == osOK)
+    {
+        altitude = data->gpsData_->altitude_;
+        epochTimeMsec = data->gpsData_->epochTimeMsec_;
+        latitude = data->gpsData_->latitude_;
+        longitude = data->gpsData_->longitude_;
+        osMutexRelease(data->gpsData_->mutex_);
+    }
+
+    if (osMutexWait(data->oxidizerTankConditionsData_->mutex_, 0) == osOK)
+    {
+        tankPressure = data->oxidizerTankConditionsData_->pressure_;
+        tankTemperature = data->oxidizerTankConditionsData_->temperature_;
+        osMutexRelease(data->oxidizerTankConditionsData_->mutex_);
+    }
 
     sprintf(
         buffer,

@@ -104,7 +104,11 @@ void readBarometerTask(void const* arg)
         double pressure = (pressureReading * sens / pow(2, 21) - off) / pow(2, 15); // need to divide P by 100 to get mbar
         double temperature = (temp); // need to divide T by 100 to get degrees Celcius
 
-        osMutexWait(data->mutex_, 0);
+        if (osMutexWait(data->mutex_, 0) != osOK)
+        {
+            continue;
+        }
+
         data->pressure_ = (int32_t) pressure;
         data->temperature_ = (int32_t) temperature;
         osMutexRelease(data->mutex_);
