@@ -88,7 +88,7 @@ static osThreadId parachutesControlTaskHandle;
 static osThreadId logDataTaskHandle;
 static osThreadId transmitDataTaskHandle;
 
-FlightPhase currentFlightPhase = BURN;
+FlightPhase currentFlightPhase = PRELAUNCH;
 static const int FLIGHT_PHASE_DISPLAY_FREQ = 1000;
 static const int FLIGHT_PHASE_BLINK_FREQ = 100;
 /* USER CODE END PV */
@@ -220,7 +220,7 @@ int main(void)
         readAccelGyroMagnetismTask,
         osPriorityNormal,
         1,
-        configMINIMAL_STACK_SIZE * 3
+        configMINIMAL_STACK_SIZE
     );
     readAccelGyroMagnetismTaskHandle =
         osThreadCreate(osThread(readAccelGyroMagnetismThread), accelGyroMagnetismData);
@@ -230,7 +230,7 @@ int main(void)
         readBarometerTask,
         osPriorityNormal,
         1,
-        configMINIMAL_STACK_SIZE * 3
+        configMINIMAL_STACK_SIZE
     );
     readBarometerTaskHandle =
         osThreadCreate(osThread(readBarometerThread), barometerData);
