@@ -12,7 +12,11 @@ static int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
 
 int32_t readAccel(AccelGyroMagnetismData* data)
 {
-    osMutexWait(data->mutex_, 0);
+    if (osMutexWait(data->mutex_, 0) != osOK)
+    {
+        return -1;
+    }
+
     int32_t accelX = data->accelX_;
     int32_t accelY = data->accelY_;
     int32_t accelZ = data->accelZ_;
@@ -30,7 +34,11 @@ int32_t readAccel(AccelGyroMagnetismData* data)
 
 int32_t readPressure(BarometerData* data)
 {
-    osMutexWait(data->mutex_, 0);
+    if (osMutexWait(data->mutex_, 0) != osOK)
+    {
+        return -1;
+    }
+
     int32_t pressure = data->pressure_;
     osMutexRelease(data->mutex_);
 
@@ -100,6 +108,12 @@ void parachutesControlAscentRoutine(
 
         int32_t currentAccel = readAccel(accelGyroMagnetismData);
         int32_t currentPressure = readPressure(barometerData);
+
+        if (currentAccel == -1 || currentPressure == -1)
+        {
+            // failed to read values
+            continue;
+        }
 
         filterSensors(currentAccel, currentPressure, positionVector);
 
