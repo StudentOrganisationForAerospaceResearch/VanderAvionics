@@ -48,7 +48,7 @@ void readOxidizerTankConditionsTask(void const* arg)
             continue;
         }
 
-        adcRead /= 10;  // Average 10 ADC readings
+        adcRead /= 10;  // Average 10 ADC readings  -- change to 5 values
 
         // vi to voltage divider varies between 0.5V-4.5V, but the board requires a voltage less than 3.3V.
         // After the voltage divider, the voltage varies between 0.285V-2.57V
