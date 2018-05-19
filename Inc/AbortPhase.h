@@ -4,4 +4,5 @@
 
 extern FlightPhase currentFlightPhase;
 
-void monitorForEmergencyShutoffTask(void const* arg);
+void abortPhaseTask(void const* arg);
+

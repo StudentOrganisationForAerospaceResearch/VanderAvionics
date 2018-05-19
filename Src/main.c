@@ -61,6 +61,7 @@
 #include "ParachutesControl.h"
 #include "LogData.h"
 #include "TransmitData.h"
+#include "AbortPhase.h"
 #include "Data.h"
 #include "FlightPhase.h"
 /* USER CODE END Includes */
@@ -87,6 +88,8 @@ static osThreadId parachutesControlTaskHandle;
 // Storing data
 static osThreadId logDataTaskHandle;
 static osThreadId transmitDataTaskHandle;
+// Special abort data thread
+static osThreadId abortPhaseTaskHandle;
 
 FlightPhase currentFlightPhase = PRELAUNCH;
 static const int FLIGHT_PHASE_DISPLAY_FREQ = 1000;
@@ -305,6 +308,15 @@ int main(void)
     transmitDataTaskHandle =
         osThreadCreate(osThread(transmitDataThread), allData);
 
+    osThreadDef(
+        abortPhaseThread,
+        abortPhaseTask,
+        osPriorityHigh,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    abortPhaseTaskHandle =
+        osThreadCreate(osThread(abortPhaseThread), NULL);
     /* USER CODE END RTOS_THREADS */
 
     /* USER CODE BEGIN RTOS_QUEUES */
