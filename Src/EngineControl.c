@@ -3,26 +3,23 @@
 #include "cmsis_os.h"
 
 #include "EngineControl.h"
+#include "Data.h"
 
-// Ground Station Commands
-#define LAUNCH_CMD 0xAA
-#define OPEN_VENT_CMD 0x01
-#define CLOSE_VENT_CMD 0x02
-
-// prelaunch
 static const int PRELAUNCH_PHASE_PERIOD = 50;
-// burn
 static const int BURN_DURATION = 10000;
-// post burn
 static const int POST_BURN_PERIOD = 10;
 
-uint8_t readCommandFromGroundStation()
+static const int MAX_TANK_PRESSURE = 50000;
+static const int MAX_DURATION_VENT_VALVE_OPEN = 7000;
+
+void openVentValve()
 {
     // TODO
-    // uint8_t buffer[1];
-    // buffer[0] = 0;
-    // HAL_UART_Receive(&huart1, buffer, sizeof(buffer), PRELAUNCH_READ_TIMEOUT);
-    return 0;
+}
+
+void closeVentValve()
+{
+    // TDOD
 }
 
 void openInjectionValve()
@@ -35,25 +32,15 @@ void closeInjectionValve()
     // TDOD
 }
 
-void openVentValve()
-{
-    // TODO
-}
-
-void closeVentValve()
-{
-    // TDOD
-}
-
 /**
- * This routine listens for and reacts to commands from the ground station.
- * The ground station will provide commands to open and close the ventilation valve
- * for the purpose of avoiding pressure build up in the oxidizer tank.
- * The ground station will also send a launch command to begin the burn phase.
+ * This routine keeps the injection valve closed during prelaunch.
+ * This routine exits when the currentFlightPhase is no longer PRELAUNCH.
  */
-void engineControlPrelaunchRoutine()
+void engineControlPrelaunchRoutine(OxidizerTankConditionsData* data)
 {
     uint32_t prevWakeTime = osKernelSysTick();
+    int32_t tankPressure = -1;
+    int32_t durationVentValveOpen = 0;
 
     for (;;)
     {
@@ -61,20 +48,29 @@ void engineControlPrelaunchRoutine()
         // Ensure valve is closed
         closeInjectionValve();
 
-        switch (readCommandFromGroundStation())
+        // Vent tank if over pressure
+        if (osMutexWait(data->oxidizerTankConditionsData_->mutex_, 0) == osOK)
         {
-            case LAUNCH_CMD:
-                currentFlightPhase != BURN;
-                return; // Launch signal received, go to burn phase
-                break;
+            // read tank pressure
+            tankPressure = data->oxidizerTankConditionsData_->pressure_;
+            osMutexRelease(data->oxidizerTankConditionsData_->mutex_);
 
-            case OPEN_VENT_CMD:
+            // open or close valve based on tank pressure
+            // also do not open valve if it's been open for too long
+            // otherwise the vent valve will break
+            if (tankPressure > MAX_TANK_PRESSURE &&
+                durationVentValveOpen < MAX_DURATION_VENT_VALVE_OPEN) {
+
+                durationVentValveOpen += PRELAUNCH_PHASE_PERIOD;
                 openVentValve();
-                break;
-
-            case CLOSE_VENT_CMD:
+            } else {
+                durationVentValveOpen = 0;
                 closeVentValve();
-                break;
+            }
+        }
+
+        if (currentFlightPhase != PRELAUNCH) {
+            return;
         }
     }
 }
@@ -110,12 +106,13 @@ void engineControlPostBurnRoutine()
 
 void engineControlTask(void const* arg)
 {
+    OxidizerTankConditionsData* data = (OxidizerTankConditionsData*) arg;
     for (;;)
     {
         switch (currentFlightPhase)
         {
             case PRELAUNCH:
-                engineControlPrelaunchRoutine();
+                engineControlPrelaunchRoutine(data);
                 break;
 
             case BURN:
