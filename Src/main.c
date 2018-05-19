@@ -88,7 +88,6 @@ static osThreadId parachutesControlTaskHandle;
 static osThreadId logDataTaskHandle;
 static osThreadId transmitDataTaskHandle;
 
-FlightPhase currentFlightPhase = PRELAUNCH;
 static const int FLIGHT_PHASE_DISPLAY_FREQ = 1000;
 static const int FLIGHT_PHASE_BLINK_FREQ = 100;
 /* USER CODE END PV */
@@ -198,6 +197,8 @@ int main(void)
     /* USER CODE END 2 */
 
     /* USER CODE BEGIN RTOS_MUTEX */
+    osMutexDef(FLIGHT_PHASE_MUTEX);
+    flightPhaseMutex = osMutexCreate(osMutex(FLIGHT_PHASE_MUTEX));
     /* USER CODE END RTOS_MUTEX */
 
     /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -567,7 +568,7 @@ void StartDefaultTask(void const* argument)
         // blink 3 times for COAST phase
         // blink 4 times for DROGUE_DESCENT phase
         // blink 5 times for MAIN_DESCENT phase
-        for (int i = -1; i < currentFlightPhase; i++)
+        for (int i = -1; i < getCurrentFlightPhase(); i++)
         {
             HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 1);
             osDelay(FLIGHT_PHASE_BLINK_FREQ);

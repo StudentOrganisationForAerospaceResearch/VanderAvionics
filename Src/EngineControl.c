@@ -3,6 +3,7 @@
 #include "cmsis_os.h"
 
 #include "EngineControl.h"
+#include "FlightPhase.h"
 
 // Ground Station Commands
 #define LAUNCH_CMD 0xAA
@@ -72,7 +73,7 @@ void engineControlPrelaunchRoutine()
         switch (readCommandFromGroundStation())
         {
             case LAUNCH_CMD:
-                currentFlightPhase = BURN;
+                newFlightPhase(BURN);
                 return; // Launch signal received, go to burn phase
                 break;
 
@@ -90,13 +91,13 @@ void engineControlPrelaunchRoutine()
 /**
  * This routine opens the injection valve for the burn phase
  * for a preconfigured amount of time. Once the preconfigured amount
- * of time has passed, this routine updates the currentFlightPhase.
+ * of time has passed, this routine updates the current flight phase.
  */
 void engineControlBurnRoutine()
 {
     openInjectionValve();
     osDelay(BURN_DURATION);
-    currentFlightPhase = COAST;
+    newFlightPhase(COAST);
     return;
 }
 
@@ -104,7 +105,7 @@ void engineControlBurnRoutine()
  * This routine keeps the injection valve and ventilation valves closed for the coast phase.
  * The injection valve is closed to avoid overshooting the goal altitude.
  * The ventilation valve is closed to avoid a trajectory change from oxidizer discharge.
- * The routine exits when the currentFlightPhase is past the coast phase.
+ * The routine exits when the current flight phase is past the coast phase.
  */
 void engineControlCoastRoutine()
 {
@@ -117,7 +118,7 @@ void engineControlCoastRoutine()
         closeVentValve();
 
         // Wait for the coast phase to end
-        if (currentFlightPhase > COAST)
+        if (getCurrentFlightPhase() > COAST)
         {
             return;
         }
@@ -154,7 +155,7 @@ void engineControlTask(void const* arg)
 {
     for (;;)
     {
-        switch (currentFlightPhase)
+        switch (getCurrentFlightPhase())
         {
             case PRELAUNCH:
                 engineControlPrelaunchRoutine();
