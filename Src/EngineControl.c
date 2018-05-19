@@ -13,11 +13,8 @@
 static const int PRELAUNCH_PHASE_PERIOD = 50;
 // burn
 static const int BURN_DURATION = 10000;
-// coast
-static const int COAST_PHASE_PERIOD = 10;
-// descent
-static const int DESCENT_PHASE_PERIOD = 100;
-static const int VENT_VALVE_TOGGLE_PERIOD = 5000;
+// post burn
+static const int POST_BURN_PERIOD = 10;
 
 uint8_t readCommandFromGroundStation()
 {
@@ -48,11 +45,6 @@ void closeVentValve()
     // TDOD
 }
 
-void toggleVentValve()
-{
-    // TODO
-}
-
 /**
  * This routine listens for and reacts to commands from the ground station.
  * The ground station will provide commands to open and close the ventilation valve
@@ -72,7 +64,7 @@ void engineControlPrelaunchRoutine()
         switch (readCommandFromGroundStation())
         {
             case LAUNCH_CMD:
-                currentFlightPhase = BURN;
+                currentFlightPhase != BURN;
                 return; // Launch signal received, go to burn phase
                 break;
 
@@ -101,52 +93,18 @@ void engineControlBurnRoutine()
 }
 
 /**
- * This routine keeps the injection valve and ventilation valves closed for the coast phase.
- * The injection valve is closed to avoid overshooting the goal altitude.
- * The ventilation valve is closed to avoid a trajectory change from oxidizer discharge.
- * The routine exits when the currentFlightPhase is past the coast phase.
+ * This routine keeps the injection valve closed for all phases past the burn phase.
+ * The injection valve is closed to avoid overshooting the goal altitude and during descent.
+ * This routine is the final phase.
  */
-void engineControlCoastRoutine()
+void engineControlPostBurnRoutine()
 {
     uint32_t prevWakeTime = osKernelSysTick();
 
     for (;;)
     {
-        osDelayUntil(&prevWakeTime, COAST_PHASE_PERIOD);
+        osDelayUntil(&prevWakeTime, POST_BURN_PERIOD);
         closeInjectionValve();
-        closeVentValve();
-
-        // Wait for the coast phase to end
-        if (currentFlightPhase > COAST)
-        {
-            return;
-        }
-    }
-}
-
-/**
- * This routine closes the injection valve and vents any remaining oxidizer.
- * The injection valve is closed to prevent combustion during descent.
- * The ventilation valve is toggled to vent any remaining oxidizer.
- * The ventilation valve must be toggled because the valve will break
- * if open for over ~10 seconds.
- */
-void engineControlPostCoastRoutine()
-{
-    uint8_t ventValveToggleCounter = 0;
-    uint32_t prevWakeTime = osKernelSysTick();
-
-    for (;;)
-    {
-        osDelayUntil(&prevWakeTime, DESCENT_PHASE_PERIOD);
-        closeInjectionValve(); // Ensure valve is closedp
-        ventValveToggleCounter += DESCENT_PHASE_PERIOD;
-
-        if (ventValveToggleCounter > VENT_VALVE_TOGGLE_PERIOD)
-        {
-            toggleVentValve();
-            ventValveToggleCounter = 0;
-        }
     }
 }
 
@@ -164,13 +122,10 @@ void engineControlTask(void const* arg)
                 engineControlBurnRoutine();
                 break;
 
-            case COAST:
-                engineControlCoastRoutine();
-                break;
-
-            case DROGUE_DESCENT: // fall through
+            case COAST:  // fall through
+            case DROGUE_DESCENT:
             case MAIN_DESCENT:
-                engineControlPostCoastRoutine();
+                engineControlPostBurnRoutine();
                 break;
 
             default:
