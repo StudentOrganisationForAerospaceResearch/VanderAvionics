@@ -54,8 +54,9 @@
 #include <stdlib.h>
 #include "ReadAccelGyroMagnetism.h"
 #include "ReadBarometer.h"
+#include "ReadCombustionTankPressure.h"
 #include "ReadGps.h"
-#include "ReadOxidizerTankConditions.h"
+#include "ReadOxidizerTankPressure.h"
 #include "MonitorForEmergencyShutoff.h"
 #include "EngineControl.h"
 #include "ParachutesControl.h"
@@ -80,8 +81,9 @@ osThreadId defaultTaskHandle;
 /* Private variables ---------------------------------------------------------*/
 static osThreadId readAccelGyroMagnetismTaskHandle;
 static osThreadId readBarometerTaskHandle;
+static osThreadId readCombustionTankPressureTaskHandle;
 static osThreadId readGpsTaskHandle;
-static osThreadId readOxidizerTankConditionsTaskHandle;
+static osThreadId readOxidizerTankPressureTaskHandle;
 // Controls that will perform actions
 static osThreadId monitorForEmergencyShutoffTaskHandle;
 static osThreadId engineControlTaskHandle;
@@ -153,10 +155,12 @@ int main(void)
         malloc(sizeof(AccelGyroMagnetismData));
     BarometerData* barometerData =
         malloc(sizeof(BarometerData));
+    CombustionTankPressureData* combustionTankPressureData =
+        malloc(sizeof(CombustionTankPressureData));
     GpsData* gpsData =
         malloc(sizeof(GpsData));
-    OxidizerTankConditionsData* oxidizerTankConditionsData =
-        malloc(sizeof(OxidizerTankConditionsData));
+    OxidizerTankPressureData* oxidizerTankPressureData =
+        malloc(sizeof(OxidizerTankPressureData));
 
     osMutexDef(ACCEL_GYRO_MAGNETISM_DATA_MUTEX);
     accelGyroMagnetismData->mutex_ = osMutexCreate(osMutex(ACCEL_GYRO_MAGNETISM_DATA_MUTEX));
@@ -175,25 +179,29 @@ int main(void)
     barometerData->pressure_ = -10;
     barometerData->temperature_ = -11;
 
+    osMutexDef(COMBUSTION_TANK_PRESSURE_DATA_MUTEX);
+    combustionTankPressureData->mutex_ = osMutexCreate(osMutex(COMBUSTION_TANK_PRESSURE_DATA_MUTEX));
+    combustionTankPressureData->pressure_ = -12;
+
     osMutexDef(GPS_DATA_MUTEX);
     gpsData->mutex_ = osMutexCreate(osMutex(GPS_DATA_MUTEX));
-    gpsData->altitude_ = -12;
-    gpsData->epochTimeMsec_ = -13;
-    gpsData->latitude_ = -14;
-    gpsData->longitude_ = -15;
+    gpsData->altitude_ = -13;
+    gpsData->epochTimeMsec_ = -14;
+    gpsData->latitude_ = -15;
+    gpsData->longitude_ = -16;
 
-    osMutexDef(OXIDIZER_TANK_CONDITIONS_DATA_MUTEX);
-    oxidizerTankConditionsData->mutex_ = osMutexCreate(osMutex(OXIDIZER_TANK_CONDITIONS_DATA_MUTEX));
-    oxidizerTankConditionsData->pressure_ = -16;
-    oxidizerTankConditionsData->temperature_ = -17;
+    osMutexDef(OXIDIZER_TANK_PRESSURE_DATA_MUTEX);
+    oxidizerTankPressureData->mutex_ = osMutexCreate(osMutex(OXIDIZER_TANK_PRESSURE_DATA_MUTEX));
+    oxidizerTankPressureData->pressure_ = -17;
 
     // data containers
     AllData* allData =
         malloc(sizeof(AllData));
     allData->accelGyroMagnetismData_ = accelGyroMagnetismData;
     allData->barometerData_ = barometerData;
+    allData->combustionTankPressureData_ = combustionTankPressureData;
     allData->gpsData_ = gpsData;
-    allData->oxidizerTankConditionsData_ = oxidizerTankConditionsData;
+    allData->oxidizerTankPressureData_ = oxidizerTankPressureData;
 
     ParachutesControlData* parachutesControlData =
         malloc(sizeof(ParachutesControlData));
@@ -240,6 +248,16 @@ int main(void)
         osThreadCreate(osThread(readBarometerThread), barometerData);
 
     osThreadDef(
+        readCombustionTankPressureThread,
+        readCombustionTankPressureTask,
+        osPriorityAboveNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    readCombustionTankPressureTaskHandle =
+        osThreadCreate(osThread(readCombustionTankPressureThread), combustionTankPressureData);
+
+    osThreadDef(
         readGpsThread,
         readGpsTask,
         osPriorityBelowNormal,
@@ -250,14 +268,14 @@ int main(void)
         osThreadCreate(osThread(readGpsThread), gpsData);
 
     osThreadDef(
-        readOxidizerTankConditionsThread,
-        readOxidizerTankConditionsTask,
+        readOxidizerTankPressureThread,
+        readOxidizerTankPressureTask,
         osPriorityAboveNormal,
         1,
         configMINIMAL_STACK_SIZE
     );
-    readOxidizerTankConditionsTaskHandle =
-        osThreadCreate(osThread(readOxidizerTankConditionsThread), oxidizerTankConditionsData);
+    readOxidizerTankPressureTaskHandle =
+        osThreadCreate(osThread(readOxidizerTankPressureThread), oxidizerTankPressureData);
 
     osThreadDef(
         monitorForEmergencyShutoffThread,
@@ -332,8 +350,9 @@ int main(void)
 
     free(accelGyroMagnetismData);
     free(barometerData);
+    free(combustionTankPressureData);
     free(gpsData);
-    free(oxidizerTankConditionsData);
+    free(oxidizerTankPressureData);
     free(allData);
     free(parachutesControlData);
     /* USER CODE END 3 */

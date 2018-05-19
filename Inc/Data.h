@@ -27,20 +27,23 @@ typedef struct
 typedef struct
 {
     osMutexId mutex_;
+    int32_t pressure_;
+} CombustionTankPressureData;
+
+typedef struct
+{
+    osMutexId mutex_;
     int32_t latitude_;
     int32_t longitude_;
     int32_t altitude_;
     unsigned int epochTimeMsec_;
 } GpsData;
 
-
 typedef struct
 {
     osMutexId mutex_;
     int32_t pressure_;
-    int32_t temperature_;
-} OxidizerTankConditionsData;
-
+} OxidizerTankPressureData;
 
 /* Data Containers */
 
@@ -48,8 +51,9 @@ typedef struct
 {
     AccelGyroMagnetismData* accelGyroMagnetismData_;
     BarometerData* barometerData_;
+    CombustionTankPressureData* combustionTankPressureData_;
     GpsData* gpsData_;
-    OxidizerTankConditionsData* oxidizerTankConditionsData_;
+    OxidizerTankPressureData* oxidizerTankPressureData_;
 } AllData;
 
 typedef struct

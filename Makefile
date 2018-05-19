@@ -59,8 +59,9 @@ C_SOURCES = \
   Src/ParachutesControl.c \
   Src/ReadAccelGyroMagnetism.c \
   Src/ReadBarometer.c \
+  Src/ReadCombustionTankPressure.c \
   Src/ReadGps.c \
-  Src/ReadOxidizerTankConditions.c \
+  Src/ReadOxidizerTankPressure.c \
   Src/stm32f4xx_hal_msp.c \
   Src/stm32f4xx_hal_timebase_TIM.c \
   Src/stm32f4xx_it.c \
