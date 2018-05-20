@@ -7,7 +7,7 @@
 
 #include "Data.h"
 
-static int READ_COMBUSTION_TANK_PRESSURE_PERIOD = 250;  // Sampling delay set to 50 Hz to match high frequency logging
+static int READ_COMBUSTION_TANK_PRESSURE_PERIOD = 20;  // Sampling delay set to 50 Hz to match high frequency logging
 
 static const int ADC_POLL_TIMEOUT = 150;
 
@@ -16,12 +16,12 @@ void readCombustionTankPressureTask(void const* arg)
     CombustionTankPressureData* data = (CombustionTankPressureData*) arg;
     uint32_t prevWakeTime = osKernelSysTick();
 
-    uint16_t adcRead = 0;   // Stores a 12 but value
-    double vo = 0;  // The voltage across R2
-    double vi = 0;  // The voltage across R1 + R2 in series
+    uint16_t adcRead = 0;   // Stores a 12 bit value ( maximum resolution for this ADC )
+    double vo = 0;  // The voltage across the 133k resistor
+    double vi = 0;  // The pressure sensor output
     double tankPressure = 0;
 
-    int counter = 0;
+    int counter = 0;    // Counts up to 5 ADC readings before averaging
 
     // Resistor values in kOhms
     int R1 = 60; //100
@@ -38,32 +38,25 @@ void readCombustionTankPressureTask(void const* arg)
             adcRead += HAL_ADC_GetValue(&hadc1);
             counter++;
         }
-        else
+
+        if (counter >= 5)
         {
-            continue;
+            adcRead /= counter;  // Average 5 ADC readings
+
+            vo = 3.3 / pow(2, 12) * adcRead;    // Calculate voltage from the 12 bit ADC reading
+
+            // vi to voltage divider varies between 0.5V-4.5V, but the board requires a voltage less than 3.3V.
+            // After the voltage divider, the voltage varies between 0.285V-2.57V
+            vi = (R2 + R1) / R2 * vo;   // Calculate the original voltage output of the sensor
+
+            // The pressure sensor is ratiometric. The pressure is 0 psi when the voltage is 0.5V, and is 300
+            // psi when the voltage is 4.5V. The equation is derived from this information.
+            tankPressure = (vi - 0.5) * 300 / 4;  // Tank pressure in psi
+            tankPressure = tankPressure * 1000;   // Multiply by 1000 to keep decimal places
+
+            adcRead = 0;
+            counter = 0;
         }
-
-        if (counter < 10)
-        {
-            continue;
-        }
-
-        adcRead /= 10;  // Average 10 ADC readings  -- change to 5 values
-
-        // vi to voltage divider varies between 0.5V-4.5V, but the board requires a voltage less than 3.3V.
-        // After the voltage divider, the voltage varies between 0.285V-2.57V
-        vo = 3.3 / pow(2, 12) * adcRead;
-
-        vi = (R2 + R1) / R2 * vo;   // Calculate the original voltage before the voltage divider.
-
-        // The low pressure sensor is ratiometric. The pressure is 0 psi when the voltage is 0.5V, and is 300
-        // psi when the voltage is 4.5V. The equations is derived from this information.
-        tankPressure = (vi - 0.5) * 300 / 4;  // Tank pressure in psi
-        tankPressure = tankPressure * 1000;   // Multiply by 1000 to keep decimal places
-
-        // Set back to 0 to
-        adcRead = 0;
-        counter = 0;
 
         if (osMutexWait(data->mutex_, 0) != osOK)
         {
