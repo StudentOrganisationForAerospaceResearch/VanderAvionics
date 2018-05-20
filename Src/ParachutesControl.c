@@ -10,6 +10,12 @@
 
 static int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
 
+struct Vector {
+    double altitude;
+    double velocity;
+    double acceleration;
+}
+
 int32_t readAccel(AccelGyroMagnetismData* data)
 {
     if (osMutexWait(data->mutex_, 0) != osOK)
@@ -51,6 +57,39 @@ void filterSensors(int32_t current_accel, int32_t current_pressure, int32_t posi
     positionVector[0] = 0;
     positionVector[1] = 0;
     positionVector[2] = 0;
+}
+
+/*
+  Takes an old state vector and current state measurements and 
+  converts them into a prediction of the rocket's current state.
+  
+  Params:
+    old_state - (Vector) Past position, velocity and acceleration
+    accel_in - (double) Measured acceleration
+    alt_in - (double) Measured altitude
+    dt - (double) Time since last step
+  
+  Returns:
+    new_state - (Vector) Current position, velocity and acceleration
+*/
+struct Vector filterSensors(struct Vector old_state, double accel_in, double alt_in, double dt) {
+    struct Vector new_state;
+    
+    // Propogate old state using simple kinematics equations
+    new_state.altitude = old_state.position + old_state.velocity*dt + 0.5*dt*dt*old_state.acceleration;
+    new_state.velocity = old_state.velocity + old_state.acceleration*dt;
+    new_state.acceleration = old_state.acceleration;
+    
+    // Calculate the difference between the new state and the measurements
+    double baro_difference = alt_in - new_state.position
+    double accel_difference = accel_in - new_state.acceleration
+    
+    // Minimize the chi2 error by means of the Kalman gain matrix
+    new_state.altitude = new_state.altitude + k[0][0]*baro_difference + k[0][1]*baro_difference;
+    new_state.velocity = new_state.velocity + k[1][0]*baro_difference + k[1][1]*baro_difference;
+    new_state.acceleration = new_state.velocity + k[2][0]*baro_difference + k[2][1]*baro_difference;
+    
+    return new_state
 }
 
 int32_t detectApogee(int32_t positionVector[3])
