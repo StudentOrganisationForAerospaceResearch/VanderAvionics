@@ -7,7 +7,7 @@
 
 #include "Data.h"
 
-static int READ_OXIDIZER_TANK_PRESSURE_PERIOD = 20;  // Sampling delay set to 50 Hz to match high frequency logging
+static int READ_OXIDIZER_TANK_PRESSURE_PERIOD = 300;
 
 static const int ADC_POLL_TIMEOUT = 150;
 

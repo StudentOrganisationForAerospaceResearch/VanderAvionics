@@ -7,7 +7,7 @@
 
 #include "Data.h"
 
-static int READ_COMBUSTION_TANK_PRESSURE_PERIOD = 20;  // Sampling delay set to 50 Hz to match high frequency logging
+static int READ_COMBUSTION_TANK_PRESSURE_PERIOD = 300;
 
 static const int ADC_POLL_TIMEOUT = 150;
 
@@ -24,8 +24,8 @@ void readCombustionTankPressureTask(void const* arg)
     int counter = 0;    // Counts up to 5 ADC readings before averaging
 
     // Resistor values in kOhms
-    int R1 = 60; //100
-    int R2 = 165; //133
+    int R1 = 100;
+    int R2 = 133;
 
     HAL_ADC_Start(&hadc1);  // Start the ADC peripheral
 
