@@ -49,27 +49,31 @@ void engineControlPrelaunchRoutine(OxidizerTankConditionsData* data)
         closeInjectionValve();
 
         // Vent tank if over pressure
-        if (osMutexWait(data->oxidizerTankConditionsData_->mutex_, 0) == osOK)
+        if (osMutexWait(data->mutex_, 0) == osOK)
         {
             // read tank pressure
-            tankPressure = data->oxidizerTankConditionsData_->pressure_;
-            osMutexRelease(data->oxidizerTankConditionsData_->mutex_);
+            tankPressure = data->pressure_;
+            osMutexRelease(data->mutex_);
 
             // open or close valve based on tank pressure
             // also do not open valve if it's been open for too long
             // otherwise the vent valve will break
             if (tankPressure > MAX_TANK_PRESSURE &&
-                durationVentValveOpen < MAX_DURATION_VENT_VALVE_OPEN) {
+                    durationVentValveOpen < MAX_DURATION_VENT_VALVE_OPEN)
+            {
 
                 durationVentValveOpen += PRELAUNCH_PHASE_PERIOD;
                 openVentValve();
-            } else {
+            }
+            else
+            {
                 durationVentValveOpen = 0;
                 closeVentValve();
             }
         }
 
-        if (currentFlightPhase != PRELAUNCH) {
+        if (currentFlightPhase != PRELAUNCH)
+        {
             return;
         }
     }
@@ -107,6 +111,7 @@ void engineControlPostBurnRoutine()
 void engineControlTask(void const* arg)
 {
     OxidizerTankConditionsData* data = (OxidizerTankConditionsData*) arg;
+
     for (;;)
     {
         switch (currentFlightPhase)
