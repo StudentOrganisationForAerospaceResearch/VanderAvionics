@@ -10,7 +10,8 @@ static const int BURN_DURATION = 10000;
 static const int POST_BURN_PERIOD = 10;
 
 static const int MAX_TANK_PRESSURE = 50000;
-static const int MAX_DURATION_VENT_VALVE_OPEN = 7000;
+static const int MAX_DURATION_VENT_VALVE_OPEN = 8000;
+static const int REQUIRED_DURATION_VENT_VALVE_CLOSED = 4000;
 
 void openVentValve()
 {
@@ -40,7 +41,7 @@ void engineControlPrelaunchRoutine(OxidizerTankConditionsData* data)
 {
     uint32_t prevWakeTime = osKernelSysTick();
     int32_t tankPressure = -1;
-    int32_t durationVentValveOpen = 0;
+    int32_t durationVentValveControlled = 0;
 
     for (;;)
     {
@@ -58,17 +59,27 @@ void engineControlPrelaunchRoutine(OxidizerTankConditionsData* data)
             // open or close valve based on tank pressure
             // also do not open valve if it's been open for too long
             // otherwise the vent valve will break
-            if (tankPressure > MAX_TANK_PRESSURE &&
-                    durationVentValveOpen < MAX_DURATION_VENT_VALVE_OPEN)
+            if (tankPressure > MAX_TANK_PRESSURE)
             {
-
-                durationVentValveOpen += PRELAUNCH_PHASE_PERIOD;
-                openVentValve();
-            }
-            else
-            {
-                durationVentValveOpen = 0;
-                closeVentValve();
+                if (durationVentValveControlled < MAX_DURATION_VENT_VALVE_OPEN)
+                {
+                    // open vent valve
+                    durationVentValveControlled += PRELAUNCH_PHASE_PERIOD;
+                    openVentValve();
+                }
+                else if (durationVentValveControlled <
+                         (MAX_DURATION_VENT_VALVE_OPEN + REQUIRED_DURATION_VENT_VALVE_CLOSED))
+                {
+                    // vent valve has been open for more than max time it can be open
+                    durationVentValveControlled += PRELAUNCH_PHASE_PERIOD;
+                    closeVentValve();
+                }
+                else
+                {
+                    // vent valve has closed to reset itself as long as is necessary
+                    openVentValve();
+                    durationVentValveControlled = 0;
+                }
             }
         }
 
