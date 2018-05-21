@@ -9,6 +9,8 @@
 #include "main.h"
 
 static int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
+static double velocity_buffer = new double[6];
+
 
 struct Vector {
     double altitude;
@@ -72,8 +74,12 @@ void filterSensors(int32_t current_accel, int32_t current_pressure, int32_t posi
   Returns:
     new_state - (Vector) Current position, velocity and acceleration
 */
-struct Vector filterSensors(struct Vector old_state, double accel_in, double alt_in, double dt) {
+struct Vector filterSensors(struct Vector old_state, int32_t current_accel, int32_t current_pressure, double dt) {
     struct Vector new_state;
+    
+    // TODO: Need to find the conversion factor for these.
+    double accel_in = (double) current_accel;
+    double alt_in = (double) current_pressure;
     
     // Propogate old state using simple kinematics equations
     new_state.altitude = old_state.position + old_state.velocity*dt + 0.5*dt*dt*old_state.acceleration;
@@ -92,10 +98,45 @@ struct Vector filterSensors(struct Vector old_state, double accel_in, double alt
     return new_state
 }
 
-int32_t detectApogee(int32_t positionVector[3])
+// Warning: the states there are total BS for the moment. They're only placeholders.
+bool detectApogee(int32_t positionVector[3])
 {
-    // TODO
+    double velocity = (double) positionVector[1]; // Convert this!
+
+    if (currentFlightPhase == PRELAUNCH) {
+
+        if (positionVector[1] > 100)
+            currentFlightPhase = BURNING;
+        
+        suffleBuffer(velocity);
+        
+    } else if (currentFlightPhase == BURNING) {
+        
+        if (((velocity_buffer[0] + velocity_buffer[1] + velocity_buffer[2]) - 
+            (velocity_buffer[3] + velocity_buffer[4] + velocity_buffer[5])) > 1)
+            currentFlightPhase = AFTER_BURN;
+            
+        suffleBuffer(velocity);
+        
+    } else if (currentFlightPhase == AFTER_BURN) {
+        
+        if (positionVector[1] > 100){
+            currentFlightPhase = DROGUE_DESCENT;
+            return 1;
+        }
+            
+    }
+
     return 0;
+}
+
+void suffleBuffer(double velocity) {
+    velocity_buffer[0] = velocity_buffer[1];
+    velocity_buffer[1] = velocity_buffer[2];
+    velocity_buffer[2] = velocity_buffer[3];
+    velocity_buffer[3] = velocity_buffer[4];
+    velocity_buffer[4] = velocity_buffer[5];
+    velocity_buffer[5] = positionVector[1];
 }
 
 void ejectDrogueParachute()
