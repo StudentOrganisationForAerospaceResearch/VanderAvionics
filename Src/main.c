@@ -487,9 +487,9 @@ static void MX_ADC2_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
     */
-    sConfig.Channel = ADC_CHANNEL_0;
+    sConfig.Channel = ADC_CHANNEL_15;
     sConfig.Rank = 1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+    sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
 
     if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
     {
@@ -600,6 +600,7 @@ static void MX_USART1_UART_Init(void)
         * EVENT_OUT
         * EXTI
      PA4   ------> SharedAnalog_PA4
+     PC5   ------> SharedAnalog_PC5
 */
 static void MX_GPIO_Init(void)
 {
@@ -634,6 +635,12 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(ADC1_IN4_GPIO_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : ADC2_IN15_Pin */
+    GPIO_InitStruct.Pin = ADC2_IN15_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(ADC2_IN15_GPIO_Port, &GPIO_InitStruct);
 
     /*Configure GPIO pins : MAG_CS_Pin IMU_CS_Pin */
     GPIO_InitStruct.Pin = MAG_CS_Pin | IMU_CS_Pin;

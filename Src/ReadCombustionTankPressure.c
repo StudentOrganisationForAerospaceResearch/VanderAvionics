@@ -28,10 +28,12 @@ void readCombustionTankPressureTask(void const* arg)
     int adc1QueueIndex = 0;    // Counts up to ADC1_QUEUE_SIZE ADC readings before averaging
 
     // Resistor values in kOhms
-    int R1 = 100;
-    int R2 = 133;
+    int R1 = 60; //100;
+    int R2 = 165; //133;
 
     HAL_ADC_Start(&hadc1);  // Start the ADC peripheral
+
+    osDelay(5);
 
     for (;;)
     {

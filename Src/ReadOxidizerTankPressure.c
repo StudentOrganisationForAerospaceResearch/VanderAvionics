@@ -9,7 +9,7 @@
 
 #define ADC2_QUEUE_SIZE 5
 
-static int READ_OXIDIZER_TANK_PRESSURE_PERIOD = 300;
+static int READ_OXIDIZER_TANK_PRESSURE_PERIOD = 500;
 
 static const int ADC2_POLL_TIMEOUT = 150;
 
@@ -29,6 +29,8 @@ void readOxidizerTankPressureTask(void const* arg)
 
     HAL_ADC_Start(&hadc2);  // Start the ADC peripheral
 
+    osDelay(5);
+
     for (;;)
     {
         osDelayUntil(&prevWakeTime, READ_OXIDIZER_TANK_PRESSURE_PERIOD);
@@ -38,20 +40,21 @@ void readOxidizerTankPressureTask(void const* arg)
             adc2ValuesQueue[adc2QueueIndex++] = HAL_ADC_GetValue(&hadc2);
         }
 
+        uint16_t adcRead;
+
         if (adc2QueueIndex >= ADC2_QUEUE_SIZE)
         {
-            uint16_t adcRead = getAverageAdc2Reading();
+            adcRead = getAverageAdc2Reading();
 
             vo = 3.3 / pow(2, 12) * adcRead;    // Calculate voltage from the 12 bit ADC reading
 
             // Since the voltage output of the pressure sensor is very small ( below 0.1V ), an opamp was used to amplify
             // the voltage to be more accuractely read by the ADC. See AndromedaV2 PCB schematic for details.
-            vi = 13 / (2 * 200) * vo; // Calculate the original voltage output of the sensor -------------------------------------
+            vi = (double) (13.0 / 400.0) * vo * 1000; // Calculate the original voltage output of the sensor * 1000 to keep decimal places
 
             // The pressure sensor is ratiometric. The pressure is 0 psi when the voltage is 0V, and is 1000
             // psi when the voltage is 0.1V. The equation is derived from this information.
             tankPressure = vi * 1000 / 0.1;  // Tank pressure in psi
-            tankPressure = tankPressure * 1000;   // Multiply by 1000 to keep decimal places
 
             adc2QueueIndex %= ADC2_QUEUE_SIZE;
         }
