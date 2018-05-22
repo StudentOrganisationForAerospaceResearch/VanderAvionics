@@ -4,29 +4,24 @@
 
 #include "EngineControl.h"
 #include "FlightPhase.h"
+#include "Data.h"
 
-// Ground Station Commands
-#define LAUNCH_CMD 0xAA
-#define OPEN_VENT_CMD 0x01
-#define CLOSE_VENT_CMD 0x02
-
-// prelaunch
 static const int PRELAUNCH_PHASE_PERIOD = 50;
-// burn
 static const int BURN_DURATION = 10000;
-// coast
-static const int COAST_PHASE_PERIOD = 10;
-// descent
-static const int DESCENT_PHASE_PERIOD = 100;
-static const int VENT_VALVE_TOGGLE_PERIOD = 5000;
+static const int POST_BURN_PERIOD = 10;
 
-uint8_t readCommandFromGroundStation()
+static const int MAX_TANK_PRESSURE = 50000;
+static const int MAX_DURATION_VENT_VALVE_OPEN = 8000;
+static const int REQUIRED_DURATION_VENT_VALVE_CLOSED = 4000;
+
+void openVentValve()
 {
     // TODO
-    // uint8_t buffer[1];
-    // buffer[0] = 0;
-    // HAL_UART_Receive(&huart1, buffer, sizeof(buffer), PRELAUNCH_READ_TIMEOUT);
-    return 0;
+}
+
+void closeVentValve()
+{
+    // TDOD
 }
 
 void openInjectionValve()
@@ -39,30 +34,15 @@ void closeInjectionValve()
     // TDOD
 }
 
-void openVentValve()
-{
-    // TODO
-}
-
-void closeVentValve()
-{
-    // TDOD
-}
-
-void toggleVentValve()
-{
-    // TODO
-}
-
 /**
- * This routine listens for and reacts to commands from the ground station.
- * The ground station will provide commands to open and close the ventilation valve
- * for the purpose of avoiding pressure build up in the oxidizer tank.
- * The ground station will also send a launch command to begin the burn phase.
+ * This routine keeps the injection valve closed during prelaunch.
+ * This routine exits when the current flight phase is no longer PRELAUNCH.
  */
-void engineControlPrelaunchRoutine()
+void engineControlPrelaunchRoutine(OxidizerTankConditionsData* data)
 {
     uint32_t prevWakeTime = osKernelSysTick();
+    int32_t tankPressure = -1;
+    int32_t durationVentValveControlled = 0;
 
     for (;;)
     {
@@ -70,20 +50,43 @@ void engineControlPrelaunchRoutine()
         // Ensure valve is closed
         closeInjectionValve();
 
-        switch (readCommandFromGroundStation())
+        // Vent tank if over pressure
+        if (osMutexWait(data->mutex_, 0) == osOK)
         {
-            case LAUNCH_CMD:
-                newFlightPhase(BURN);
-                return; // Launch signal received, go to burn phase
-                break;
+            // read tank pressure
+            tankPressure = data->pressure_;
+            osMutexRelease(data->mutex_);
 
-            case OPEN_VENT_CMD:
-                openVentValve();
-                break;
+            // open or close valve based on tank pressure
+            // also do not open valve if it's been open for too long
+            // otherwise the vent valve will break
+            if (tankPressure > MAX_TANK_PRESSURE)
+            {
+                if (durationVentValveControlled < MAX_DURATION_VENT_VALVE_OPEN)
+                {
+                    // open vent valve
+                    durationVentValveControlled += PRELAUNCH_PHASE_PERIOD;
+                    openVentValve();
+                }
+                else if (durationVentValveControlled <
+                         (MAX_DURATION_VENT_VALVE_OPEN + REQUIRED_DURATION_VENT_VALVE_CLOSED))
+                {
+                    // vent valve has been open for more than max time it can be open
+                    durationVentValveControlled += PRELAUNCH_PHASE_PERIOD;
+                    closeVentValve();
+                }
+                else
+                {
+                    // vent valve has closed to reset itself as long as is necessary
+                    openVentValve();
+                    durationVentValveControlled = 0;
+                }
+            }
+        }
 
-            case CLOSE_VENT_CMD:
-                closeVentValve();
-                break;
+        if (getCurrentFlightPhase() != PRELAUNCH)
+        {
+            return;
         }
     }
 }
@@ -102,76 +105,41 @@ void engineControlBurnRoutine()
 }
 
 /**
- * This routine keeps the injection valve and ventilation valves closed for the coast phase.
- * The injection valve is closed to avoid overshooting the goal altitude.
- * The ventilation valve is closed to avoid a trajectory change from oxidizer discharge.
- * The routine exits when the current flight phase is past the coast phase.
+ * This routine keeps the injection valve closed for all phases past the burn phase.
+ * The injection valve is closed to avoid overshooting the goal altitude and during descent.
+ * This routine is the final phase.
  */
-void engineControlCoastRoutine()
+void engineControlPostBurnRoutine()
 {
     uint32_t prevWakeTime = osKernelSysTick();
 
     for (;;)
     {
-        osDelayUntil(&prevWakeTime, COAST_PHASE_PERIOD);
+        osDelayUntil(&prevWakeTime, POST_BURN_PERIOD);
         closeInjectionValve();
-        closeVentValve();
-
-        // Wait for the coast phase to end
-        if (getCurrentFlightPhase() > COAST)
-        {
-            return;
-        }
-    }
-}
-
-/**
- * This routine closes the injection valve and vents any remaining oxidizer.
- * The injection valve is closed to prevent combustion during descent.
- * The ventilation valve is toggled to vent any remaining oxidizer.
- * The ventilation valve must be toggled because the valve will break
- * if open for over ~10 seconds.
- */
-void engineControlPostCoastRoutine()
-{
-    uint8_t ventValveToggleCounter = 0;
-    uint32_t prevWakeTime = osKernelSysTick();
-
-    for (;;)
-    {
-        osDelayUntil(&prevWakeTime, DESCENT_PHASE_PERIOD);
-        closeInjectionValve(); // Ensure valve is closedp
-        ventValveToggleCounter += DESCENT_PHASE_PERIOD;
-
-        if (ventValveToggleCounter > VENT_VALVE_TOGGLE_PERIOD)
-        {
-            toggleVentValve();
-            ventValveToggleCounter = 0;
-        }
     }
 }
 
 void engineControlTask(void const* arg)
 {
+    OxidizerTankConditionsData* data = (OxidizerTankConditionsData*) arg;
+
     for (;;)
     {
         switch (getCurrentFlightPhase())
         {
             case PRELAUNCH:
-                engineControlPrelaunchRoutine();
+                engineControlPrelaunchRoutine(data);
                 break;
 
             case BURN:
                 engineControlBurnRoutine();
                 break;
 
-            case COAST:
-                engineControlCoastRoutine();
-                break;
-
-            case DROGUE_DESCENT: // fall through
+            case COAST:  // fall through
+            case DROGUE_DESCENT:
             case MAIN_DESCENT:
-                engineControlPostCoastRoutine();
+                engineControlPostBurnRoutine();
                 break;
 
             default:

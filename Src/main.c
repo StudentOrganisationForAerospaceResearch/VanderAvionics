@@ -274,7 +274,7 @@ int main(void)
         configMINIMAL_STACK_SIZE * 2
     );
     engineControlTaskHandle =
-        osThreadCreate(osThread(engineControlThread), NULL);
+        osThreadCreate(osThread(engineControlThread), oxidizerTankConditionsData);
 
     osThreadDef(
         parachutesControlThread,
