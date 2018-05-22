@@ -7,21 +7,25 @@
 
 #include "Data.h"
 
+#define ADC1_QUEUE_SIZE 5
+
 static int READ_COMBUSTION_TANK_PRESSURE_PERIOD = 300;
 
-static const int ADC_POLL_TIMEOUT = 150;
+static const int ADC1_POLL_TIMEOUT = 150;
+
+static uint16_t adc1ValuesQueue[ADC1_QUEUE_SIZE] = {0};    // Average ADC1_QUEUE_SIZE ADC readings that are each 12 bits in size
+// ( maximum resolution for this ADC )
 
 void readCombustionTankPressureTask(void const* arg)
 {
     CombustionTankPressureData* data = (CombustionTankPressureData*) arg;
     uint32_t prevWakeTime = osKernelSysTick();
 
-    uint16_t adcRead = 0;   // Stores a 12 bit value ( maximum resolution for this ADC )
     double vo = 0;  // The voltage across the 133k resistor
     double vi = 0;  // The pressure sensor output
     double tankPressure = 0;
 
-    int counter = 0;    // Counts up to 5 ADC readings before averaging
+    int adc1QueueIndex = 0;    // Counts up to ADC1_QUEUE_SIZE ADC readings before averaging
 
     // Resistor values in kOhms
     int R1 = 100;
@@ -33,15 +37,14 @@ void readCombustionTankPressureTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, READ_COMBUSTION_TANK_PRESSURE_PERIOD);
 
-        if (HAL_ADC_PollForConversion(&hadc1, ADC_POLL_TIMEOUT ) == HAL_OK)
+        if (HAL_ADC_PollForConversion(&hadc1, ADC1_POLL_TIMEOUT ) == HAL_OK)
         {
-            adcRead += HAL_ADC_GetValue(&hadc1);
-            counter++;
+            adc1ValuesQueue[adc1QueueIndex++] = HAL_ADC_GetValue(&hadc1);
         }
 
-        if (counter >= 5)
+        if (adc1QueueIndex >= ADC1_QUEUE_SIZE)
         {
-            adcRead /= counter;  // Average 5 ADC readings
+            uint16_t adcRead = getAverageAdc1Reading();
 
             vo = 3.3 / pow(2, 12) * adcRead;    // Calculate voltage from the 12 bit ADC reading
 
@@ -54,8 +57,7 @@ void readCombustionTankPressureTask(void const* arg)
             tankPressure = (vi - 0.5) * 300 / 4;  // Tank pressure in psi
             tankPressure = tankPressure * 1000;   // Multiply by 1000 to keep decimal places
 
-            adcRead = 0;
-            counter = 0;
+            adc1QueueIndex %= ADC1_QUEUE_SIZE;
         }
 
         if (osMutexWait(data->mutex_, 0) != osOK)
@@ -66,4 +68,16 @@ void readCombustionTankPressureTask(void const* arg)
         data->pressure_ = (int32_t) tankPressure;
         osMutexRelease(data->mutex_);
     }
+}
+
+uint16_t getAverageAdc1Reading()
+{
+    uint16_t sum = 0;
+
+    for (int i = 0; i < ADC1_QUEUE_SIZE; i++)
+    {
+        sum += adc1ValuesQueue[i];
+    }
+
+    return (sum / ADC1_QUEUE_SIZE);
 }
