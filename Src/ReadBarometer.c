@@ -22,6 +22,8 @@ static const uint8_t PROM_READ_TREF_CMD = 0xAA;
 static const uint8_t PROM_READ_TEMPSENS_CMD = 0xAC;
 static const uint8_t RESET_CMD = 0x1E;
 
+uint16_t readCalibrationCoefficient(const uint8_t PROM_READ_CMD);
+
 void readBarometerTask(void const* arg)
 {
     BarometerData* data = (BarometerData*) arg;

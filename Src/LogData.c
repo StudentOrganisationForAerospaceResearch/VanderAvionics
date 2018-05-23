@@ -30,7 +30,7 @@ void buildLogEntry(AllData* data, char* buffer)
     int32_t magnetoZ = -1;
     int32_t pressure = -1;
     int32_t temperature = -1;
-    int32_t combustionTankPressure = -1;
+    int32_t combustionChamberPressure = -1;
     int32_t altitude = -1;
     int32_t epochTimeMsec = -1;
     int32_t latitude = -1;
@@ -58,10 +58,10 @@ void buildLogEntry(AllData* data, char* buffer)
         osMutexRelease(data->barometerData_->mutex_);
     }
 
-    if (osMutexWait(data->combustionTankPressureData_->mutex_, 0) == osOK)
+    if (osMutexWait(data->combustionChamberPressureData_->mutex_, 0) == osOK)
     {
-        combustionTankPressure = data->combustionTankPressureData_->pressure_;
-        osMutexRelease(data->combustionTankPressureData_->mutex_);
+        combustionChamberPressure = data->combustionChamberPressureData_->pressure_;
+        osMutexRelease(data->combustionChamberPressureData_->mutex_);
     }
 
     if (osMutexWait(data->gpsData_->mutex_, 0) == osOK)
@@ -93,7 +93,7 @@ void buildLogEntry(AllData* data, char* buffer)
         magnetoZ,
         pressure,
         temperature,
-        combustionTankPressure,
+        combustionChamberPressure,
         altitude,
         epochTimeMsec,
         latitude,
@@ -201,7 +201,7 @@ void logDataTask(void const* arg)
         "magnetoZ,"
         "pressure,"
         "temperature,"
-        "combustionTankPressure,"
+        "combustionChamberPressure,"
         "altitude,"
         "epochTimeMsec,"
         "latitude,"

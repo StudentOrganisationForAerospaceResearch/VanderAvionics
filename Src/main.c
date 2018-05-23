@@ -1,3 +1,4 @@
+
 /**
   ******************************************************************************
   * @file           : main.c
@@ -54,7 +55,7 @@
 #include <stdlib.h>
 #include "ReadAccelGyroMagnetism.h"
 #include "ReadBarometer.h"
-#include "ReadCombustionTankPressure.h"
+#include "ReadCombustionChamberPressure.h"
 #include "ReadGps.h"
 #include "ReadOxidizerTankPressure.h"
 #include "MonitorForEmergencyShutoff.h"
@@ -82,7 +83,7 @@ osThreadId defaultTaskHandle;
 /* Private variables ---------------------------------------------------------*/
 static osThreadId readAccelGyroMagnetismTaskHandle;
 static osThreadId readBarometerTaskHandle;
-static osThreadId readCombustionTankPressureTaskHandle;
+static osThreadId readCombustionChamberPressureTaskHandle;
 static osThreadId readGpsTaskHandle;
 static osThreadId readOxidizerTankPressureTaskHandle;
 // Controls that will perform actions
@@ -158,8 +159,8 @@ int main(void)
         malloc(sizeof(AccelGyroMagnetismData));
     BarometerData* barometerData =
         malloc(sizeof(BarometerData));
-    CombustionTankPressureData* combustionTankPressureData =
-        malloc(sizeof(CombustionTankPressureData));
+    CombustionChamberPressureData* combustionChamberPressureData =
+        malloc(sizeof(CombustionChamberPressureData));
     GpsData* gpsData =
         malloc(sizeof(GpsData));
     OxidizerTankPressureData* oxidizerTankPressureData =
@@ -182,9 +183,9 @@ int main(void)
     barometerData->pressure_ = -10;
     barometerData->temperature_ = -11;
 
-    osMutexDef(COMBUSTION_TANK_PRESSURE_DATA_MUTEX);
-    combustionTankPressureData->mutex_ = osMutexCreate(osMutex(COMBUSTION_TANK_PRESSURE_DATA_MUTEX));
-    combustionTankPressureData->pressure_ = -12;
+    osMutexDef(COMBUSTION_CHAMBER_PRESSURE_DATA_MUTEX);
+    combustionChamberPressureData->mutex_ = osMutexCreate(osMutex(COMBUSTION_CHAMBER_PRESSURE_DATA_MUTEX));
+    combustionChamberPressureData->pressure_ = -12;
 
     osMutexDef(GPS_DATA_MUTEX);
     gpsData->mutex_ = osMutexCreate(osMutex(GPS_DATA_MUTEX));
@@ -202,7 +203,7 @@ int main(void)
         malloc(sizeof(AllData));
     allData->accelGyroMagnetismData_ = accelGyroMagnetismData;
     allData->barometerData_ = barometerData;
-    allData->combustionTankPressureData_ = combustionTankPressureData;
+    allData->combustionChamberPressureData_ = combustionChamberPressureData;
     allData->gpsData_ = gpsData;
     allData->oxidizerTankPressureData_ = oxidizerTankPressureData;
 
@@ -251,14 +252,14 @@ int main(void)
         osThreadCreate(osThread(readBarometerThread), barometerData);
 
     osThreadDef(
-        readCombustionTankPressureThread,
-        readCombustionTankPressureTask,
+        readCombustionChamberPressureThread,
+        readCombustionChamberPressureTask,
         osPriorityAboveNormal,
         1,
         configMINIMAL_STACK_SIZE
     );
-    readCombustionTankPressureTaskHandle =
-        osThreadCreate(osThread(readCombustionTankPressureThread), combustionTankPressureData);
+    readCombustionChamberPressureTaskHandle =
+        osThreadCreate(osThread(readCombustionChamberPressureThread), combustionChamberPressureData);
 
     osThreadDef(
         readGpsThread,
@@ -353,7 +354,7 @@ int main(void)
 
     free(accelGyroMagnetismData);
     free(barometerData);
-    free(combustionTankPressureData);
+    free(combustionChamberPressureData);
     free(gpsData);
     free(oxidizerTankPressureData);
     free(allData);
@@ -438,7 +439,7 @@ static void MX_ADC1_Init(void)
     hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
     hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
     hadc1.Init.NbrOfConversion = 1;
-    hadc1.Init.DMAContinuousRequests = ENABLE;
+    hadc1.Init.DMAContinuousRequests = DISABLE;
     hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
 
     if (HAL_ADC_Init(&hadc1) != HAL_OK)
@@ -477,7 +478,7 @@ static void MX_ADC2_Init(void)
     hadc2.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
     hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
     hadc2.Init.NbrOfConversion = 1;
-    hadc2.Init.DMAContinuousRequests = ENABLE;
+    hadc2.Init.DMAContinuousRequests = DISABLE;
     hadc2.Init.EOCSelection = ADC_EOC_SEQ_CONV;
 
     if (HAL_ADC_Init(&hadc2) != HAL_OK)

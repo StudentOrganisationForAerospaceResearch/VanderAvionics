@@ -59,7 +59,7 @@ C_SOURCES = \
   Src/ParachutesControl.c \
   Src/ReadAccelGyroMagnetism.c \
   Src/ReadBarometer.c \
-  Src/ReadCombustionTankPressure.c \
+  Src/ReadCombustionChamberPressure.c \
   Src/ReadGps.c \
   Src/ReadOxidizerTankPressure.c \
   Src/stm32f4xx_hal_msp.c \
@@ -67,6 +67,7 @@ C_SOURCES = \
   Src/stm32f4xx_it.c \
   Src/system_stm32f4xx.c \
   Src/TransmitData.c \
+  Src/Utils.c \
   tm_fatfs/Src/ccsbcs.c \
   tm_fatfs/Src/diskio.c \
   tm_fatfs/Src/fatfs_sd.c \

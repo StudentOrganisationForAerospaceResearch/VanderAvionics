@@ -28,7 +28,7 @@ typedef struct
 {
     osMutexId mutex_;
     int32_t pressure_;
-} CombustionTankPressureData;
+} CombustionChamberPressureData;
 
 typedef struct
 {
@@ -51,7 +51,7 @@ typedef struct
 {
     AccelGyroMagnetismData* accelGyroMagnetismData_;
     BarometerData* barometerData_;
-    CombustionTankPressureData* combustionTankPressureData_;
+    CombustionChamberPressureData* combustionChamberPressureData_;
     GpsData* gpsData_;
     OxidizerTankPressureData* oxidizerTankPressureData_;
 } AllData;
