@@ -35,7 +35,6 @@ void readCombustionChamberPressureTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, READ_COMBUSTION_CHAMBER_PRESSURE_PERIOD);
 
-
         if (HAL_ADC_PollForConversion(&hadc1, COMBUSTION_CHAMBER_ADC_POLL_TIMEOUT) == HAL_OK)
         {
             combustionChamberValuesQueue[combustionChamberQueueIndex++] = HAL_ADC_GetValue(&hadc1);
