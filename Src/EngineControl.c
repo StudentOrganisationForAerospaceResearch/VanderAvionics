@@ -9,7 +9,7 @@ static const int PRELAUNCH_PHASE_PERIOD = 50;
 static const int BURN_DURATION = 10000;
 static const int POST_BURN_PERIOD = 10;
 
-static const int MAX_TANK_PRESSURE = 50000;
+static const int MAX_TANK_PRESSURE_KPA = 5660; // 820psi, 25 deg C at saturation
 static const int MAX_DURATION_VENT_VALVE_OPEN = 8000;
 static const int REQUIRED_DURATION_VENT_VALVE_CLOSED = 4000;
 
