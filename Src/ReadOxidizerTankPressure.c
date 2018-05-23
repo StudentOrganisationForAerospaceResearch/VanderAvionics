@@ -18,7 +18,7 @@ static uint16_t oxidizerTankValuesQueue[QUEUE_SIZE] = {0};
 
 void readOxidizerTankPressureTask(void const* arg)
 {
-    OxidizerTankPressureData* data = (OxidizerTankPressureData*) arg;
+    OxidizerTankPressureData* data = (OxidizerTankPressureData* ) arg;
     uint32_t prevWakeTime = osKernelSysTick();
 
     double vo = 0;  // The pressure sensor voltage after amplification
@@ -28,8 +28,6 @@ void readOxidizerTankPressureTask(void const* arg)
     int oxidizerTankQueueIndex = 0;
 
     HAL_ADC_Start(&hadc2);  // Enables ADC and starts conversion of regular channels
-
-    osDelay(5); // TAKE THIS OUT??
 
     for (;;)
     {

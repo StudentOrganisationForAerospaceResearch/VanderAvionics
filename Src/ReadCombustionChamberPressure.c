@@ -13,14 +13,14 @@
 static int READ_COMBUSTION_CHAMBER_PRESSURE_PERIOD = 80;
 
 static const int COMBUSTION_CHAMBER_ADC_POLL_TIMEOUT = 50;
-static const int R1 = 100;    // Resistor values in kOhms
-static const int R2 = 133;
+static const double R1 = 100;    // Resistor values in kOhms
+static const double R2 = 133;
 
 static uint16_t combustionChamberValuesQueue[QUEUE_SIZE] = {0};
 
 void readCombustionChamberPressureTask(void const* arg)
 {
-    CombustionChamberPressureData* data = (CombustionChamberPressureData*) arg;
+    CombustionChamberPressureData* data = (CombustionChamberPressureData* ) arg;
     uint32_t prevWakeTime = osKernelSysTick();
 
     double vo = 0;  // The voltage across the 133k resistor
@@ -31,11 +31,10 @@ void readCombustionChamberPressureTask(void const* arg)
 
     HAL_ADC_Start(&hadc1);  // Enables ADC and starts conversion of regular channels
 
-    osDelay(5); // TAKE THIS OUT??
-
     for (;;)
     {
         osDelayUntil(&prevWakeTime, READ_COMBUSTION_CHAMBER_PRESSURE_PERIOD);
+
 
         if (HAL_ADC_PollForConversion(&hadc1, COMBUSTION_CHAMBER_ADC_POLL_TIMEOUT) == HAL_OK)
         {
