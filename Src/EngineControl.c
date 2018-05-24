@@ -3,6 +3,7 @@
 #include "cmsis_os.h"
 
 #include "EngineControl.h"
+#include "FlightPhase.h"
 #include "Data.h"
 
 static const int PRELAUNCH_PHASE_PERIOD = 50;
@@ -35,7 +36,7 @@ void closeInjectionValve()
 
 /**
  * This routine keeps the injection valve closed during prelaunch.
- * This routine exits when the currentFlightPhase is no longer PRELAUNCH.
+ * This routine exits when the current flight phase is no longer PRELAUNCH.
  */
 void engineControlPrelaunchRoutine(OxidizerTankConditionsData* data)
 {
@@ -83,7 +84,7 @@ void engineControlPrelaunchRoutine(OxidizerTankConditionsData* data)
             }
         }
 
-        if (currentFlightPhase != PRELAUNCH)
+        if (getCurrentFlightPhase() != PRELAUNCH)
         {
             return;
         }
@@ -93,13 +94,13 @@ void engineControlPrelaunchRoutine(OxidizerTankConditionsData* data)
 /**
  * This routine opens the injection valve for the burn phase
  * for a preconfigured amount of time. Once the preconfigured amount
- * of time has passed, this routine updates the currentFlightPhase.
+ * of time has passed, this routine updates the current flight phase.
  */
 void engineControlBurnRoutine()
 {
     openInjectionValve();
     osDelay(BURN_DURATION);
-    currentFlightPhase = COAST;
+    newFlightPhase(COAST);
     return;
 }
 
@@ -125,7 +126,7 @@ void engineControlTask(void const* arg)
 
     for (;;)
     {
-        switch (currentFlightPhase)
+        switch (getCurrentFlightPhase())
         {
             case PRELAUNCH:
                 engineControlPrelaunchRoutine(data);
