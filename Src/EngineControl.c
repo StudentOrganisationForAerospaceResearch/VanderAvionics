@@ -59,7 +59,7 @@ void engineControlPrelaunchRoutine(OxidizerTankConditionsData* data)
             // open or close valve based on tank pressure
             // also do not open valve if it's been open for too long
             // otherwise the vent valve will break
-            if (tankPressure > MAX_TANK_PRESSURE)
+            if (tankPressure > MAX_TANK_PRESSURE_KPA)
             {
                 if (durationVentValveControlled < MAX_DURATION_VENT_VALVE_OPEN)
                 {
