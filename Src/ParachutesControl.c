@@ -53,14 +53,6 @@ int32_t readPressure(BarometerData* data)
     return (int32_t)pressure;
 }
 
-void filterSensors(int32_t currentAccel, int32_t currentAltitude, int32_t positionVector[3])
-{
-    // TODO
-    positionVector[0] = 0;
-    positionVector[1] = 0;
-    positionVector[2] = 0;
-}
-
 /*
   Takes an old state vector and current state measurements and 
   converts them into a prediction of the rocket's current state.
@@ -74,12 +66,11 @@ void filterSensors(int32_t currentAccel, int32_t currentAltitude, int32_t positi
   Returns:
     newState - (KalmanStateVector) Current position, velocity and acceleration
 */
-struct KalmanStateVector filterSensors(struct KalmanStateVector oldState, int32_t currentAccel, int32_t currentAltitude, double dt) {
+struct KalmanStateVector filterSensors(struct KalmanStateVector oldState, int32_t currentAccel, int32_t currentPressure, double dt) {
     struct KalmanStateVector newState;
     
-    // TODO: Need to find the conversion factor for these.
-    double accelIn = (double) currentAccel;
-    double altIn = (double) currentAltitude; //This should be altitude instead of pressure.
+    double accelIn = (double) currentAccel * 9.8 * 1000; // Convert from milli-g to m/s^2
+    double altIn = (double) 44307.69396 * (1 - pow(currentPressure/1013.25, 0.190284); // Convert from millibars to m
     
     // Propogate old state using simple kinematics equations
     newState.altitude = oldState.position + oldState.velocity*dt + 0.5*dt*dt*oldState.acceleration;
