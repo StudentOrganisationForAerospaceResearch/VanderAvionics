@@ -52,6 +52,7 @@ C_SOURCES = \
   Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
   Src/AbortPhase.c \
   Src/EngineControl.c \
+  Src/FlightPhase.c \
   Src/freertos.c \
   Src/LogData.c \
   Src/main.c \
