@@ -5,8 +5,8 @@
 #include "cmsis_os.h"
 
 #include "ParachutesControl.h"
+#include "FlightPhase.h"
 #include "Data.h"
-#include "main.h"
 
 static const int MAIN_DEPLOYMENT_ALTITUDE = 1000; //TODO: FIND OUT WHAT THIS IS SUPPOSED TO BE!!! Units in meters.
 static int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
@@ -135,7 +135,7 @@ void ejectMainParachute()
 }
 
 /**
- * This routine just waits for the currentFlightPhase to get out of PRELAUNCH
+ * This routine just waits for the current flight phase to get out of PRELAUNCH
  */
 void parachutesControlPrelaunchRoutine()
 {
@@ -145,7 +145,7 @@ void parachutesControlPrelaunchRoutine()
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
-        if (currentFlightPhase > PRELAUNCH)
+        if (getCurrentFlightPhase() > PRELAUNCH)
         {
             // Ascent has begun
             return;
@@ -157,7 +157,7 @@ void parachutesControlPrelaunchRoutine()
 /**
  * This routine monitors for apogee.
  * Once apogee has been detected,
- * eject the drogue parachute and update the currentFlightPhase.
+ * eject the drogue parachute and update the current flight phase.
  */
 void parachutesControlAscentRoutine(
     AccelGyroMagnetismData* accelGyroMagnetismData,
@@ -185,7 +185,7 @@ void parachutesControlAscentRoutine(
         if (detectApogee(positionVector))
         {
             ejectDrogueParachute();
-            currentFlightPhase = DROGUE_DESCENT;
+            newFlightPhase(DROGUE_DESCENT);
             return;
         }
     }
@@ -194,7 +194,7 @@ void parachutesControlAscentRoutine(
 /**
  * This routine detects reaching a certain altitude
  * Once that altitude has been reached, eject the main parachute
- * and update the currentFlightPhase.
+ * and update the current flight phase.
  */
 void parachutesControlDrogueDescentRoutine()
 {
@@ -210,7 +210,7 @@ void parachutesControlDrogueDescentRoutine()
         {
 
             ejectMainParachute();
-            currentFlightPhase = MAIN_DESCENT;
+            newFlightPhase(MAIN_DESCENT);
             return;
         }
     }
@@ -234,7 +234,7 @@ void parachutesControlTask(void const* arg)
 
     for (;;)
     {
-        switch (currentFlightPhase)
+        switch (getCurrentFlightPhase())
         {
             case PRELAUNCH:
                 parachutesControlPrelaunchRoutine();
