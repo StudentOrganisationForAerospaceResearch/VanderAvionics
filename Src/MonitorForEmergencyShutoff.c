@@ -13,15 +13,27 @@ void monitorForEmergencyShutoffTask(void const* arg)
     uint32_t prevWakeTime = osKernelSysTick();
 
     AccelGyroMagnetismData* data = (AccelGyroMagnetismData*) arg;
+    FlightPhase phase = PRELAUNCH;
 
     for (;;)
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_EMERGENCY_SHUTOFF_PERIOD);
 
-        if (0)
+        phase = getCurrentFlightPhase();
+
+        if (phase != BURN && phase != COAST)
         {
-            newFlightPhase(ABORT);
-            osThreadSuspend(osThreadGetId());
+            if (0)
+            {
+                // check if not right side up
+                newFlightPhase(ABORT);
+            }
+        }
+
+        if (phase == ABORT)
+        {
+            // job complete
+            osThreadSuspend(osGetThreadId());
         }
     }
 }
