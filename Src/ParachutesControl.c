@@ -8,11 +8,11 @@
 #include "Data.h"
 #include "main.h"
 
+static const int MAIN_DEPLOYMENT_ALTITUDE = 1000; //TODO: FIND OUT WHAT THIS IS SUPPOSED TO BE!!! Units in meters.
 static int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
-static double velocity_buffer = new double[6];
 
 
-struct Vector {
+struct KalmanStateVector {
     double altitude;
     double velocity;
     double acceleration;
@@ -53,7 +53,7 @@ int32_t readPressure(BarometerData* data)
     return (int32_t)pressure;
 }
 
-void filterSensors(int32_t current_accel, int32_t current_pressure, int32_t positionVector[3])
+void filterSensors(int32_t currentAccel, int32_t currentAltitude, int32_t positionVector[3])
 {
     // TODO
     positionVector[0] = 0;
@@ -66,77 +66,71 @@ void filterSensors(int32_t current_accel, int32_t current_pressure, int32_t posi
   converts them into a prediction of the rocket's current state.
   
   Params:
-    old_state - (Vector) Past position, velocity and acceleration
-    accel_in - (double) Measured acceleration
-    alt_in - (double) Measured altitude
+    oldState - (KalmanStateVector) Past position, velocity and acceleration
+    currentAccel - (double) Measured acceleration
+    currentAltitude - (double) Measured altitude
     dt - (double) Time since last step
   
   Returns:
-    new_state - (Vector) Current position, velocity and acceleration
+    newState - (KalmanStateVector) Current position, velocity and acceleration
 */
-struct Vector filterSensors(struct Vector old_state, int32_t current_accel, int32_t current_pressure, double dt) {
-    struct Vector new_state;
+struct KalmanStateVector filterSensors(struct KalmanStateVector oldState, int32_t currentAccel, int32_t currentAltitude, double dt) {
+    struct KalmanStateVector newState;
     
     // TODO: Need to find the conversion factor for these.
-    double accel_in = (double) current_accel;
-    double alt_in = (double) current_pressure;
+    double accelIn = (double) currentAccel;
+    double altIn = (double) currentAltitude; //This should be altitude instead of pressure.
     
     // Propogate old state using simple kinematics equations
-    new_state.altitude = old_state.position + old_state.velocity*dt + 0.5*dt*dt*old_state.acceleration;
-    new_state.velocity = old_state.velocity + old_state.acceleration*dt;
-    new_state.acceleration = old_state.acceleration;
+    newState.altitude = oldState.position + oldState.velocity*dt + 0.5*dt*dt*oldState.acceleration;
+    newState.velocity = oldState.velocity + oldState.acceleration*dt;
+    newState.acceleration = oldState.acceleration;
     
     // Calculate the difference between the new state and the measurements
-    double baro_difference = alt_in - new_state.position
-    double accel_difference = accel_in - new_state.acceleration
+    double baroDifference = altIn - newState.position
+    double accelDifference = accelIn - newState.acceleration
     
     // Minimize the chi2 error by means of the Kalman gain matrix
-    new_state.altitude = new_state.altitude + k[0][0]*baro_difference + k[0][1]*baro_difference;
-    new_state.velocity = new_state.velocity + k[1][0]*baro_difference + k[1][1]*baro_difference;
-    new_state.acceleration = new_state.velocity + k[2][0]*baro_difference + k[2][1]*baro_difference;
+    newState.altitude = newState.altitude + k[0][0]*baroDifference + k[0][1]*accelDifference;
+    newState.velocity = newState.velocity + k[1][0]*baroDifference + k[1][1]*accelDifference;
+    newState.acceleration = newState.velocity + k[2][0]*baroDifference + k[2][1]*accelDifference;
     
-    return new_state
+    return newState
 }
 
-// Warning: the states there are total BS for the moment. They're only placeholders.
-bool detectApogee(int32_t positionVector[3])
-{
-    double velocity = (double) positionVector[1]; // Convert this!
+/*
+  Takes an old state vector and current state measurements and 
+  converts them into a prediction of the rocket's current state.
+  
+  Params:
+    state - (KalmanStateVector) Current state returned by the Kalman Filter
+  
+  Returns:
+    - (Bool) True if either parachute is deployed.
+*/
+bool detectApogee(struct KalmanStateVector state)
 
-    if (currentFlightPhase == PRELAUNCH) {
-
-        if (positionVector[1] > 100)
-            currentFlightPhase = BURNING;
+    if (currentFlightPhase == COAST) {
+        // Monitor for when to deploy drogue chute. Simple velocity tolerance, looking for a minimum.
         
-        suffleBuffer(velocity);
-        
-    } else if (currentFlightPhase == BURNING) {
-        
-        if (((velocity_buffer[0] + velocity_buffer[1] + velocity_buffer[2]) - 
-            (velocity_buffer[3] + velocity_buffer[4] + velocity_buffer[5])) > 1)
-            currentFlightPhase = AFTER_BURN;
-            
-        suffleBuffer(velocity);
-        
-    } else if (currentFlightPhase == AFTER_BURN) {
-        
-        if (positionVector[1] > 100){
+        if (state.velocity < 25){
+            ejectDrogueParachute();
             currentFlightPhase = DROGUE_DESCENT;
+            return 1;
+        }
+            
+    } else if (currentFlightPhase == DROGUE_DESCENT) {
+        // Monitor for when to deploy main chute. Simply look for less than desired altitude.
+        
+        if (positionVector[0] < MAIN_DEPLOYMENT_ALTITUDE) {
+            ejectMainParachute();
+            currentFlightPhase = MAIN_DESCENT;
             return 1;
         }
             
     }
 
     return 0;
-}
-
-void suffleBuffer(double velocity) {
-    velocity_buffer[0] = velocity_buffer[1];
-    velocity_buffer[1] = velocity_buffer[2];
-    velocity_buffer[2] = velocity_buffer[3];
-    velocity_buffer[3] = velocity_buffer[4];
-    velocity_buffer[4] = velocity_buffer[5];
-    velocity_buffer[5] = positionVector[1];
 }
 
 void ejectDrogueParachute()
