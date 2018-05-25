@@ -3,6 +3,7 @@
 #include "cmsis_os.h"
 
 #include "MonitorForEmergencyShutoff.h"
+#include "FlightPhase.h"
 #include "Data.h"
 
 static int MONITOR_FOR_EMERGENCY_SHUTOFF_PERIOD = 1000;
@@ -16,5 +17,11 @@ void monitorForEmergencyShutoffTask(void const* arg)
     for (;;)
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_EMERGENCY_SHUTOFF_PERIOD);
+
+        if (0)
+        {
+            newFlightPhase(ABORT);
+            osThreadSuspend(osThreadGetId());
+        }
     }
 }
