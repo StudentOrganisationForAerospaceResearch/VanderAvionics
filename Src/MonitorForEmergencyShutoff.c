@@ -33,7 +33,7 @@ void monitorForEmergencyShutoffTask(void const* arg)
         if (phase == ABORT)
         {
             // job complete
-            osThreadSuspend(osGetThreadId());
+            osThreadSuspend(osThreadGetId());
         }
     }
 }
