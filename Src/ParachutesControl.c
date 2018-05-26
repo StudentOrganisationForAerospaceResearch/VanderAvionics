@@ -9,7 +9,10 @@
 #include "Data.h"
 
 static const int MAIN_DEPLOYMENT_ALTITUDE = 1000; //TODO: FIND OUT WHAT THIS IS SUPPOSED TO BE!!! Units in meters.
-static int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
+static const int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
+static const double KALMAN_GAIN[][2] = {{0.105553059, 0.109271566}, 
+                                  {0.0361533034, 0.0661198847}, 
+                                  {0.000273178915, 0.618030079}};
 
 struct KalmanStateVector
 {
@@ -53,19 +56,19 @@ int32_t readPressure(BarometerData* data)
     return (int32_t)pressure;
 }
 
-/*
-  Takes an old state vector and current state measurements and
-  converts them into a prediction of the rocket's current state.
-
-  Params:
-    oldState - (KalmanStateVector) Past altitude, velocity and acceleration
-    currentAccel - (double) Measured acceleration
-    currentAltitude - (double) Measured altitude
-    dt - (double) Time since last step
-
-  Returns:
-    newState - (KalmanStateVector) Current altitude, velocity and acceleration
-*/
+/**
+ * Takes an old state vector and current state measurements and
+ * converts them into a prediction of the rocket's current state.
+ *
+ * Params:
+ *   oldState - (KalmanStateVector) Past altitude, velocity and acceleration
+ *   currentAccel - (double) Measured acceleration
+ *   currentAltitude - (double) Measured altitude
+ *   dt - (double) Time since last step
+ *
+ * Returns:
+ *   newState - (KalmanStateVector) Current altitude, velocity and acceleration
+ */
 struct KalmanStateVector filterSensors(
     struct KalmanStateVector oldState,
     int32_t currentAccel,
@@ -74,12 +77,15 @@ struct KalmanStateVector filterSensors(
 )
 {
     struct KalmanStateVector newState;
+    
+    // Convert from milli-g to m/s^2
+    double accelIn = (double) currentAccel * 9.8 * 1000; 
+    
+    // Convert from 100*millibars to m
+    double altIn = (double) 44307.69396 * (1 - pow(currentPressure / 101325, 0.190284)); 
 
-    double accelIn = (double) currentAccel * 9.8 * 1000; // Convert from milli-g to m/s^2
-    double altIn = (double) 44307.69396 * (1 - pow(currentPressure / 101325, 0.190284)); // Convert from 100*millibars to m
 
-
-    // Propogate old state using simple kinematics equations
+    // Propagate old state using simple kinematics equations
     newState.altitude = oldState.altitude + oldState.velocity * dt + 0.5 * dt * dt * oldState.acceleration;
     newState.velocity = oldState.velocity + oldState.acceleration * dt;
     newState.acceleration = oldState.acceleration;
@@ -89,14 +95,23 @@ struct KalmanStateVector filterSensors(
     double accelDifference = accelIn - newState.acceleration;
 
     // Minimize the chi2 error by means of the Kalman gain matrix
-    newState.altitude = newState.altitude + k[0][0] * baroDifference + k[0][1] * accelDifference;
-    newState.velocity = newState.velocity + k[1][0] * baroDifference + k[1][1] * accelDifference;
-    newState.acceleration = newState.velocity + k[2][0] * baroDifference + k[2][1] * accelDifference;
+    newState.altitude = newState.altitude + KALMAN_GAIN[0][0] * baroDifference + KALMAN_GAIN[0][1] * accelDifference;
+    newState.velocity = newState.velocity + KALMAN_GAIN[1][0] * baroDifference + KALMAN_GAIN[1][1] * accelDifference;
+    newState.acceleration = newState.velocity + KALMAN_GAIN[2][0] * baroDifference + KALMAN_GAIN[2][1] * accelDifference;
 
-    return newState
+    return newState;
 }
 
-bool detectApogee(struct KalmanStateVector* state)
+/**
+ * Takes the current state vector and determines if apogee has been reached.
+ *
+ * Params:
+ *   state - (KalmanStateVector) Past altitude, velocity and acceleration
+ *
+ * Returns:
+ *   - (int32_t) 1 if apogee has been reached, 0 if not.
+ */
+int32_t detectApogee(struct KalmanStateVector state)
 {
     // Monitor for when to deploy drogue chute. Simple velocity tolerance, looking for a minimum.
     if (state.velocity < 25)
@@ -107,10 +122,22 @@ bool detectApogee(struct KalmanStateVector* state)
     return 0;
 }
 
-bool detectMainDeploymentAltitude(struct KalmanStateVector* state)
+/**
+ * Takes the current state vector and determines if main chute should be released.
+ * 
+ * ***NOTE: This is determined by the constant MAIN_DEPLOYMENT_ALTITUDE,
+ *           which should be verified before launch.
+ *
+ * Params:
+ *   state - (KalmanStateVector) Past altitude, velocity and acceleration
+ *
+ * Returns:
+ *   - (int32_t) 1 if main chute should be deployed, 0 if not.
+ */
+int32_t detectMainDeploymentAltitude(struct KalmanStateVector state)
 {
     // Monitor for when to deploy main chute. Simply look for less than desired altitude.
-    if (state[0] < MAIN_DEPLOYMENT_ALTITUDE)
+    if (state.altitude < MAIN_DEPLOYMENT_ALTITUDE)
     {
         return 1;
     }
@@ -156,7 +183,7 @@ void parachutesControlPrelaunchRoutine()
 void parachutesControlAscentRoutine(
     AccelGyroMagnetismData* accelGyroMagnetismData,
     BarometerData* barometerData,
-    struct KalmanVectorState* state
+    struct KalmanStateVector state
 )
 {
     uint32_t prevWakeTime = osKernelSysTick();
@@ -174,7 +201,7 @@ void parachutesControlAscentRoutine(
             continue;
         }
 
-        filterSensors(currentAccel, currentPressure, state, MONITOR_FOR_PARACHUTES_PERIOD);
+        filterSensors(state, currentAccel, currentPressure, MONITOR_FOR_PARACHUTES_PERIOD);
 
         if (detectApogee(state))
         {
@@ -193,7 +220,7 @@ void parachutesControlAscentRoutine(
 void parachutesControlDrogueDescentRoutine(
     AccelGyroMagnetismData* accelGyroMagnetismData,
     BarometerData* barometerData,
-    struct KalmanVectorState* state
+    struct KalmanStateVector state
 )
 {
     uint32_t prevWakeTime = osKernelSysTick();
@@ -212,7 +239,7 @@ void parachutesControlDrogueDescentRoutine(
             continue;
         }
 
-        filterSensors(currentAccel, currentPressure, state, MONITOR_FOR_PARACHUTES_PERIOD);
+        filterSensors(state, currentAccel, currentPressure, MONITOR_FOR_PARACHUTES_PERIOD);
 
         // detect 4600 ft above sea level and eject main parachute
         if (detectMainDeploymentAltitude(state))
@@ -239,7 +266,7 @@ void parachutesControlMainDescentRoutine()
 void parachutesControlTask(void const* arg)
 {
     ParachutesControlData* data = (ParachutesControlData*) arg;
-    struct KalmanVectorState state;
+    struct KalmanStateVector state;
 
     for (;;)
     {
@@ -254,7 +281,7 @@ void parachutesControlTask(void const* arg)
                 parachutesControlAscentRoutine(
                     data->accelGyroMagnetismData_,
                     data->barometerData_,
-                    &state
+                    state
                 );
                 break;
 
@@ -262,7 +289,7 @@ void parachutesControlTask(void const* arg)
                 parachutesControlDrogueDescentRoutine(
                     data->accelGyroMagnetismData_,
                     data->barometerData_,
-                    &state
+                    state
                 );
 
                 break;
