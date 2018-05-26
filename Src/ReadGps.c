@@ -10,15 +10,14 @@
 static int READ_GPS_PERIOD = 1000;
 static int CMD_TIMEOUT = 1500;
 
-static uint8_t header = {0xB5, 0x62};
-static uint8_t CFG_ANT[] = {0xB5, 0x62, 0x06, 0x13, 0x04, 0x00, 0x1B, 0x00, 0x8B, 0xA9}; // Set antenna settings
-static uint8_t CFG_DAT[] = {0xB5, 0x62, 0x06, 0x06, 0x02, 0x00, 0x00, 0x00}; // Set datum settings
-static uint8_t CFG_PRT[];	//TODO: setup configuration for UART
-static uint8_t CFG_RATE[] = {0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0xFA, 0x00, 0x01, 0x00, 0x01, 0x00}; // output rate
-static uint8_t CFG_NMEA[]; // not sure if we need to do manually
-static uint8_t setNavigationMode[] = {0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x06, 0x03, 0x00, 0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 
+static const uint8_t GPS_SET_ANTENNA[] = {0xB5, 0x62, 0x06, 0x13, 0x04, 0x00, 0x1B, 0x00, 0x8B, 0xA9}; // CFG-ANT
+static const uint8_t GPS_SET_DATUM[] = {0xB5, 0x62, 0x06, 0x06, 0x02, 0x00, 0x00, 0x00}; // CFG-DAT
+static const uint8_t GPS_SETUP_UART[];	//TODO: setup configuration for UART [CFG-PRT]
+static const uint8_t GPS_SET_OUTPUTRATE[] = {0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0xFA, 0x00, 0x01, 0x00, 0x01, 0x00}; // CFG-RATE
+static const uint8_t GPS_CONFIG_NMEA[]; // not sure if we need to do manually [CFG_NMEA]
+static const uint8_t GPS_setNavigationMode[] = {0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x06, 0x03, 0x00, 0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 
     								0x05, 0x00, 0xFA, 0x00, 0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    								0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0xDC };
+    								0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0xDC };	
 
 
 void readGpsTask(void const* arg)
@@ -31,22 +30,22 @@ void readGpsTask(void const* arg)
 
     /* Set antenna settings */
     HAL_GPIO_WritePin(UART_GND_STATION_TX_GPIO_Port, UART_GND_STATION_TX_Pin, GPIO_PIN_RESET);  
-    HAL_GPIO_Transmit(&huart1, &CFG_ANT, 10, CMD_TIMEOUT); 
+    HAL_GPIO_Transmit(&huart1, &GPS_SET_ANTENNA, 10, CMD_TIMEOUT); 
     HAL_GPIO_WritePin(UART_GND_STATION_TX_GPIO_Port, UART_GND_STATION_TX_Pin, GPIO_PIN_SET);
 
     /* Set datum settings */
     HAL_GPIO_WritePin(UART_GND_STATION_TX_GPIO_Port, UART_GND_STATION_TX_Pin, GPIO_PIN_RESET);  
-    HAL_GPIO_Transmit(&huart1, &CFG_DAT, 8, CMD_TIMEOUT); 
+    HAL_GPIO_Transmit(&huart1, &GPS_SET_DATUM, 8, CMD_TIMEOUT); 
     HAL_GPIO_WritePin(UART_GND_STATION_TX_GPIO_Port, UART_GND_STATION_TX_Pin, GPIO_PIN_SET);
 
     /* Set output rate */
     HAL_GPIO_WritePin(UART_GND_STATION_TX_GPIO_Port, UART_GND_STATION_TX_Pin, GPIO_PIN_RESET);  
-    HAL_GPIO_Transmit(&huart1, &CFG_RATE, 12, CMD_TIMEOUT); 
+    HAL_GPIO_Transmit(&huart1, &GPS_SET_OUTPUTRATE, 12, CMD_TIMEOUT); 
     HAL_GPIO_WritePin(UART_GND_STATION_TX_GPIO_Port, UART_GND_STATION_TX_Pin, GPIO_PIN_SET);
 
     /* Put in Navigation mode */
     HAL_GPIO_WritePin(UART_GND_STATION_TX_GPIO_Port, UART_GND_STATION_TX_Pin, GPIO_PIN_RESET);  
-    HAL_GPIO_Transmit(&huart1, &setNavigationMode, 44, CMD_TIMEOUT); 
+    HAL_GPIO_Transmit(&huart1, &GPS_setNavigationMode, 44, CMD_TIMEOUT); 
     HAL_GPIO_WritePin(UART_GND_STATION_TX_GPIO_Port, UART_GND_STATION_TX_Pin, GPIO_PIN_SET);
 
 
