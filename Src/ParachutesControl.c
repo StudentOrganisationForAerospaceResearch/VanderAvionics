@@ -5,18 +5,18 @@
 #include "cmsis_os.h"
 
 #include "ParachutesControl.h"
+#include "FlightPhase.h"
 #include "Data.h"
-#include "main.h"
 
 static const int MAIN_DEPLOYMENT_ALTITUDE = 1000; //TODO: FIND OUT WHAT THIS IS SUPPOSED TO BE!!! Units in meters.
 static int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
 
-
-struct KalmanStateVector {
+struct KalmanStateVector
+{
     double altitude;
     double velocity;
     double acceleration;
-}
+};
 
 int32_t readAccel(AccelGyroMagnetismData* data)
 {
@@ -54,71 +54,64 @@ int32_t readPressure(BarometerData* data)
 }
 
 /*
-  Takes an old state vector and current state measurements and 
+  Takes an old state vector and current state measurements and
   converts them into a prediction of the rocket's current state.
-  
+
   Params:
-    oldState - (KalmanStateVector) Past position, velocity and acceleration
+    oldState - (KalmanStateVector) Past altitude, velocity and acceleration
     currentAccel - (double) Measured acceleration
     currentAltitude - (double) Measured altitude
     dt - (double) Time since last step
-  
+
   Returns:
-    newState - (KalmanStateVector) Current position, velocity and acceleration
+    newState - (KalmanStateVector) Current altitude, velocity and acceleration
 */
-struct KalmanStateVector filterSensors(struct KalmanStateVector oldState, int32_t currentAccel, int32_t currentPressure, double dt) {
+struct KalmanStateVector filterSensors(
+    struct KalmanStateVector oldState,
+    int32_t currentAccel,
+    int32_t currentPressure,
+    double dt
+)
+{
     struct KalmanStateVector newState;
-    
+
     double accelIn = (double) currentAccel * 9.8 * 1000; // Convert from milli-g to m/s^2
-    double altIn = (double) 44307.69396 * (1 - pow(currentPressure/1013.25, 0.190284); // Convert from millibars to m
-    
+    double altIn = (double) 44307.69396 * (1 - pow(currentPressure / 1013.25, 0.190284)); // Convert from millibars to m
+
     // Propogate old state using simple kinematics equations
-    newState.altitude = oldState.position + oldState.velocity*dt + 0.5*dt*dt*oldState.acceleration;
-    newState.velocity = oldState.velocity + oldState.acceleration*dt;
+    newState.altitude = oldState.altitude + oldState.velocity * dt + 0.5 * dt * dt * oldState.acceleration;
+    newState.velocity = oldState.velocity + oldState.acceleration * dt;
     newState.acceleration = oldState.acceleration;
-    
+
     // Calculate the difference between the new state and the measurements
-    double baroDifference = altIn - newState.position
-    double accelDifference = accelIn - newState.acceleration
-    
+    double baroDifference = altIn - newState.altitude;
+    double accelDifference = accelIn - newState.acceleration;
+
     // Minimize the chi2 error by means of the Kalman gain matrix
-    newState.altitude = newState.altitude + k[0][0]*baroDifference + k[0][1]*accelDifference;
-    newState.velocity = newState.velocity + k[1][0]*baroDifference + k[1][1]*accelDifference;
-    newState.acceleration = newState.velocity + k[2][0]*baroDifference + k[2][1]*accelDifference;
-    
+    newState.altitude = newState.altitude + k[0][0] * baroDifference + k[0][1] * accelDifference;
+    newState.velocity = newState.velocity + k[1][0] * baroDifference + k[1][1] * accelDifference;
+    newState.acceleration = newState.velocity + k[2][0] * baroDifference + k[2][1] * accelDifference;
+
     return newState
 }
 
-/*
-  Takes an old state vector and current state measurements and 
-  converts them into a prediction of the rocket's current state.
-  
-  Params:
-    state - (KalmanStateVector) Current state returned by the Kalman Filter
-  
-  Returns:
-    - (Bool) True if either parachute is deployed.
-*/
-bool detectApogee(struct KalmanStateVector state)
+bool detectApogee(struct KalmanStateVector* state)
+{
+    // Monitor for when to deploy drogue chute. Simple velocity tolerance, looking for a minimum.
+    if (state.velocity < 25)
+    {
+        return 1;
+    }
 
-    if (currentFlightPhase == COAST) {
-        // Monitor for when to deploy drogue chute. Simple velocity tolerance, looking for a minimum.
-        
-        if (state.velocity < 25){
-            ejectDrogueParachute();
-            currentFlightPhase = DROGUE_DESCENT;
-            return 1;
-        }
-            
-    } else if (currentFlightPhase == DROGUE_DESCENT) {
-        // Monitor for when to deploy main chute. Simply look for less than desired altitude.
-        
-        if (positionVector[0] < MAIN_DEPLOYMENT_ALTITUDE) {
-            ejectMainParachute();
-            currentFlightPhase = MAIN_DESCENT;
-            return 1;
-        }
-            
+    return 0;
+}
+
+bool detectMainDeploymentAltitude(struct KalmanStateVector* state)
+{
+    // Monitor for when to deploy main chute. Simply look for less than desired altitude.
+    if (state[0] < MAIN_DEPLOYMENT_ALTITUDE)
+    {
+        return 1;
     }
 
     return 0;
@@ -135,7 +128,7 @@ void ejectMainParachute()
 }
 
 /**
- * This routine just waits for the currentFlightPhase to get out of PRELAUNCH
+ * This routine just waits for the current flight phase to get out of PRELAUNCH
  */
 void parachutesControlPrelaunchRoutine()
 {
@@ -145,7 +138,7 @@ void parachutesControlPrelaunchRoutine()
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
-        if (currentFlightPhase > PRELAUNCH)
+        if (getCurrentFlightPhase() > PRELAUNCH)
         {
             // Ascent has begun
             return;
@@ -157,15 +150,15 @@ void parachutesControlPrelaunchRoutine()
 /**
  * This routine monitors for apogee.
  * Once apogee has been detected,
- * eject the drogue parachute and update the currentFlightPhase.
+ * eject the drogue parachute and update the current flight phase.
  */
 void parachutesControlAscentRoutine(
     AccelGyroMagnetismData* accelGyroMagnetismData,
-    BarometerData* barometerData
+    BarometerData* barometerData,
+    struct KalmanVectorState* state
 )
 {
     uint32_t prevWakeTime = osKernelSysTick();
-    int32_t positionVector[3];
 
     for (;;)
     {
@@ -180,12 +173,12 @@ void parachutesControlAscentRoutine(
             continue;
         }
 
-        filterSensors(currentAccel, currentPressure, positionVector);
+        filterSensors(currentAccel, currentPressure, state, MONITOR_FOR_PARACHUTES_PERIOD);
 
-        if (detectApogee(positionVector))
+        if (detectApogee(state))
         {
             ejectDrogueParachute();
-            currentFlightPhase = DROGUE_DESCENT;
+            newFlightPhase(DROGUE_DESCENT);
             return;
         }
     }
@@ -194,9 +187,13 @@ void parachutesControlAscentRoutine(
 /**
  * This routine detects reaching a certain altitude
  * Once that altitude has been reached, eject the main parachute
- * and update the currentFlightPhase.
+ * and update the current flight phase.
  */
-void parachutesControlDrogueDescentRoutine()
+void parachutesControlDrogueDescentRoutine(
+    AccelGyroMagnetismData* accelGyroMagnetismData,
+    BarometerData* barometerData,
+    struct KalmanVectorState* state
+)
 {
     uint32_t prevWakeTime = osKernelSysTick();
 
@@ -204,13 +201,23 @@ void parachutesControlDrogueDescentRoutine()
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
-        // TODO
-        // detect 4600 ft above sea level and eject main parachute
-        if (0)
-        {
 
+        int32_t currentAccel = readAccel(accelGyroMagnetismData);
+        int32_t currentPressure = readPressure(barometerData);
+
+        if (currentAccel == -1 || currentPressure == -1)
+        {
+            // failed to read values
+            continue;
+        }
+
+        filterSensors(currentAccel, currentPressure, state, MONITOR_FOR_PARACHUTES_PERIOD);
+
+        // detect 4600 ft above sea level and eject main parachute
+        if (detectMainDeploymentAltitude(state))
+        {
             ejectMainParachute();
-            currentFlightPhase = MAIN_DESCENT;
+            newFlightPhase(MAIN_DESCENT);
             return;
         }
     }
@@ -231,10 +238,11 @@ void parachutesControlMainDescentRoutine()
 void parachutesControlTask(void const* arg)
 {
     ParachutesControlData* data = (ParachutesControlData*) arg;
+    struct KalmanVectorState state;
 
     for (;;)
     {
-        switch (currentFlightPhase)
+        switch (getCurrentFlightPhase())
         {
             case PRELAUNCH:
                 parachutesControlPrelaunchRoutine();
@@ -244,12 +252,18 @@ void parachutesControlTask(void const* arg)
             case COAST:
                 parachutesControlAscentRoutine(
                     data->accelGyroMagnetismData_,
-                    data->barometerData_
+                    data->barometerData_,
+                    &state
                 );
                 break;
 
             case DROGUE_DESCENT:
-                parachutesControlDrogueDescentRoutine();
+                parachutesControlDrogueDescentRoutine(
+                    data->accelGyroMagnetismData_,
+                    data->barometerData_,
+                    &state
+                );
+
                 break;
 
             case MAIN_DESCENT:

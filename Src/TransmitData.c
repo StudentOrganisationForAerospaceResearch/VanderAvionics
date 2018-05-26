@@ -4,6 +4,7 @@
 
 #include "TransmitData.h"
 
+#include "FlightPhase.h"
 #include "Data.h"
 
 static int TRANSMIT_DATA_PERIOD = 250;
@@ -49,7 +50,7 @@ void transmitDataTask(void const* arg)
             longitude,
             pressure,
             temperature,
-            currentFlightPhase
+            getCurrentFlightPhase()
         );
     }
 }
