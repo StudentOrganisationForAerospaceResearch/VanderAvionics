@@ -8,7 +8,7 @@
 
 #include "LogData.h"
 #include "Data.h"
-#include "main.h"
+#include "FlightPhase.h"
 
 static int SLOW_LOG_DATA_PERIOD = 1000;
 static int FAST_LOG_DATA_PERIOD = 50;
@@ -99,7 +99,7 @@ void buildLogEntry(AllData* data, char* buffer)
         latitude,
         longitude,
         oxidizerTankPressure,
-        currentFlightPhase
+        getCurrentFlightPhase()
     );
 }
 
@@ -111,7 +111,7 @@ void lowFrequencyLogToSdRoutine(AllData* data, char* buffer, FlightPhase entryPh
     {
         osDelayUntil(&prevWakeTime, SLOW_LOG_DATA_PERIOD);
 
-        if (currentFlightPhase != entryPhase)
+        if (getCurrentFlightPhase() != entryPhase)
         {
             // New phase has started, exit low frequency logging
             return;
@@ -145,9 +145,11 @@ void highFrequencyLogToSdRoutine(AllData* data, char* buffer)
         // Keep trying, really need to log during this time
         mounted = (f_mount(&fatfs, "SD:", 1) == FR_OK);
 
-        if ( currentFlightPhase != BURN &&
-                currentFlightPhase != COAST &&
-                currentFlightPhase != DROGUE_DESCENT)
+        FlightPhase flightPhase = getCurrentFlightPhase();
+
+        if ( flightPhase != BURN &&
+                flightPhase != COAST &&
+                flightPhase != DROGUE_DESCENT)
         {
             // couldn't mount during important phases, too bad :(
             return;
@@ -162,9 +164,11 @@ void highFrequencyLogToSdRoutine(AllData* data, char* buffer)
     {
         osDelayUntil(&prevWakeTime, FAST_LOG_DATA_PERIOD);
 
-        if ( currentFlightPhase != BURN &&
-                currentFlightPhase != COAST &&
-                currentFlightPhase != DROGUE_DESCENT)
+        FlightPhase flightPhase = getCurrentFlightPhase();
+
+        if ( flightPhase != BURN &&
+                flightPhase != COAST &&
+                flightPhase != DROGUE_DESCENT)
         {
             // done important phases, unmont card and exit high frequency logging
             break;
@@ -226,7 +230,7 @@ void logDataTask(void const* arg)
 
     for (;;)
     {
-        switch (currentFlightPhase)
+        switch (getCurrentFlightPhase())
         {
             case PRELAUNCH:
                 lowFrequencyLogToSdRoutine(data, buffer, PRELAUNCH);
