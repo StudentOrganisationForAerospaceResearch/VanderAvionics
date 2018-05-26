@@ -38,7 +38,7 @@ void closeInjectionValve()
  * This routine keeps the injection valve closed during prelaunch.
  * This routine exits when the current flight phase is no longer PRELAUNCH.
  */
-void engineControlPrelaunchRoutine(OxidizerTankConditionsData* data)
+void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
 {
     uint32_t prevWakeTime = osKernelSysTick();
     int32_t tankPressure = -1;
@@ -122,7 +122,7 @@ void engineControlPostBurnRoutine()
 
 void engineControlTask(void const* arg)
 {
-    OxidizerTankConditionsData* data = (OxidizerTankConditionsData*) arg;
+    OxidizerTankPressureData* data = (OxidizerTankPressureData*) arg;
 
     for (;;)
     {
