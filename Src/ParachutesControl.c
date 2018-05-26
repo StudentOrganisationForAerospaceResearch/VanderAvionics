@@ -76,7 +76,8 @@ struct KalmanStateVector filterSensors(
     struct KalmanStateVector newState;
 
     double accelIn = (double) currentAccel * 9.8 * 1000; // Convert from milli-g to m/s^2
-    double altIn = (double) 44307.69396 * (1 - pow(currentPressure / 1013.25, 0.190284)); // Convert from millibars to m
+    double altIn = (double) 44307.69396 * (1 - pow(currentPressure / 101325, 0.190284)); // Convert from 100*millibars to m
+
 
     // Propogate old state using simple kinematics equations
     newState.altitude = oldState.altitude + oldState.velocity * dt + 0.5 * dt * dt * oldState.acceleration;
