@@ -1,3 +1,4 @@
+
 /**
   ******************************************************************************
   * @file           : main.c
@@ -54,8 +55,9 @@
 #include <stdlib.h>
 #include "ReadAccelGyroMagnetism.h"
 #include "ReadBarometer.h"
+#include "ReadCombustionChamberPressure.h"
 #include "ReadGps.h"
-#include "ReadOxidizerTankConditions.h"
+#include "ReadOxidizerTankPressure.h"
 #include "MonitorForEmergencyShutoff.h"
 #include "EngineControl.h"
 #include "ParachutesControl.h"
@@ -66,6 +68,9 @@
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef hadc2;
+
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 SPI_HandleTypeDef hspi3;
@@ -78,8 +83,9 @@ osThreadId defaultTaskHandle;
 /* Private variables ---------------------------------------------------------*/
 static osThreadId readAccelGyroMagnetismTaskHandle;
 static osThreadId readBarometerTaskHandle;
+static osThreadId readCombustionChamberPressureTaskHandle;
 static osThreadId readGpsTaskHandle;
-static osThreadId readOxidizerTankConditionsTaskHandle;
+static osThreadId readOxidizerTankPressureTaskHandle;
 // Controls that will perform actions
 static osThreadId monitorForEmergencyShutoffTaskHandle;
 static osThreadId engineControlTaskHandle;
@@ -99,6 +105,8 @@ static void MX_SPI3_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_ADC1_Init(void);
+static void MX_ADC2_Init(void);
 void StartDefaultTask(void const* argument);
 
 /* USER CODE BEGIN PFP */
@@ -142,16 +150,20 @@ int main(void)
     MX_USART1_UART_Init();
     MX_SPI2_Init();
     MX_SPI1_Init();
+    MX_ADC1_Init();
+    MX_ADC2_Init();
     /* USER CODE BEGIN 2 */
     // data primitive structs
     AccelGyroMagnetismData* accelGyroMagnetismData =
         malloc(sizeof(AccelGyroMagnetismData));
     BarometerData* barometerData =
         malloc(sizeof(BarometerData));
+    CombustionChamberPressureData* combustionChamberPressureData =
+        malloc(sizeof(CombustionChamberPressureData));
     GpsData* gpsData =
         malloc(sizeof(GpsData));
-    OxidizerTankConditionsData* oxidizerTankConditionsData =
-        malloc(sizeof(OxidizerTankConditionsData));
+    OxidizerTankPressureData* oxidizerTankPressureData =
+        malloc(sizeof(OxidizerTankPressureData));
 
     osMutexDef(ACCEL_GYRO_MAGNETISM_DATA_MUTEX);
     accelGyroMagnetismData->mutex_ = osMutexCreate(osMutex(ACCEL_GYRO_MAGNETISM_DATA_MUTEX));
@@ -170,25 +182,29 @@ int main(void)
     barometerData->pressure_ = -10;
     barometerData->temperature_ = -11;
 
+    osMutexDef(COMBUSTION_CHAMBER_PRESSURE_DATA_MUTEX);
+    combustionChamberPressureData->mutex_ = osMutexCreate(osMutex(COMBUSTION_CHAMBER_PRESSURE_DATA_MUTEX));
+    combustionChamberPressureData->pressure_ = -12;
+
     osMutexDef(GPS_DATA_MUTEX);
     gpsData->mutex_ = osMutexCreate(osMutex(GPS_DATA_MUTEX));
-    gpsData->altitude_ = -12;
-    gpsData->epochTimeMsec_ = -13;
-    gpsData->latitude_ = -14;
-    gpsData->longitude_ = -15;
+    gpsData->altitude_ = -13;
+    gpsData->epochTimeMsec_ = -14;
+    gpsData->latitude_ = -15;
+    gpsData->longitude_ = -16;
 
-    osMutexDef(OXIDIZER_TANK_CONDITIONS_DATA_MUTEX);
-    oxidizerTankConditionsData->mutex_ = osMutexCreate(osMutex(OXIDIZER_TANK_CONDITIONS_DATA_MUTEX));
-    oxidizerTankConditionsData->pressure_ = -16;
-    oxidizerTankConditionsData->temperature_ = -17;
+    osMutexDef(OXIDIZER_TANK_PRESSURE_DATA_MUTEX);
+    oxidizerTankPressureData->mutex_ = osMutexCreate(osMutex(OXIDIZER_TANK_PRESSURE_DATA_MUTEX));
+    oxidizerTankPressureData->pressure_ = -17;
 
     // data containers
     AllData* allData =
         malloc(sizeof(AllData));
     allData->accelGyroMagnetismData_ = accelGyroMagnetismData;
     allData->barometerData_ = barometerData;
+    allData->combustionChamberPressureData_ = combustionChamberPressureData;
     allData->gpsData_ = gpsData;
-    allData->oxidizerTankConditionsData_ = oxidizerTankConditionsData;
+    allData->oxidizerTankPressureData_ = oxidizerTankPressureData;
 
     ParachutesControlData* parachutesControlData =
         malloc(sizeof(ParachutesControlData));
@@ -237,6 +253,16 @@ int main(void)
         osThreadCreate(osThread(readBarometerThread), barometerData);
 
     osThreadDef(
+        readCombustionChamberPressureThread,
+        readCombustionChamberPressureTask,
+        osPriorityAboveNormal,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    readCombustionChamberPressureTaskHandle =
+        osThreadCreate(osThread(readCombustionChamberPressureThread), combustionChamberPressureData);
+
+    osThreadDef(
         readGpsThread,
         readGpsTask,
         osPriorityBelowNormal,
@@ -247,14 +273,14 @@ int main(void)
         osThreadCreate(osThread(readGpsThread), gpsData);
 
     osThreadDef(
-        readOxidizerTankConditionsThread,
-        readOxidizerTankConditionsTask,
+        readOxidizerTankPressureThread,
+        readOxidizerTankPressureTask,
         osPriorityAboveNormal,
         1,
         configMINIMAL_STACK_SIZE
     );
-    readOxidizerTankConditionsTaskHandle =
-        osThreadCreate(osThread(readOxidizerTankConditionsThread), oxidizerTankConditionsData);
+    readOxidizerTankPressureTaskHandle =
+        osThreadCreate(osThread(readOxidizerTankPressureThread), oxidizerTankPressureData);
 
     osThreadDef(
         monitorForEmergencyShutoffThread,
@@ -274,7 +300,7 @@ int main(void)
         configMINIMAL_STACK_SIZE * 2
     );
     engineControlTaskHandle =
-        osThreadCreate(osThread(engineControlThread), oxidizerTankConditionsData);
+        osThreadCreate(osThread(engineControlThread), oxidizerTankPressureData);
 
     osThreadDef(
         parachutesControlThread,
@@ -329,8 +355,9 @@ int main(void)
 
     free(accelGyroMagnetismData);
     free(barometerData);
+    free(combustionChamberPressureData);
     free(gpsData);
-    free(oxidizerTankConditionsData);
+    free(oxidizerTankPressureData);
     free(allData);
     free(parachutesControlData);
     /* USER CODE END 3 */
@@ -393,6 +420,84 @@ void SystemClock_Config(void)
 
     /* SysTick_IRQn interrupt configuration */
     HAL_NVIC_SetPriority(SysTick_IRQn, 15, 0);
+}
+
+/* ADC1 init function */
+static void MX_ADC1_Init(void)
+{
+
+    ADC_ChannelConfTypeDef sConfig;
+
+    /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+    */
+    hadc1.Instance = ADC1;
+    hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+    hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+    hadc1.Init.ScanConvMode = DISABLE;
+    hadc1.Init.ContinuousConvMode = ENABLE;
+    hadc1.Init.DiscontinuousConvMode = DISABLE;
+    hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
+    hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+    hadc1.Init.NbrOfConversion = 1;
+    hadc1.Init.DMAContinuousRequests = DISABLE;
+    hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
+
+    if (HAL_ADC_Init(&hadc1) != HAL_OK)
+    {
+        _Error_Handler(__FILE__, __LINE__);
+    }
+
+    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+    */
+    sConfig.Channel = ADC_CHANNEL_4;
+    sConfig.Rank = 1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+
+    if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+    {
+        _Error_Handler(__FILE__, __LINE__);
+    }
+
+}
+
+/* ADC2 init function */
+static void MX_ADC2_Init(void)
+{
+
+    ADC_ChannelConfTypeDef sConfig;
+
+    /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+    */
+    hadc2.Instance = ADC2;
+    hadc2.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+    hadc2.Init.Resolution = ADC_RESOLUTION_12B;
+    hadc2.Init.ScanConvMode = DISABLE;
+    hadc2.Init.ContinuousConvMode = ENABLE;
+    hadc2.Init.DiscontinuousConvMode = DISABLE;
+    hadc2.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    hadc2.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
+    hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+    hadc2.Init.NbrOfConversion = 1;
+    hadc2.Init.DMAContinuousRequests = DISABLE;
+    hadc2.Init.EOCSelection = ADC_EOC_SEQ_CONV;
+
+    if (HAL_ADC_Init(&hadc2) != HAL_OK)
+    {
+        _Error_Handler(__FILE__, __LINE__);
+    }
+
+    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+    */
+    sConfig.Channel = ADC_CHANNEL_15;
+    sConfig.Rank = 1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+
+    if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
+    {
+        _Error_Handler(__FILE__, __LINE__);
+    }
+
 }
 
 /* SPI1 init function */
@@ -496,6 +601,8 @@ static void MX_USART1_UART_Init(void)
         * Output
         * EVENT_OUT
         * EXTI
+     PA4   ------> SharedAnalog_PA4
+     PC5   ------> SharedAnalog_PC5
 */
 static void MX_GPIO_Init(void)
 {
@@ -524,6 +631,18 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : ADC1_IN4_Pin */
+    GPIO_InitStruct.Pin = ADC1_IN4_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(ADC1_IN4_GPIO_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : ADC2_IN15_Pin */
+    GPIO_InitStruct.Pin = ADC2_IN15_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(ADC2_IN15_GPIO_Port, &GPIO_InitStruct);
 
     /*Configure GPIO pins : MAG_CS_Pin IMU_CS_Pin */
     GPIO_InitStruct.Pin = MAG_CS_Pin | IMU_CS_Pin;

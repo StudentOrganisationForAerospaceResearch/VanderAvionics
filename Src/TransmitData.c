@@ -15,7 +15,6 @@ void transmitData(
     int32_t latitude,
     int32_t longitude,
     int32_t pressure,
-    int32_t temperature,
     FlightPhase phase)
 {
     // TODO
@@ -38,10 +37,9 @@ void transmitDataTask(void const* arg)
         int32_t longitude = data->gpsData_->longitude_;
         osMutexRelease(data->gpsData_->mutex_);
 
-        osMutexWait(data->oxidizerTankConditionsData_->mutex_, 0);
-        int32_t pressure = data->oxidizerTankConditionsData_->pressure_;
-        int32_t temperature = data->oxidizerTankConditionsData_->temperature_;
-        osMutexRelease(data->oxidizerTankConditionsData_->mutex_);
+        osMutexWait(data->oxidizerTankPressureData_->mutex_, 0);
+        int32_t pressure = data->oxidizerTankPressureData_->pressure_;
+        osMutexRelease(data->oxidizerTankPressureData_->mutex_);
 
         transmitData(
             altitude,
@@ -49,7 +47,6 @@ void transmitDataTask(void const* arg)
             latitude,
             longitude,
             pressure,
-            temperature,
             getCurrentFlightPhase()
         );
     }
