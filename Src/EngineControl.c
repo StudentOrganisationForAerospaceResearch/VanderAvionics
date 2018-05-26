@@ -16,12 +16,14 @@ static const int REQUIRED_DURATION_VENT_VALVE_CLOSED = 4000;
 
 void openVentValve()
 {
-    // TODO
+    // Powered is open
+    HAL_GPIO_WritePin(GPIOB, VENT_VALVE_OUT_Pin, GPIO_PIN_SET);
 }
 
 void closeVentValve()
 {
-    // TDOD
+    // Unpowered is closed
+    HAL_GPIO_WritePin(GPIOB, VENT_VALVE_OUT_Pin, GPIO_PIN_RESET);
 }
 
 void openInjectionValve()
@@ -31,7 +33,7 @@ void openInjectionValve()
 
 void closeInjectionValve()
 {
-    // TDOD
+    // TODO
 }
 
 /**
@@ -60,6 +62,8 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
             // open or close valve based on tank pressure
             // also do not open valve if it's been open for too long
             // otherwise the vent valve will break
+            tankPressure = 1000000;
+
             if (tankPressure > MAX_TANK_PRESSURE)
             {
                 if (durationVentValveControlled < MAX_DURATION_VENT_VALVE_OPEN)
