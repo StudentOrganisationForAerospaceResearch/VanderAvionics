@@ -6,7 +6,9 @@
 #include "FlightPhase.h"
 #include "Data.h"
 
-static int MONITOR_FOR_EMERGENCY_SHUTOFF_PERIOD = 1000;
+static const int MONITOR_FOR_EMERGENCY_SHUTOFF_PERIOD = 1000;
+static const int STRAIGHT_UP_MAGNETO_Z = 3090;
+static const int VERTICAL_DEVIATION_LIMIT = 0.7;
 
 void monitorForEmergencyShutoffTask(void const* arg)
 {
@@ -14,6 +16,7 @@ void monitorForEmergencyShutoffTask(void const* arg)
 
     AccelGyroMagnetismData* data = (AccelGyroMagnetismData*) arg;
     FlightPhase phase = PRELAUNCH;
+    int32_t magnetoZ = -1;
 
     for (;;)
     {
@@ -21,11 +24,17 @@ void monitorForEmergencyShutoffTask(void const* arg)
 
         phase = getCurrentFlightPhase();
 
-        if (phase != BURN && phase != COAST)
+        if (osMutexWait(data->mutex_, 0) == osOK)
         {
-            if (0)
+            magnetoZ = data->magnetoZ_;
+            osMutexRelease(data->mutex_);
+        }
+
+        if (phase == BURN)
+        {
+            // check if not right side up
+            if (magnetoZ < STRAIGHT_UP_MAGNETO_Z * VERTICAL_DEVIATION_LIMIT)
             {
-                // check if not right side up
                 newFlightPhase(ABORT);
             }
         }
