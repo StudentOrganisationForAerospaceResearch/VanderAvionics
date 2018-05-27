@@ -10,7 +10,8 @@
 
 static const int MAIN_DEPLOYMENT_ALTITUDE = 1000; //TODO: FIND OUT WHAT THIS IS SUPPOSED TO BE!!! Units in meters.
 static const int MONITOR_FOR_PARACHUTES_PERIOD = 200;
-static const double KALMAN_GAIN[][2] = {
+static const double KALMAN_GAIN[][2] =
+{
     {0.105553059, 0.109271566},
     {0.0361533034, 0.0661198847},
     {0.000273178915, 0.618030079}
