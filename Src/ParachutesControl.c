@@ -8,11 +8,13 @@
 #include "FlightPhase.h"
 #include "Data.h"
 
+// Pressure at spaceport america in 100*millibars on May 27, 2018
+static const int SEA_LEVEL_PRESSURE = 101421.93903699999; //TODO: THIS NEEDS TO BE UPDATED AND RECORDED ON LAUNCH DAY
 static const int MAIN_DEPLOYMENT_ALTITUDE = 1000; //TODO: FIND OUT WHAT THIS IS SUPPOSED TO BE!!! Units in meters.
 static const int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
 static const double KALMAN_GAIN[][2] = {{0.105553059, 0.109271566}, 
-                                  {0.0361533034, 0.0661198847}, 
-                                  {0.000273178915, 0.618030079}};
+                                        {0.0361533034, 0.0661198847}, 
+                                        {0.000273178915, 0.618030079}};
 
 struct KalmanStateVector
 {
@@ -56,6 +58,8 @@ int32_t readPressure(BarometerData* data)
     return (int32_t)pressure;
 }
 
+
+
 /**
  * Takes an old state vector and current state measurements and
  * converts them into a prediction of the rocket's current state.
@@ -78,11 +82,11 @@ struct KalmanStateVector filterSensors(
 {
     struct KalmanStateVector newState;
     
-    // Convert from milli-g to m/s^2
-    double accelIn = (double) currentAccel * 9.8 * 1000; 
+    // TODO: Figure out what the conversion factor is.
+    double accelIn = (double) currentAccel; 
     
-    // Convert from 100*millibars to m
-    double altIn = (double) 44307.69396 * (1 - pow(currentPressure / 101325, 0.190284)); 
+    // Convert from 100*millibars to m. This may or may not be right, depending on where you look. Needs testing
+    double altIn = (double) 44307.69396 * (1 - pow(currentPressure / SEA_LEVEL_PRESSURE, 0.190284)); 
 
 
     // Propagate old state using simple kinematics equations
