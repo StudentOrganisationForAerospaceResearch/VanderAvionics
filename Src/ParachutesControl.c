@@ -11,10 +11,20 @@
 // Pressure at spaceport america in 100*millibars on May 27, 2018
 static const int SEA_LEVEL_PRESSURE = 101421.93903699999; //TODO: THIS NEEDS TO BE UPDATED AND RECORDED ON LAUNCH DAY
 static const int MAIN_DEPLOYMENT_ALTITUDE = 1000; //TODO: FIND OUT WHAT THIS IS SUPPOSED TO BE!!! Units in meters.
+<<<<<<< HEAD
 static const int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
 static const double KALMAN_GAIN[][2] = {{0.105553059, 0.109271566}, 
                                         {0.0361533034, 0.0661198847}, 
                                         {0.000273178915, 0.618030079}};
+=======
+static const int MONITOR_FOR_PARACHUTES_PERIOD = 200;
+static const double KALMAN_GAIN[][2] =
+{
+    {0.105553059, 0.109271566},
+    {0.0361533034, 0.0661198847},
+    {0.000273178915, 0.618030079}
+};
+>>>>>>> 0a222dd97ef0adfb5cec9ae73905e947a90dc900
 
 struct KalmanStateVector
 {
@@ -128,7 +138,7 @@ int32_t detectApogee(struct KalmanStateVector state)
 
 /**
  * Takes the current state vector and determines if main chute should be released.
- * 
+ *
  * ***NOTE: This is determined by the constant MAIN_DEPLOYMENT_ALTITUDE,
  *           which should be verified before launch.
  *
