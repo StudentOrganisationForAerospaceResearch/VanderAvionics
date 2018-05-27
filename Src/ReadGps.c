@@ -14,7 +14,7 @@ static const uint8_t GPS_SET_DATUM[] = {0xB5, 0x62, 0x06, 0x06, 0x02, 0x00, 0x00
 static const uint8_t GPS_SETUP_UART[];  //TODO: setup configuration for UART [CFG-PRT]
 static const uint8_t GPS_SET_OUTPUTRATE[] = {0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0xFA, 0x00, 0x01, 0x00, 0x01, 0x00}; // CFG-RATE
 static const uint8_t GPS_CONFIG_NMEA[]; // not sure if we need to do manually [CFG_NMEA]
-static const uint8_t GPS_setNavigationMode[] = {0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x06, 0x03, 0x00, 0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00,
+static const uint8_t GPS_SETNAVIGATIONMODE[] = {0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x06, 0x03, 0x00, 0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00,
                                                 0x05, 0x00, 0xFA, 0x00, 0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0xDC
                                                };
@@ -24,7 +24,7 @@ void readGpsTask(void const* arg)
     GpsData* data = (GpsData*) arg;
     uint32_t prevWakeTime = osKernelSysTick();
     uint16_t latitudeData, longitudeData, altitudeData, epochTimeMsecData;
-    uint16_t GpsData[10];
+    uint16_t gpsData[10];
 
     /* Set antenna settings */
     HAL_GPIO_WritePin(UART_GND_STATION_TX_GPIO_Port, UART_GND_STATION_TX_Pin, GPIO_PIN_RESET);
@@ -43,7 +43,7 @@ void readGpsTask(void const* arg)
 
     /* Put in Navigation mode */
     HAL_GPIO_WritePin(UART_GND_STATION_TX_GPIO_Port, UART_GND_STATION_TX_Pin, GPIO_PIN_RESET);
-    HAL_UART_Transmit(&huart1, &GPS_setNavigationMode, 44, CMD_TIMEOUT);
+    HAL_UART_Transmit(&huart1, &GPS_SETNAVIGATIONMODE, 44, CMD_TIMEOUT);
     HAL_GPIO_WritePin(UART_GND_STATION_TX_GPIO_Port, UART_GND_STATION_TX_Pin, GPIO_PIN_SET);
 
 
@@ -75,6 +75,7 @@ void readGpsTask(void const* arg)
         data -> longitude_ = longitudeData;
         data -> altitude_ = altitudeData;
         data -> epochTimeMsec_ = epochTimeMsecData;
+        osMutexRelease(data->mutex_);
 
     }
 }
