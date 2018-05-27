@@ -10,9 +10,10 @@
 
 static const int MAIN_DEPLOYMENT_ALTITUDE = 1000; //TODO: FIND OUT WHAT THIS IS SUPPOSED TO BE!!! Units in meters.
 static const int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
-static const double KALMAN_GAIN[][2] = {{0.105553059, 0.109271566}, 
-                                  {0.0361533034, 0.0661198847}, 
-                                  {0.000273178915, 0.618030079}};
+static const double KALMAN_GAIN[][2] = {{0.105553059, 0.109271566},
+    {0.0361533034, 0.0661198847},
+    {0.000273178915, 0.618030079}
+};
 
 struct KalmanStateVector
 {
@@ -77,12 +78,12 @@ struct KalmanStateVector filterSensors(
 )
 {
     struct KalmanStateVector newState;
-    
+
     // Convert from milli-g to m/s^2
-    double accelIn = (double) currentAccel * 9.8 * 1000; 
-    
+    double accelIn = (double) currentAccel * 9.8 * 1000;
+
     // Convert from 100*millibars to m
-    double altIn = (double) 44307.69396 * (1 - pow(currentPressure / 101325, 0.190284)); 
+    double altIn = (double) 44307.69396 * (1 - pow(currentPressure / 101325, 0.190284));
 
 
     // Propagate old state using simple kinematics equations
@@ -124,7 +125,7 @@ int32_t detectApogee(struct KalmanStateVector state)
 
 /**
  * Takes the current state vector and determines if main chute should be released.
- * 
+ *
  * ***NOTE: This is determined by the constant MAIN_DEPLOYMENT_ALTITUDE,
  *           which should be verified before launch.
  *
