@@ -25,15 +25,21 @@ void closeVentValve()
     // Unpowered is closed
     HAL_GPIO_WritePin(GPIOB, VENT_VALVE_OUT_Pin, GPIO_PIN_RESET);
 }
-
+// High pulse is sent to change state of injection valve.
 void openInjectionValve()
 {
-    // TODO
+    // Send high pulse to open injection valve
+    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_OUT_Pin, GPIO_PIN_SET);
+    osDelay(500);
+    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_OUT_Pin, GPIO_PIN_RESET);
 }
 
 void closeInjectionValve()
 {
-    // TODO
+    // Send high pulse to close injection valve
+    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_OUT_Pin, GPIO_PIN_SET);
+    osDelay(500);
+    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_OUT_Pin, GPIO_PIN_RESET);
 }
 
 /**
@@ -46,11 +52,11 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
     int32_t tankPressure = -1;
     int32_t durationVentValveControlled = 0;
 
-    for (;;)
+    for(;;)
     {
         osDelayUntil(&prevWakeTime, PRELAUNCH_PHASE_PERIOD);
-        // Ensure valve is closed
-        closeInjectionValve();
+        // Ensure valve is closed - ASSUME injcetion valve is closed initially??
+        //closeInjectionValve();
 
         // Vent tank if over pressure
         if (osMutexWait(data->mutex_, 0) == osOK)
@@ -120,7 +126,7 @@ void engineControlPostBurnRoutine()
     for (;;)
     {
         osDelayUntil(&prevWakeTime, POST_BURN_PERIOD);
-        closeInjectionValve();
+        closeInjectionValve();  // Is this still happening??
     }
 }
 
