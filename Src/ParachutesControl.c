@@ -11,12 +11,6 @@
 // Pressure at spaceport america in 100*millibars on May 27, 2018
 static const int SEA_LEVEL_PRESSURE = 101421.93903699999; //TODO: THIS NEEDS TO BE UPDATED AND RECORDED ON LAUNCH DAY
 static const int MAIN_DEPLOYMENT_ALTITUDE = 1000; //TODO: FIND OUT WHAT THIS IS SUPPOSED TO BE!!! Units in meters.
-<<<<<<< HEAD
-static const int MONITOR_FOR_PARACHUTES_PERIOD = 1000;
-static const double KALMAN_GAIN[][2] = {{0.105553059, 0.109271566}, 
-                                        {0.0361533034, 0.0661198847}, 
-                                        {0.000273178915, 0.618030079}};
-=======
 static const int MONITOR_FOR_PARACHUTES_PERIOD = 200;
 static const double KALMAN_GAIN[][2] =
 {
@@ -24,7 +18,6 @@ static const double KALMAN_GAIN[][2] =
     {0.0361533034, 0.0661198847},
     {0.000273178915, 0.618030079}
 };
->>>>>>> 0a222dd97ef0adfb5cec9ae73905e947a90dc900
 
 struct KalmanStateVector
 {
@@ -78,7 +71,7 @@ int32_t readPressure(BarometerData* data)
  *   oldState - (KalmanStateVector) Past altitude, velocity and acceleration
  *   currentAccel - (double) Measured acceleration
  *   currentAltitude - (double) Measured altitude
- *   dt - (double) Time since last step
+ *   dt - (double) Time since last step. In ms.
  *
  * Returns:
  *   newState - (KalmanStateVector) Current altitude, velocity and acceleration
@@ -87,16 +80,19 @@ struct KalmanStateVector filterSensors(
     struct KalmanStateVector oldState,
     int32_t currentAccel,
     int32_t currentPressure,
-    double dt
+    double dtMillis
 )
 {
     struct KalmanStateVector newState;
     
     // TODO: Figure out what the conversion factor is.
-    double accelIn = (double) currentAccel; 
+    double accelIn = (double) currentAccel / 2048 * 9.8; // Unitless -> g -> m/s
     
     // Convert from 100*millibars to m. This may or may not be right, depending on where you look. Needs testing
     double altIn = (double) 44307.69396 * (1 - pow(currentPressure / SEA_LEVEL_PRESSURE, 0.190284)); 
+    
+    // Convert from ms to s
+    double dt = dtMillis / 1000;
 
 
     // Propagate old state using simple kinematics equations
