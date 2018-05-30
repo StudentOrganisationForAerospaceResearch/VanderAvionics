@@ -84,13 +84,13 @@ struct KalmanStateVector filterSensors(
 )
 {
     struct KalmanStateVector newState;
-    
+
     // TODO: Figure out what the conversion factor is.
     double accelIn = (double) currentAccel / 2048 * 9.8; // Unitless -> g -> m/s
-    
+
     // Convert from 100*millibars to m. This may or may not be right, depending on where you look. Needs testing
-    double altIn = (double) 44307.69396 * (1 - pow(currentPressure / SEA_LEVEL_PRESSURE, 0.190284)); 
-    
+    double altIn = (double) 44307.69396 * (1 - pow(currentPressure / SEA_LEVEL_PRESSURE, 0.190284));
+
     // Convert from ms to s
     double dt = dtMillis / 1000;
 
