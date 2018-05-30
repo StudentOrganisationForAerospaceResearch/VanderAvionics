@@ -9,6 +9,7 @@
 static const int PRELAUNCH_PHASE_PERIOD = 50;
 static const int BURN_DURATION = 10000;
 static const int POST_BURN_PERIOD = 10;
+static const int INJECTION_VALVE_PULSE_PERIOD = 500; 	// 0.5s high pulse to change state of injection valve
 
 static const int MAX_TANK_PRESSURE = 820000; // 820 psi, 5660 kPa, 25 deg C at saturation
 static const int MAX_DURATION_VENT_VALVE_OPEN = 8000;
@@ -30,7 +31,7 @@ void openInjectionValve()
 {
     // Send high pulse to open injection valve
     HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_OUT_Pin, GPIO_PIN_SET);
-    osDelay(500);
+    osDelay(INJECTION_VALVE_PULSE_PERIOD);
     HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_OUT_Pin, GPIO_PIN_RESET);
 }
 
@@ -38,7 +39,7 @@ void closeInjectionValve()
 {
     // Send high pulse to close injection valve
     HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_OUT_Pin, GPIO_PIN_SET);
-    osDelay(500);
+    osDelay(INJECTION_VALVE_PULSE_PERIOD);
     HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_OUT_Pin, GPIO_PIN_RESET);
 }
 
@@ -52,7 +53,7 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
     int32_t tankPressure = -1;
     int32_t durationVentValveControlled = 0;
 
-    for(;;)
+    for (;;)
     {
         osDelayUntil(&prevWakeTime, PRELAUNCH_PHASE_PERIOD);
         // Ensure valve is closed - ASSUME injcetion valve is closed initially??
