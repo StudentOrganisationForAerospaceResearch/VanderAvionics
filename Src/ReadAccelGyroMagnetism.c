@@ -132,15 +132,15 @@ void readAccelGyroMagnetismTask(void const* arg)
             continue;
         }
 
-        data->accelX_ = accelX * ACCEL_SENSITIVITY;
-        data->accelY_ = accelY * ACCEL_SENSITIVITY;
-        data->accelZ_ = accelZ * ACCEL_SENSITIVITY;
-        data->gyroX_ = gyroX * GYRO_SENSITIVITY;
-        data->gyroY_ = gyroY * GYRO_SENSITIVITY;
-        data->gyroZ_ = gyroZ * GYRO_SENSITIVITY;
-        data->magnetoX_ = magnetoX * MAGENTO_SENSITIVITY;
-        data->magnetoY_ = magnetoY * MAGENTO_SENSITIVITY;
-        data->magnetoZ_ = magnetoZ * MAGENTO_SENSITIVITY;
+        data->accelX_ = accelX * ACCEL_SENSITIVITY;	// mg
+        data->accelY_ = accelY * ACCEL_SENSITIVITY; // mg
+        data->accelZ_ = accelZ * ACCEL_SENSITIVITY; // mg
+        data->gyroX_ = gyroX * GYRO_SENSITIVITY; // mdps
+        data->gyroY_ = gyroY * GYRO_SENSITIVITY; // mdps
+        data->gyroZ_ = gyroZ * GYRO_SENSITIVITY; // mdps
+        data->magnetoX_ = magnetoX * MAGENTO_SENSITIVITY; // mgauss
+        data->magnetoY_ = magnetoY * MAGENTO_SENSITIVITY; // mgauss
+        data->magnetoZ_ = magnetoZ * MAGENTO_SENSITIVITY; // mgauss
         osMutexRelease(data->mutex_);
     }
 }
