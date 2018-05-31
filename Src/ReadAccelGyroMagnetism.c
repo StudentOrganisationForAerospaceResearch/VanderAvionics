@@ -132,7 +132,7 @@ void readAccelGyroMagnetismTask(void const* arg)
             continue;
         }
 
-        data->accelX_ = accelX * ACCEL_SENSITIVITY;	// mg
+        data->accelX_ = accelX * ACCEL_SENSITIVITY; // mg
         data->accelY_ = accelY * ACCEL_SENSITIVITY; // mg
         data->accelZ_ = accelZ * ACCEL_SENSITIVITY; // mg
         data->gyroX_ = gyroX * GYRO_SENSITIVITY; // mdps
