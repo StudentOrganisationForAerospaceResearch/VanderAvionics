@@ -138,9 +138,9 @@ void readAccelGyroMagnetismTask(void const* arg)
         data->gyroX_ = gyroX * GYRO_SENSITIVITY;
         data->gyroY_ = gyroY * GYRO_SENSITIVITY;
         data->gyroZ_ = gyroZ * GYRO_SENSITIVITY;
-        data->magnetoX_ = magnetoX * MAGENTO_SENSITIVITY * 1000;
-        data->magnetoY_ = magnetoY * MAGENTO_SENSITIVITY * 1000;
-        data->magnetoZ_ = magnetoZ * MAGENTO_SENSITIVITY * 1000;
+        data->magnetoX_ = magnetoX * MAGENTO_SENSITIVITY;
+        data->magnetoY_ = magnetoY * MAGENTO_SENSITIVITY;
+        data->magnetoZ_ = magnetoZ * MAGENTO_SENSITIVITY;
         osMutexRelease(data->mutex_);
     }
 }
