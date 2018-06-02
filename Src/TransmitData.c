@@ -16,6 +16,8 @@ static const uint8_t OXIDIZER_TANK_HEADER_BYTE = 0x34;
 static const uint8_t COMBUSTION_CHAMBER_HEADER_BYTE = 0x35;
 static const uint8_t FLIGHT_PHASE_HEADER_BYTE = 0x36;
 
+static const uint8_t UART_TIMEOUT = 100;
+
 void transmitImuData(AllData* data)
 {
     int32_t accelX = -1;
@@ -56,6 +58,18 @@ void transmitBarometerData(AllData* data)
         temperature = data->barometerData_->temperature_;
         osMutexRelease(data->barometerData_->mutex_);
     }
+
+    if (HAL_UART_Init(&huart1) != HAL_OK)
+    {
+        return;
+    }
+
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, 1);
+    // uint8_t buffer [] = {BAROMETER_HEADER_BYTE, pressure&0x000000ff, pressure&0x0000ff00>>8, pressure&0x00ff0000>>16, pressure&0xff000000>>24,
+    // 	temperature&0x000000ff, temperature&0x0000ff00>>8, temperature&0x00ff0000>>16, temperature&0xff000000>>24};
+    uint8_t buffer [] = {0x01};
+    HAL_UART_Transmit(&huart1, buffer, sizeof(buffer), UART_TIMEOUT);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, 0);
 }
 
 void transmitGpsData(AllData* data)
