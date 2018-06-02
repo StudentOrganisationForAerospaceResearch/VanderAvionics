@@ -101,10 +101,10 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
         /**ADC1 GPIO Configuration
         PB0     ------> ADC1_IN8
         */
-        GPIO_InitStruct.Pin = ADC1_Pin;
+        GPIO_InitStruct.Pin = COMBUSTION_CHAMBER_ADC_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(ADC1_GPIO_Port, &GPIO_InitStruct);
+        HAL_GPIO_Init(COMBUSTION_CHAMBER_ADC_GPIO_Port, &GPIO_InitStruct);
 
         /* USER CODE BEGIN ADC1_MspInit 1 */
 
@@ -121,34 +121,14 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
         /**ADC2 GPIO Configuration
         PB1     ------> ADC2_IN9
         */
-        GPIO_InitStruct.Pin = ADC2_Pin;
+        GPIO_InitStruct.Pin = OXIDIZER_TANK_ADC_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(ADC2_GPIO_Port, &GPIO_InitStruct);
+        HAL_GPIO_Init(OXIDIZER_TANK_ADC_GPIO_Port, &GPIO_InitStruct);
 
         /* USER CODE BEGIN ADC2_MspInit 1 */
 
         /* USER CODE END ADC2_MspInit 1 */
-    }
-    else if (hadc->Instance == ADC3)
-    {
-        /* USER CODE BEGIN ADC3_MspInit 0 */
-
-        /* USER CODE END ADC3_MspInit 0 */
-        /* Peripheral clock enable */
-        __HAL_RCC_ADC3_CLK_ENABLE();
-
-        /**ADC3 GPIO Configuration
-        PC2     ------> ADC3_IN12
-        */
-        GPIO_InitStruct.Pin = ADC3_PIN_REQUIRED_TO_SET_EXT_TRIGGER_Pin;
-        GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(ADC3_PIN_REQUIRED_TO_SET_EXT_TRIGGER_GPIO_Port, &GPIO_InitStruct);
-
-        /* USER CODE BEGIN ADC3_MspInit 1 */
-
-        /* USER CODE END ADC3_MspInit 1 */
     }
 
 }
@@ -167,7 +147,7 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
         /**ADC1 GPIO Configuration
         PB0     ------> ADC1_IN8
         */
-        HAL_GPIO_DeInit(ADC1_GPIO_Port, ADC1_Pin);
+        HAL_GPIO_DeInit(COMBUSTION_CHAMBER_ADC_GPIO_Port, COMBUSTION_CHAMBER_ADC_Pin);
 
         /* USER CODE BEGIN ADC1_MspDeInit 1 */
 
@@ -184,28 +164,11 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
         /**ADC2 GPIO Configuration
         PB1     ------> ADC2_IN9
         */
-        HAL_GPIO_DeInit(ADC2_GPIO_Port, ADC2_Pin);
+        HAL_GPIO_DeInit(OXIDIZER_TANK_ADC_GPIO_Port, OXIDIZER_TANK_ADC_Pin);
 
         /* USER CODE BEGIN ADC2_MspDeInit 1 */
 
         /* USER CODE END ADC2_MspDeInit 1 */
-    }
-    else if (hadc->Instance == ADC3)
-    {
-        /* USER CODE BEGIN ADC3_MspDeInit 0 */
-
-        /* USER CODE END ADC3_MspDeInit 0 */
-        /* Peripheral clock disable */
-        __HAL_RCC_ADC3_CLK_DISABLE();
-
-        /**ADC3 GPIO Configuration
-        PC2     ------> ADC3_IN12
-        */
-        HAL_GPIO_DeInit(ADC3_PIN_REQUIRED_TO_SET_EXT_TRIGGER_GPIO_Port, ADC3_PIN_REQUIRED_TO_SET_EXT_TRIGGER_Pin);
-
-        /* USER CODE BEGIN ADC3_MspDeInit 1 */
-
-        /* USER CODE END ADC3_MspDeInit 1 */
     }
 
 }
@@ -228,7 +191,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
         PA6     ------> SPI1_MISO
         PA7     ------> SPI1_MOSI
         */
-        GPIO_InitStruct.Pin = IMU_SCK_Pin | IMU_MISO_Pin | IMU_MOSI_Pin;
+        GPIO_InitStruct.Pin = IMU_SPI_SCK_Pin | IMU_SPI_MISO_Pin | IMU_SPI_MOSI_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -306,7 +269,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
         PA6     ------> SPI1_MISO
         PA7     ------> SPI1_MOSI
         */
-        HAL_GPIO_DeInit(GPIOA, IMU_SCK_Pin | IMU_MISO_Pin | IMU_MOSI_Pin);
+        HAL_GPIO_DeInit(GPIOA, IMU_SPI_SCK_Pin | IMU_SPI_MISO_Pin | IMU_SPI_MOSI_Pin);
 
         /* USER CODE BEGIN SPI1_MspDeInit 1 */
 
@@ -370,7 +333,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
         PA0-WKUP     ------> UART4_TX
         PA1     ------> UART4_RX
         */
-        GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
+        GPIO_InitStruct.Pin = GPS_UART_TX_Pin | GPS_UART_RX_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_PULLUP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -393,7 +356,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
         PB6     ------> USART1_TX
         PB7     ------> USART1_RX
         */
-        GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
+        GPIO_InitStruct.Pin = RADIO_UART_TX_Pin | RADIO_UART_RX_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_PULLUP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -416,7 +379,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
         PA2     ------> USART2_TX
         PA3     ------> USART2_RX
         */
-        GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_3;
+        GPIO_InitStruct.Pin = LAUNCH_SYS_UART_TX_Pin | LAUNCH_SYS_UART_RX_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_PULLUP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -468,7 +431,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
         PA0-WKUP     ------> UART4_TX
         PA1     ------> UART4_RX
         */
-        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_0 | GPIO_PIN_1);
+        HAL_GPIO_DeInit(GPIOA, GPS_UART_TX_Pin | GPS_UART_RX_Pin);
 
         /* USER CODE BEGIN UART4_MspDeInit 1 */
 
@@ -486,7 +449,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
         PB6     ------> USART1_TX
         PB7     ------> USART1_RX
         */
-        HAL_GPIO_DeInit(GPIOB, GPIO_PIN_6 | GPIO_PIN_7);
+        HAL_GPIO_DeInit(GPIOB, RADIO_UART_TX_Pin | RADIO_UART_RX_Pin);
 
         /* USER CODE BEGIN USART1_MspDeInit 1 */
 
@@ -504,7 +467,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
         PA2     ------> USART2_TX
         PA3     ------> USART2_RX
         */
-        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2 | GPIO_PIN_3);
+        HAL_GPIO_DeInit(GPIOA, LAUNCH_SYS_UART_TX_Pin | LAUNCH_SYS_UART_RX_Pin);
 
         /* USER CODE BEGIN USART2_MspDeInit 1 */
 
