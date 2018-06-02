@@ -59,16 +59,16 @@ void transmitBarometerData(AllData* data)
         osMutexRelease(data->barometerData_->mutex_);
     }
 
-    if (HAL_UART_Init(&huart1) != HAL_OK)
-    {
-        return;
-    }
+    // if (HAL_UART_Init(&huart1) != HAL_OK)
+    // {
+    //     return;
+    // }
 
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, 1);
     // uint8_t buffer [] = {BAROMETER_HEADER_BYTE, pressure&0x000000ff, pressure&0x0000ff00>>8, pressure&0x00ff0000>>16, pressure&0xff000000>>24,
     // 	temperature&0x000000ff, temperature&0x0000ff00>>8, temperature&0x00ff0000>>16, temperature&0xff000000>>24};
-    uint8_t buffer [] = {0x01};
-    HAL_UART_Transmit(&huart1, buffer, sizeof(buffer), UART_TIMEOUT);
+    uint8_t buffer [] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, 0);
 }
 
@@ -130,11 +130,11 @@ void transmitDataTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, TRANSMIT_DATA_PERIOD);
 
-        transmitImuData(data);
+        // transmitImuData(data);
         transmitBarometerData(data);
-        transmitGpsData(data);
-        transmitOxidizerTankData(data);
-        transmitCombustionChamberData(data);
-        transmitFlightPhaseData(data);
+        // transmitGpsData(data);
+        // transmitOxidizerTankData(data);
+        // transmitCombustionChamberData(data);
+        // transmitFlightPhaseData(data);
     }
 }
