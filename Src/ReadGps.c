@@ -18,6 +18,7 @@ static const uint8_t GPS_SET_NAVIGATION_MODE[] = {0xB5, 0x62, 0x06, 0x24, 0x24, 
                                                 0x05, 0x00, 0xFA, 0x00, 0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0xDC
                                                };
+static const uint8_t GPS_test_packet[] = {0111100101, 0110100101};
 
 void readGpsTask(void const* arg)
 {
@@ -53,7 +54,11 @@ void readGpsTask(void const* arg)
         //READ------------------------------------------------------
         // HAL_GPIO_WritePin(UART_GND_STATION_TX_GPIO_Port, UART_GND_STATION_TX_Pin, GPIO_PIN_RESET);
         // HAL_UART_Transmit(&huart1, &GPS_LLA_DOUBLE_PRECISION_CMD_PACKET, 1, CMD_TIMEOUT);
-        // HAL_UART_Receive(&huart1, &GpsData[0], 1, CMD_TIMEOUT);
+        HAL_UART_Receive(&huart1, &gpsData[0], 32, CMD_TIMEOUT);
+        latitudeData = parseData_latitude(gpsData);
+        longitudeData = parseData_longitude(gpsData);
+        // altitudeData = &gpsData[2];
+        // epochTimeMsecData = &gpsData[3];
         // HAL_GPIO_WritePin(UART_GND_STATION_TX_GPIO_Port, UART_GND_STATION_TX_Pin, GPIO_PIN_SET);
 
         // osDelay(3);
@@ -81,16 +86,30 @@ void readGpsTask(void const* arg)
 }
 
 /* String parser for GPS module */
-// void parse_gps( int *lat, int *lon ) {
-//   char *string = strstr(txt,"$GPGLL"); // txt -> text string from RX buffer
-//   if( string != 0 ) {
-//     if( string[7] != ',' ) {
-//        *lat = ( string[7] - 48 )*10 + ( string[8] - 48 );
-//        *lon = ( string[19] - 48 )*100 + ( string[20] - 48 )*10 + ( string[21] - 48 );
+int parseData_latitude(char * string){
+	int lat;
+	if( string != 0 ) {
+	    if( string[7] != ',' ) {
+	       lat = ( string[7] - 48 )*10 + ( string[8] - 48 );
+	       // if( string[17] == 'S' )
+        //     *lat = 0 - latitude;
+	    }
+   } else {
+   	lat = 0;
+   }
+   return lat;
+}
 
-//         if( string[17] == 'S' )
-//             *lat = 0 - latitude;
-//         if(string[31] == 'W')
-//              lon = 0 - longitude;         }
-//    }
-// }
+int parseData_longitude(char * string){
+	int lon;
+	if( string != 0 ) {
+	    if( string[7] != ',' ) {
+	       lon = ( string[19] - 48 )*100 + ( string[20] - 48 )*10 + ( string[21] - 48 );
+	        // if(string[31] == 'W')
+	        //      lon = 0 - longitude;         
+	    }
+   } else {
+   		lon = 0;
+   }
+   return lon;
+}
