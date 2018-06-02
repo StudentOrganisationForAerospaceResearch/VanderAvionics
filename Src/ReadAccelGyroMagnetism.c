@@ -34,17 +34,17 @@ static const int CMD_TIMEOUT = 150;
 // Full Commands
 static const uint8_t ACTIVATE_GYRO_ACCEL_CMD = G1_CTRL_REGISTER_ADDR | WRITE_CMD_MASK | ACCEL_GYRO_MASK;
 // 011 01 0 00 -> ODR 119, 500 DPS
-static const uint8_t ACTIVATE_GYRO_ACCEL_DATA = 0x68 | WRITE_CMD_MASK | ACCEL_GYRO_MASK;	// ODR 119 has cutoff of 38Hz
+static const uint8_t ACTIVATE_GYRO_ACCEL_DATA = 0x68;	// ODR 119 has cutoff of 38Hz
 
 static const uint8_t SET_ACCEL_SCALE_CMD = XL6_CTRL_REGISTER_ADDR | WRITE_CMD_MASK | ACCEL_GYRO_MASK;
 // 011 01 0 00 -> ODR 119, +/- 16G
 static const uint8_t SET_ACCEL_SCALE_DATA = 0x68;
 
-static const uint8_t SET_MAGNETO_ODR_CMD = M1_CTRL_REGISTER_ADDR | WRITE_CMD_MASK | MAGNETO_MASK;
+static const uint8_t SET_MAGNETO_ODR_CMD = M1_CTRL_REGISTER_ADDR | WRITE_CMD_MASK;
 // 0 00 100 0 0 -> temp comp disabled, low performance mode, 10 ODR, fast ODR disabled, self-test disabled
 static const uint8_t SET_MAGNETO_ODR_DATA = 0x10;
 
-static const uint8_t ACTIVATE_MAGNETO_CMD = M3_CTRL_REGISTER_ADDR | WRITE_CMD_MASK | MAGNETO_MASK;
+static const uint8_t ACTIVATE_MAGNETO_CMD = M3_CTRL_REGISTER_ADDR | WRITE_CMD_MASK;
 // 1 0 0 00 0 00 -> I2C Disable, Low power mode disabled, SPI write enable, Continuous-conversion mode
 static const uint8_t ACTIVATE_MAGNETO_DATA = 0x80;
 
