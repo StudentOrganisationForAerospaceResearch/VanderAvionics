@@ -78,7 +78,9 @@ int32_t readPressure(BarometerData* data)
  */
 struct KalmanStateVector filterSensors(
     struct KalmanStateVector oldState,
-    int32_t currentAccel,
+    int32_t currentAccelX,
+    int32_t currentAccelY,
+    int32_t currentAccelZ,
     int32_t currentPressure,
     double dtMillis
 )
@@ -86,7 +88,7 @@ struct KalmanStateVector filterSensors(
     struct KalmanStateVector newState;
     
     // TODO: Figure out what the conversion factor is.
-    double accelIn = (double) currentAccel / 2048 * 9.8; // Unitless -> g -> m/s
+    double accelIn = (double) pow(pow(currentAccelX, 2) + pow(currentAccelY, 2) + pow(currentAccelZ, 2), 0.5) / 1000 * 9.8; // Milli-g -> g -> m/s
     
     // Convert from 100*millibars to m. This may or may not be right, depending on where you look. Needs testing
     double altIn = (double) 44307.69396 * (1 - pow(currentPressure / SEA_LEVEL_PRESSURE, 0.190284)); 
