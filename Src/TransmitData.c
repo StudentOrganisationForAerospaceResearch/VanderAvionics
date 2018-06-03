@@ -16,6 +16,8 @@ static const uint8_t OXIDIZER_TANK_HEADER_BYTE = 0x34;
 static const uint8_t COMBUSTION_CHAMBER_HEADER_BYTE = 0x35;
 static const uint8_t FLIGHT_PHASE_HEADER_BYTE = 0x36;
 
+static const uint8_t UART_TIMEOUT = 100;
+
 void transmitImuData(AllData* data)
 {
     int32_t accelX = -1;
@@ -56,6 +58,9 @@ void transmitBarometerData(AllData* data)
         temperature = data->barometerData_->temperature_;
         osMutexRelease(data->barometerData_->mutex_);
     }
+
+    uint8_t buffer [] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
+    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);
 }
 
 void transmitGpsData(AllData* data)
