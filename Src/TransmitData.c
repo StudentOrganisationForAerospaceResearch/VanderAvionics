@@ -107,6 +107,12 @@ void transmitFlightPhaseData(AllData* data)
     // TODO send data
 }
 
+void transmitVentValveStatus()
+{
+    // uint8_t ventValveStatus = ventValveIsOpen;
+    // TODO send data
+}
+
 void transmitDataTask(void const* arg)
 {
     AllData* data = (AllData*) arg;
@@ -122,5 +128,6 @@ void transmitDataTask(void const* arg)
         transmitOxidizerTankData(data);
         transmitCombustionChamberData(data);
         transmitFlightPhaseData(data);
+        transmitVentValveStatus();
     }
 }

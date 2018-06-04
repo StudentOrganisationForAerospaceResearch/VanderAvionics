@@ -14,13 +14,17 @@ static const int MAX_TANK_PRESSURE = 820000; // 820 psi, 5660 kPa, 25 deg C at s
 static const int MAX_DURATION_VENT_VALVE_OPEN = 8000;
 static const int REQUIRED_DURATION_VENT_VALVE_CLOSED = 4000;
 
+int ventValveIsOpen = 0;
+
 void openVentValve()
 {
+    ventValveIsOpen = 1;
     // TODO
 }
 
 void closeVentValve()
 {
+    ventValveIsOpen = 0;
     // TDOD
 }
 
