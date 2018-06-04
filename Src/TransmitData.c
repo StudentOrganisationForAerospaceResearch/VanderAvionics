@@ -15,6 +15,7 @@ static const uint8_t GPS_HEADER_BYTE = 0x33;
 static const uint8_t OXIDIZER_TANK_HEADER_BYTE = 0x34;
 static const uint8_t COMBUSTION_CHAMBER_HEADER_BYTE = 0x35;
 static const uint8_t FLIGHT_PHASE_HEADER_BYTE = 0x36;
+static const uint8_t VENT_VALVE_STATUS_HEADER_BYTE = 0x37;
 
 void transmitImuData(AllData* data)
 {
