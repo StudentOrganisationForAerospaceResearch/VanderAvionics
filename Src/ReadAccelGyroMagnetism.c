@@ -109,13 +109,13 @@ void readAccelGyroMagnetismTask(void const* arg)
         accelY = (dataBuffer[3] << 8) | (dataBuffer[2]);
         accelZ = (dataBuffer[5] << 8) | (dataBuffer[4]);
 
-        HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_RESET);
-        HAL_SPI_Transmit(&hspi1, &READ_MAGNETO_X_LOW_CMD, 1, CMD_TIMEOUT);
-        HAL_SPI_Receive(&hspi1, &dataBuffer[0], 6, CMD_TIMEOUT);
-        HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_SET);
-        magnetoX = (dataBuffer[1] << 8) | (dataBuffer[0]);
-        magnetoY = (dataBuffer[3] << 8) | (dataBuffer[2]);
-        magnetoZ = (dataBuffer[5] << 8) | (dataBuffer[4]);
+        // HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_RESET);
+        // HAL_SPI_Transmit(&hspi1, &READ_MAGNETO_X_LOW_CMD, 1, CMD_TIMEOUT);
+        // HAL_SPI_Receive(&hspi1, &dataBuffer[0], 6, CMD_TIMEOUT);
+        // HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_SET);
+        // magnetoX = (dataBuffer[1] << 8) | (dataBuffer[0]);
+        // magnetoY = (dataBuffer[3] << 8) | (dataBuffer[2]);
+        // magnetoZ = (dataBuffer[5] << 8) | (dataBuffer[4]);
 
         /* Writeback */
         if (osMutexWait(data->mutex_, 0) != osOK)
@@ -129,9 +129,9 @@ void readAccelGyroMagnetismTask(void const* arg)
         data->gyroX_ = gyroX * GYRO_SENSITIVITY; // mdps
         data->gyroY_ = gyroY * GYRO_SENSITIVITY; // mdps
         data->gyroZ_ = gyroZ * GYRO_SENSITIVITY; // mdps
-        data->magnetoX_ = magnetoX * MAGENTO_SENSITIVITY; // mgauss
-        data->magnetoY_ = magnetoY * MAGENTO_SENSITIVITY; // mgauss
-        data->magnetoZ_ = magnetoZ * MAGENTO_SENSITIVITY; // mgauss
+        // data->magnetoX_ = magnetoX * MAGENTO_SENSITIVITY; // mgauss
+        // data->magnetoY_ = magnetoY * MAGENTO_SENSITIVITY; // mgauss
+        // data->magnetoZ_ = magnetoZ * MAGENTO_SENSITIVITY; // mgauss
         osMutexRelease(data->mutex_);
     }
 }
