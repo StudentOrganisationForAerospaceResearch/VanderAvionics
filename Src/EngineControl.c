@@ -9,7 +9,6 @@
 static const int PRELAUNCH_PHASE_PERIOD = 50;
 static const int BURN_DURATION = 10000;
 static const int POST_BURN_PERIOD = 10;
-static const int INJECTION_VALVE_PULSE_PERIOD = 500; 	// 0.5s high pulse to change state of injection valve
 
 static const int MAX_TANK_PRESSURE = 820000; // 820 psi, 5660 kPa, 25 deg C at saturation
 static const int MAX_DURATION_VENT_VALVE_OPEN = 8000;
@@ -17,30 +16,22 @@ static const int REQUIRED_DURATION_VENT_VALVE_CLOSED = 4000;
 
 void openVentValve()
 {
-    // Powered is open
-    HAL_GPIO_WritePin(GPIOB, VENT_VALVE_OUT_Pin, GPIO_PIN_SET);
+    // TODO
 }
 
 void closeVentValve()
 {
-    // Unpowered is closed
-    HAL_GPIO_WritePin(GPIOB, VENT_VALVE_OUT_Pin, GPIO_PIN_RESET);
+    // TDOD
 }
-// High pulse is sent to change state of injection valve.
+
 void openInjectionValve()
 {
-    // Send high pulse to open injection valve
-    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_OUT_Pin, GPIO_PIN_SET);
-    osDelay(INJECTION_VALVE_PULSE_PERIOD);
-    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_OUT_Pin, GPIO_PIN_RESET);
+    // TODO
 }
 
 void closeInjectionValve()
 {
-    // Send high pulse to close injection valve
-    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_OUT_Pin, GPIO_PIN_SET);
-    osDelay(INJECTION_VALVE_PULSE_PERIOD);
-    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_OUT_Pin, GPIO_PIN_RESET);
+    // TDOD
 }
 
 /**
@@ -56,8 +47,8 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
     for (;;)
     {
         osDelayUntil(&prevWakeTime, PRELAUNCH_PHASE_PERIOD);
-        // Ensure valve is closed - ASSUME injcetion valve is closed initially??
-        //closeInjectionValve();
+        // Ensure valve is closed
+        closeInjectionValve();
 
         // Vent tank if over pressure
         if (osMutexWait(data->mutex_, 0) == osOK)
@@ -69,8 +60,6 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
             // open or close valve based on tank pressure
             // also do not open valve if it's been open for too long
             // otherwise the vent valve will break
-            tankPressure = 1000000;
-
             if (tankPressure > MAX_TANK_PRESSURE)
             {
                 if (durationVentValveControlled < MAX_DURATION_VENT_VALVE_OPEN)
@@ -127,7 +116,7 @@ void engineControlPostBurnRoutine()
     for (;;)
     {
         osDelayUntil(&prevWakeTime, POST_BURN_PERIOD);
-        closeInjectionValve();  // Is this still happening??
+        closeInjectionValve();
     }
 }
 
