@@ -17,11 +17,14 @@ static const uint8_t COMBUSTION_CHAMBER_HEADER_BYTE = 0x35;
 static const uint8_t FLIGHT_PHASE_HEADER_BYTE = 0x36;
 
 static const uint8_t UART_TIMEOUT = 100;
+static const MASK_32to24 = 0xff000000;
+static const MASK_24to16 = 0x00ff0000;
+static const MASK_16to8 = 0x0000ff00;
+static const MASK_8to0 = 0x000000ff;
 
 void transmitImuData(AllData* data)
 {
     int32_t accelX = -1;
-    // TODO send data
     int32_t accelY = -1;
     int32_t accelZ = -1;
     int32_t gyroX = -1;
@@ -44,12 +47,26 @@ void transmitImuData(AllData* data)
         magnetoZ = data->accelGyroMagnetismData_->magnetoZ_;
         osMutexRelease(data->accelGyroMagnetismData_->mutex_);
     }
+
+    uint8_t buffer [] = {IMU_HEADER_BYTE,
+                         (uint8_t) ((accelX & MASK_32to24) >> 24), (uint8_t) ((accelX & MASK_24to16) >> 16), (uint8_t) ((accelX & MASK_16to8) >> 8), (uint8_t) (accelX & MASK_8to0),
+                         (uint8_t) ((accelY & MASK_32to24) >> 24), (uint8_t) ((accelY & MASK_24to16) >> 16), (uint8_t) ((accelY & MASK_16to8) >> 8), (uint8_t) (accelY & MASK_8to0),
+                         (uint8_t) ((accelZ & MASK_32to24) >> 24), (uint8_t) ((accelZ & MASK_24to16) >> 16), (uint8_t) ((accelZ & MASK_16to8) >> 8), (uint8_t) (accelZ & MASK_8to0),
+                         (uint8_t) ((gyroX & MASK_32to24) >> 24), (uint8_t) ((gyroX & MASK_24to16) >> 16), (uint8_t) ((gyroX & MASK_16to8) >> 8), (uint8_t) (gyroX & MASK_8to0),
+                         (uint8_t) ((gyroY & MASK_32to24) >> 24), (uint8_t) ((gyroY & MASK_24to16) >> 16), (uint8_t) ((gyroY & MASK_16to8) >> 8), (uint8_t) (gyroY & MASK_8to0),
+                         (uint8_t) ((gyroZ & MASK_32to24) >> 24), (uint8_t) ((gyroZ & MASK_24to16) >> 16), (uint8_t) ((gyroZ & MASK_16to8) >> 8), (uint8_t) (gyroZ & MASK_8to0),
+                         (uint8_t) ((magnetoX & MASK_32to24) >> 24), (uint8_t) ((magnetoX & MASK_24to16) >> 16), (uint8_t) ((magnetoX & MASK_16to8) >> 8), (uint8_t) (magnetoX & MASK_8to0),
+                         (uint8_t) ((magnetoY & MASK_32to24) >> 24), (uint8_t) ((magnetoY & MASK_24to16) >> 16), (uint8_t) ((magnetoY & MASK_16to8) >> 8), (uint8_t) (magnetoY & MASK_8to0),
+                         (uint8_t) ((magnetoZ & MASK_32to24) >> 24), (uint8_t) ((magnetoZ & MASK_24to16) >> 16), (uint8_t) ((magnetoZ & MASK_16to8) >> 8), (uint8_t) (magnetoZ & MASK_8to0)
+                        };
+
+    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Launch Systems
+    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
 void transmitBarometerData(AllData* data)
 {
     int32_t pressure = -1;
-    // TODO send data
     int32_t temperature = -1;
 
     if (osMutexWait(data->barometerData_->mutex_, 0) == osOK)
@@ -59,23 +76,18 @@ void transmitBarometerData(AllData* data)
         osMutexRelease(data->barometerData_->mutex_);
     }
 
-    // if (HAL_UART_Init(&huart1) != HAL_OK)
-    // {
-    //     return;
-    // }
+    uint8_t buffer [] = {BAROMETER_HEADER_BYTE,
+                         (uint8_t) ((pressure & MASK_32to24) >> 24), (uint8_t) ((pressure & MASK_24to16) >> 16), (uint8_t) ((pressure & MASK_16to8) >> 8), (uint8_t) (pressure & MASK_8to0),
+                         (uint8_t) ((temperature & MASK_32to24) >> 24), (uint8_t) ((temperature & MASK_24to16) >> 16), (uint8_t) ((temperature & MASK_16to8) >> 8), (uint8_t) (temperature & MASK_8to0)
+                        };
 
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, 1);
-    // uint8_t buffer [] = {BAROMETER_HEADER_BYTE, pressure&0x000000ff, pressure&0x0000ff00>>8, pressure&0x00ff0000>>16, pressure&0xff000000>>24,
-    // 	temperature&0x000000ff, temperature&0x0000ff00>>8, temperature&0x00ff0000>>16, temperature&0xff000000>>24};
-    uint8_t buffer [] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
-    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, 0);
+    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Launch Systems
+    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
 void transmitGpsData(AllData* data)
 {
     int32_t altitude = -1;
-    // TODO send data
     int32_t epochTimeMsec = -1;
     int32_t latitude = -1;
     int32_t longitude = -1;
@@ -88,37 +100,64 @@ void transmitGpsData(AllData* data)
         longitude = data->gpsData_->longitude_;
         osMutexRelease(data->gpsData_->mutex_);
     }
+
+    uint8_t buffer [] = {GPS_HEADER_BYTE,
+                         (uint8_t) ((altitude & MASK_32to24) >> 24), (uint8_t) ((altitude & MASK_24to16) >> 16), (uint8_t) ((altitude & MASK_16to8) >> 8), (uint8_t) (altitude & MASK_8to0),
+                         (uint8_t) ((epochTimeMsec & MASK_32to24) >> 24), (uint8_t) ((epochTimeMsec & MASK_24to16) >> 16), (uint8_t) ((epochTimeMsec & MASK_16to8) >> 8), (uint8_t) (epochTimeMsec & MASK_8to0),
+                         (uint8_t) ((latitude & MASK_32to24) >> 24), (uint8_t) ((latitude & MASK_24to16) >> 16), (uint8_t) ((latitude & MASK_16to8) >> 8), (uint8_t) (latitude & MASK_8to0),
+                         (uint8_t) ((longitude & MASK_32to24) >> 24), (uint8_t) ((longitude & MASK_24to16) >> 16), (uint8_t) ((longitude & MASK_16to8) >> 8), (uint8_t) (longitude & MASK_8to0)
+                        };
+
+    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Launch Systems
+    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
 void transmitOxidizerTankData(AllData* data)
 {
     int32_t oxidizerTankPressure = -1;
-    // TODO send data
-
 
     if (osMutexWait(data->oxidizerTankPressureData_->mutex_, 0) == osOK)
     {
         oxidizerTankPressure = data->oxidizerTankPressureData_->pressure_;
         osMutexRelease(data->oxidizerTankPressureData_->mutex_);
     }
+
+    uint8_t buffer [] = {OXIDIZER_TANK_HEADER_BYTE,
+                         (uint8_t) ((oxidizerTankPressure & MASK_32to24) >> 24), (uint8_t) ((oxidizerTankPressure & MASK_24to16) >> 16), (uint8_t) ((oxidizerTankPressure & MASK_16to8) >> 8), (uint8_t) (oxidizerTankPressure & MASK_8to0)
+                        };
+
+    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Launch Systems
+    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
 void transmitCombustionChamberData(AllData* data)
 {
     int32_t combustionChamberPressure = -1;
-    // TODO send data
 
     if (osMutexWait(data->combustionChamberPressureData_->mutex_, 0) == osOK)
     {
         combustionChamberPressure = data->combustionChamberPressureData_->pressure_;
         osMutexRelease(data->combustionChamberPressureData_->mutex_);
     }
+
+    uint8_t buffer [] = {COMBUSTION_CHAMBER_HEADER_BYTE,
+                         (uint8_t) ((combustionChamberPressure & MASK_32to24) >> 24), (uint8_t) ((combustionChamberPressure & MASK_24to16) >> 16), (uint8_t) ((combustionChamberPressure & MASK_16to8) >> 8), (uint8_t) (combustionChamberPressure & MASK_8to0)
+                        };
+
+    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Launch Systems
+    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
 void transmitFlightPhaseData(AllData* data)
 {
     uint8_t flightPhase = getCurrentFlightPhase();
-    // TODO send data
+
+    uint8_t buffer [] = {FLIGHT_PHASE_HEADER_BYTE,
+                         flightPhase
+                        };
+
+    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Launch Systems
+    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
 void transmitDataTask(void const* arg)
@@ -130,11 +169,11 @@ void transmitDataTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, TRANSMIT_DATA_PERIOD);
 
-        // transmitImuData(data);
+        transmitImuData(data);
         transmitBarometerData(data);
-        // transmitGpsData(data);
-        // transmitOxidizerTankData(data);
-        // transmitCombustionChamberData(data);
-        // transmitFlightPhaseData(data);
+        transmitGpsData(data);
+        transmitOxidizerTankData(data);
+        transmitCombustionChamberData(data);
+        transmitFlightPhaseData(data);
     }
 }
