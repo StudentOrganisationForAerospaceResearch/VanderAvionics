@@ -1,6 +1,6 @@
 #include "FlightPhase.h"
 
-static FlightPhase currentFlightPhase = PRELAUNCH;
+static FlightPhase currentFlightPhase = BURN;
 
 static const int FLIGHT_MUTEX_RETRIES = 10;
 
