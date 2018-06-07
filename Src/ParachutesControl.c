@@ -10,7 +10,7 @@
 
 // Pressure at spaceport america in 100*millibars on May 27, 2018
 static const int SEA_LEVEL_PRESSURE = 101421.93903699999; //TODO: THIS NEEDS TO BE UPDATED AND RECORDED ON LAUNCH DAY
-static const int MAIN_DEPLOYMENT_ALTITUDE = 4572; // Units in meters. Equivalent of 15000 ft.
+static const int MAIN_DEPLOYMENT_ALTITUDE = 4572 + 1401; // Units in meters. Equivalent of 15000 ft + altitude of spaceport america.
 static const int MONITOR_FOR_PARACHUTES_PERIOD = 200;
 static const double KALMAN_GAIN[][2] =
 {
@@ -78,17 +78,14 @@ int32_t readPressure(BarometerData* data)
  */
 struct KalmanStateVector filterSensors(
     struct KalmanStateVector oldState,
-    int32_t currentAccelX,
-    int32_t currentAccelY,
-    int32_t currentAccelZ,
+    int32_t currentAccel,
     int32_t currentPressure,
     double dtMillis
 )
 {
     struct KalmanStateVector newState;
 
-    // TODO: Figure out what the conversion factor is.
-    double accelIn = (double) pow(pow(currentAccelX, 2) + pow(currentAccelY, 2) + pow(currentAccelZ, 2), 0.5) / 1000 * 9.8; // Milli-g -> g -> m/s
+    double accelIn = (double) currentAccel / 1000 * 9.8; // Milli-g -> g -> m/s
     
     // Convert from 100*millibars to m. This may or may not be right, depending on where you look. Needs testing
     double altIn = (double) 44307.69396 * (1 - pow(currentPressure / SEA_LEVEL_PRESSURE, 0.190284));
