@@ -76,6 +76,7 @@ SPI_HandleTypeDef hspi2;
 SPI_HandleTypeDef hspi3;
 
 UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart2;
 
 osThreadId defaultTaskHandle;
 
@@ -102,11 +103,12 @@ static const int FLIGHT_PHASE_BLINK_FREQ = 100;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI3_Init(void);
-static void MX_USART1_UART_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_ADC2_Init(void);
+static void MX_USART1_UART_Init(void);
+static void MX_USART2_UART_Init(void);
 void StartDefaultTask(void const* argument);
 
 /* USER CODE BEGIN PFP */
@@ -147,11 +149,12 @@ int main(void)
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
     MX_SPI3_Init();
-    MX_USART1_UART_Init();
     MX_SPI2_Init();
     MX_SPI1_Init();
     MX_ADC1_Init();
     MX_ADC2_Init();
+    MX_USART1_UART_Init();
+    MX_USART2_UART_Init();
     /* USER CODE BEGIN 2 */
     // data primitive structs
     AccelGyroMagnetismData* accelGyroMagnetismData =
@@ -580,7 +583,7 @@ static void MX_USART1_UART_Init(void)
 {
 
     huart1.Instance = USART1;
-    huart1.Init.BaudRate = 115200;
+    huart1.Init.BaudRate = 4800;
     huart1.Init.WordLength = UART_WORDLENGTH_8B;
     huart1.Init.StopBits = UART_STOPBITS_1;
     huart1.Init.Parity = UART_PARITY_NONE;
@@ -589,6 +592,26 @@ static void MX_USART1_UART_Init(void)
     huart1.Init.OverSampling = UART_OVERSAMPLING_16;
 
     if (HAL_UART_Init(&huart1) != HAL_OK)
+    {
+        _Error_Handler(__FILE__, __LINE__);
+    }
+
+}
+
+/* USART2 init function */
+static void MX_USART2_UART_Init(void)
+{
+
+    huart2.Instance = USART2;
+    huart2.Init.BaudRate = 4800;
+    huart2.Init.WordLength = UART_WORDLENGTH_8B;
+    huart2.Init.StopBits = UART_STOPBITS_1;
+    huart2.Init.Parity = UART_PARITY_NONE;
+    huart2.Init.Mode = UART_MODE_TX_RX;
+    huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+
+    if (HAL_UART_Init(&huart2) != HAL_OK)
     {
         _Error_Handler(__FILE__, __LINE__);
     }
@@ -620,7 +643,7 @@ static void MX_GPIO_Init(void)
     HAL_GPIO_WritePin(GPIOC, LED1_Pin | LED2_Pin | BARO_CS_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOB, MAG_CS_Pin | IMU_CS_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, MAG_CS_Pin | IMU_CS_Pin | GPIO_PIN_13, GPIO_PIN_RESET);
 
     /*Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(THERM_CS_GPIO_Port, THERM_CS_Pin, GPIO_PIN_RESET);
@@ -644,8 +667,8 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(ADC2_IN15_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pins : MAG_CS_Pin IMU_CS_Pin */
-    GPIO_InitStruct.Pin = MAG_CS_Pin | IMU_CS_Pin;
+    /*Configure GPIO pins : MAG_CS_Pin IMU_CS_Pin PB13 */
+    GPIO_InitStruct.Pin = MAG_CS_Pin | IMU_CS_Pin | GPIO_PIN_13;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
