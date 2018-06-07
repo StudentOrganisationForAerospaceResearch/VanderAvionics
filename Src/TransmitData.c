@@ -163,8 +163,14 @@ void transmitFlightPhaseData(AllData* data)
 
 void transmitVentValveStatus()
 {
-    // uint8_t ventValveStatus = ventValveIsOpen;
-    // TODO send data
+    uint8_t ventValveStatus = ventValveIsOpen;
+
+    uint8_t buffer [] = {VENT_VALVE_STATUS_HEADER_BYTE,
+                         (uint8_t) ((ventValveStatus))
+                        };
+
+    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT); // Launch Systems
+    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Radio
 }
 
 void transmitDataTask(void const* arg)
