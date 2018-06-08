@@ -9,6 +9,7 @@
 static const int PRELAUNCH_PHASE_PERIOD = 50;
 static const int BURN_DURATION = 10000;
 static const int POST_BURN_PERIOD = 10;
+static const int INJECTION_VALVE_PULSE_PERIOD = 500; 	// 0.5s high pulse to change state of injection valve
 
 static const int MAX_TANK_PRESSURE = 820000; // 820 psi, 5660 kPa, 25 deg C at saturation
 static const int MAX_DURATION_VENT_VALVE_OPEN = 8000;
@@ -18,24 +19,32 @@ int ventValveIsOpen = 0;
 
 void openVentValve()
 {
+    // Powered is open
+    HAL_GPIO_WritePin(GPIOB, VENT_VALVE_Pin, GPIO_PIN_SET);
     ventValveIsOpen = 1;
-    // TODO
 }
 
 void closeVentValve()
 {
+    // Unpowered is closed
+    HAL_GPIO_WritePin(GPIOB, VENT_VALVE_Pin, GPIO_PIN_RESET);
     ventValveIsOpen = 0;
-    // TDOD
 }
-
+// High pulse is sent to change state of injection valve.
 void openInjectionValve()
 {
-    // TODO
+    // Send high pulse to open injection valve
+    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_Pin, GPIO_PIN_SET);
+    osDelay(INJECTION_VALVE_PULSE_PERIOD);
+    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_Pin, GPIO_PIN_RESET);
 }
 
 void closeInjectionValve()
 {
-    // TDOD
+    // Send high pulse to close injection valve
+    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_Pin, GPIO_PIN_SET);
+    osDelay(INJECTION_VALVE_PULSE_PERIOD);
+    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_Pin, GPIO_PIN_RESET);
 }
 
 /**
@@ -51,8 +60,8 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
     for (;;)
     {
         osDelayUntil(&prevWakeTime, PRELAUNCH_PHASE_PERIOD);
-        // Ensure valve is closed
-        closeInjectionValve();
+        // Assume valve is closed
+        // closeInjectionValve();
 
         // Vent tank if over pressure
         if (osMutexWait(data->mutex_, 0) == osOK)
@@ -120,7 +129,7 @@ void engineControlPostBurnRoutine()
     for (;;)
     {
         osDelayUntil(&prevWakeTime, POST_BURN_PERIOD);
-        closeInjectionValve();
+        //closeInjectionValve();
     }
 }
 
