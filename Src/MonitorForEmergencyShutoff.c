@@ -40,10 +40,11 @@ void monitorForEmergencyShutoffTask(void const* arg)
         if (phase == ABORT)
         {
             // job complete
-            for(;;) {
+            for (;;)
+            {
                 // do nothing this thread is finished
                 osDelay(1000);
             }
-                    }
+        }
     }
 }

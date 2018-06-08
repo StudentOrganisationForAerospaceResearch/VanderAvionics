@@ -21,7 +21,8 @@ void abortPhaseTask(void const* arg)
         {
             // close injection valve
             // pulse vent valve
-            for(;;) {
+            for (;;)
+            {
                 openVentValve();
                 osDelay(VENT_VALVE_PULSE_PERIOD);
                 closeVentValve();
