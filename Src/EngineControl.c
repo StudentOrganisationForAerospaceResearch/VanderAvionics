@@ -88,6 +88,11 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
             }
         }
 
+        if (launchCmdReceived != 0)
+        {
+            newFlightPhase(BURN);
+        }
+
         if (getCurrentFlightPhase() != PRELAUNCH)
         {
             return;
@@ -109,9 +114,7 @@ void engineControlBurnRoutine()
 }
 
 /**
- * This routine keeps the injection valve closed for all phases past the burn phase.
- * The injection valve is closed to avoid overshooting the goal altitude and during descent.
- * This routine is the final phase.
+ * This routine does nothing and allows the injection valve to stay open.
  */
 void engineControlPostBurnRoutine()
 {
@@ -120,7 +123,6 @@ void engineControlPostBurnRoutine()
     for (;;)
     {
         osDelayUntil(&prevWakeTime, POST_BURN_PERIOD);
-        closeInjectionValve();
     }
 }
 

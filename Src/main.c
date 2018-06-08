@@ -95,6 +95,12 @@ static osThreadId parachutesControlTaskHandle;
 static osThreadId logDataTaskHandle;
 static osThreadId transmitDataTaskHandle;
 
+static uint8_t launchSystemsRxChar = 0;
+static const uint8_t LAUNCH_CMD_BYTE = 0x20;
+static const uint8_t ABORT_CMD_BYTE = 0x2F;
+uint8_t launchCmdReceived = 0;
+uint8_t abortCmdReceived = 0;
+
 static const int FLIGHT_PHASE_DISPLAY_FREQ = 1000;
 static const int FLIGHT_PHASE_BLINK_FREQ = 100;
 /* USER CODE END PV */
@@ -225,7 +231,12 @@ int main(void)
     /* USER CODE END RTOS_SEMAPHORES */
 
     /* USER CODE BEGIN RTOS_TIMERS */
-    /* start timers, add new ones, ... */
+    if (HAL_UART_Receive_IT(&huart1, launchSystemsRxChar, 1) != HAL_OK)
+    {
+        /* Reception Error */
+        Error_Handler();
+    }
+
     /* USER CODE END RTOS_TIMERS */
 
     /* Create the thread(s) */
@@ -690,6 +701,25 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
+{
+    if (huart->Instance == USART1)
+    {
+        if (launchSystemsRxChar == LAUNCH_CMD_BYTE)
+        {
+            launchCmdReceived = 1;
+        }
+        else if (launchSystemsRxChar == ABORT_CMD_BYTE)
+        {
+            abortCmdReceived = 1;
+        }
+    }
+
+    if (HAL_UART_Receive_IT(&huart1, launchSystemsRxChar, 1) != HAL_OK)
+    {
+        HAL_UART_Receive_IT(&huart1, launchSystemsRxChar, 1); // try one more time
+    }
+}
 
 /* USER CODE END 4 */
 
