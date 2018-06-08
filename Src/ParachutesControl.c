@@ -294,13 +294,19 @@ void parachutesControlTask(void const* arg)
             case MAIN_DESCENT:
                 // This routine does nothing since there is nothing left to do
                 // after the main parachute has been launched.
-                osThreadSuspend(osThreadGetId());
+            for(;;) {
+                // do nothing this thread is finished
+                osDelay(1000);
+            }
                 break;
 
             case ABORT:
                 // Stop executing and wait let other code do what needs to be done
                 // This should already be done by other code in the program
-                osThreadSuspend(osThreadGetId());
+            for(;;) {
+                // do nothing this thread is finished
+                osDelay(1000);
+            }
                 break;
 
             default:

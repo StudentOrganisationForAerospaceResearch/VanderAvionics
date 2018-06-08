@@ -149,7 +149,10 @@ void engineControlTask(void const* arg)
             case ABORT:
                 // Stop executing and wait let other code do what needs to be done
                 // This should already be done by other code in the program
-                osThreadSuspend(osThreadGetId());
+            for(;;) {
+                // do nothing this thread is finished
+                osDelay(1000);
+            }
                 break;
 
             default:

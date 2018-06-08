@@ -4,8 +4,10 @@
 
 #include "AbortPhase.h"
 #include "FlightPhase.h"
+#include "EngineControl.h"
 
 static const int PRELAUNCH_PHASE_PERIOD = 50;
+static const int VENT_VALVE_PULSE_PERIOD = 3000;
 
 void abortPhaseTask(void const* arg)
 {
@@ -18,8 +20,13 @@ void abortPhaseTask(void const* arg)
         if (getCurrentFlightPhase() == ABORT)
         {
             // close injection valve
-            // open vent valve
-            osThreadSuspend(osThreadGetId());
+            // pulse vent valve
+            for(;;) {
+                openVentValve();
+                osDelay(VENT_VALVE_PULSE_PERIOD);
+                closeVentValve();
+                osDelay(VENT_VALVE_PULSE_PERIOD);
+            }
         }
     }
 }
