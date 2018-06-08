@@ -30,12 +30,12 @@ void buildLogEntry(AllData* data, char* buffer)
     int32_t magnetoZ = -1;
     int32_t pressure = -1;
     int32_t temperature = -1;
+    int32_t combustionChamberPressure = -1;
     int32_t altitude = -1;
     int32_t epochTimeMsec = -1;
     int32_t latitude = -1;
     int32_t longitude = -1;
-    int32_t tankPressure = -1;
-    int32_t tankTemperature = -1;
+    int32_t oxidizerTankPressure = -1;
 
     if (osMutexWait(data->accelGyroMagnetismData_->mutex_, 0) == osOK)
     {
@@ -51,12 +51,17 @@ void buildLogEntry(AllData* data, char* buffer)
         osMutexRelease(data->accelGyroMagnetismData_->mutex_);
     }
 
-
     if (osMutexWait(data->barometerData_->mutex_, 0) == osOK)
     {
         pressure = data->barometerData_->pressure_;
         temperature = data->barometerData_->temperature_;
         osMutexRelease(data->barometerData_->mutex_);
+    }
+
+    if (osMutexWait(data->combustionChamberPressureData_->mutex_, 0) == osOK)
+    {
+        combustionChamberPressure = data->combustionChamberPressureData_->pressure_;
+        osMutexRelease(data->combustionChamberPressureData_->mutex_);
     }
 
     if (osMutexWait(data->gpsData_->mutex_, 0) == osOK)
@@ -68,11 +73,10 @@ void buildLogEntry(AllData* data, char* buffer)
         osMutexRelease(data->gpsData_->mutex_);
     }
 
-    if (osMutexWait(data->oxidizerTankConditionsData_->mutex_, 0) == osOK)
+    if (osMutexWait(data->oxidizerTankPressureData_->mutex_, 0) == osOK)
     {
-        tankPressure = data->oxidizerTankConditionsData_->pressure_;
-        tankTemperature = data->oxidizerTankConditionsData_->temperature_;
-        osMutexRelease(data->oxidizerTankConditionsData_->mutex_);
+        oxidizerTankPressure = data->oxidizerTankPressureData_->pressure_;
+        osMutexRelease(data->oxidizerTankPressureData_->mutex_);
     }
 
     sprintf(
@@ -89,12 +93,12 @@ void buildLogEntry(AllData* data, char* buffer)
         magnetoZ,
         pressure,
         temperature,
+        combustionChamberPressure,
         altitude,
         epochTimeMsec,
         latitude,
         longitude,
-        tankPressure,
-        tankTemperature,
+        oxidizerTankPressure,
         getCurrentFlightPhase()
     );
 }
@@ -201,12 +205,12 @@ void logDataTask(void const* arg)
         "magnetoZ,"
         "pressure,"
         "temperature,"
+        "combustionChamberPressure,"
         "altitude,"
         "epochTimeMsec,"
         "latitude,"
         "longitude,"
-        "tankPressure,"
-        "tankTemperature,"
+        "oxidizerTankPressure,"
         "currentFlightPhase\n"
     );
 

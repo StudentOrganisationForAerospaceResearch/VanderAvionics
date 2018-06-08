@@ -10,17 +10,21 @@ static const int PRELAUNCH_PHASE_PERIOD = 50;
 static const int BURN_DURATION = 10000;
 static const int POST_BURN_PERIOD = 10;
 
-static const int MAX_TANK_PRESSURE_KPA = 5660; // 820psi, 25 deg C at saturation
+static const int MAX_TANK_PRESSURE = 820000; // 820 psi, 5660 kPa, 25 deg C at saturation
 static const int MAX_DURATION_VENT_VALVE_OPEN = 8000;
 static const int REQUIRED_DURATION_VENT_VALVE_CLOSED = 4000;
 
+int ventValveIsOpen = 0;
+
 void openVentValve()
 {
+    ventValveIsOpen = 1;
     // TODO
 }
 
 void closeVentValve()
 {
+    ventValveIsOpen = 0;
     // TDOD
 }
 
@@ -38,7 +42,7 @@ void closeInjectionValve()
  * This routine keeps the injection valve closed during prelaunch.
  * This routine exits when the current flight phase is no longer PRELAUNCH.
  */
-void engineControlPrelaunchRoutine(OxidizerTankConditionsData* data)
+void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
 {
     uint32_t prevWakeTime = osKernelSysTick();
     int32_t tankPressure = -1;
@@ -60,7 +64,7 @@ void engineControlPrelaunchRoutine(OxidizerTankConditionsData* data)
             // open or close valve based on tank pressure
             // also do not open valve if it's been open for too long
             // otherwise the vent valve will break
-            if (tankPressure > MAX_TANK_PRESSURE_KPA)
+            if (tankPressure > MAX_TANK_PRESSURE)
             {
                 if (durationVentValveControlled < MAX_DURATION_VENT_VALVE_OPEN)
                 {
@@ -122,7 +126,7 @@ void engineControlPostBurnRoutine()
 
 void engineControlTask(void const* arg)
 {
-    OxidizerTankConditionsData* data = (OxidizerTankConditionsData*) arg;
+    OxidizerTankPressureData* data = (OxidizerTankPressureData*) arg;
 
     for (;;)
     {
