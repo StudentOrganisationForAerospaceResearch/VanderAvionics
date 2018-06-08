@@ -17,10 +17,9 @@ void abortPhaseTask(void const* arg)
 
         if (getCurrentFlightPhase() == ABORT)
         {
-            continue;
+            // close injection valve
+            // open vent valve
+            osThreadSuspend(osThreadGetId());
         }
-
-        // close injection valve
-        // open vent valve
     }
 }

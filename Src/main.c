@@ -95,7 +95,7 @@ static osThreadId parachutesControlTaskHandle;
 // Storing data
 static osThreadId logDataTaskHandle;
 static osThreadId transmitDataTaskHandle;
-// Special abort data thread
+// Special abort thread
 static osThreadId abortPhaseTaskHandle;
 
 static const int FLIGHT_PHASE_DISPLAY_FREQ = 1000;
