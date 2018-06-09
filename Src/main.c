@@ -238,11 +238,11 @@ int main(void)
 
     /* USER CODE BEGIN RTOS_TIMERS */
     /* start timers, add new ones, ... */
-    if (HAL_UART_Receive_IT(&huart1, launchSystemsRxChar, 1) != HAL_OK)
-    {
-        /* Reception Error */
-        HAL_UART_ErrorCallback(&huart1);
-    }
+    // if (HAL_UART_Receive_IT(&huart1, launchSystemsRxChar, 1) != HAL_OK)
+    // {
+    //     /* Reception Error */
+    //     HAL_UART_ErrorCallback(&huart1);
+    // }
 
     /* USER CODE END RTOS_TIMERS */
 
