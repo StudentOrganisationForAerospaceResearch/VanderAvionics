@@ -243,9 +243,15 @@ void logDataTask(void const* arg)
                 break;
 
             case MAIN_DESCENT:
-            case ABORT:
-            default:
                 lowFrequencyLogToSdRoutine(data, buffer, MAIN_DESCENT);
+                break;
+
+            case ABORT:
+                lowFrequencyLogToSdRoutine(data, buffer, ABORT);
+                break;
+
+            default:
+                lowFrequencyLogToSdRoutine(data, buffer, MAIN_DESCENT); // won't work
                 break;
         }
     }
