@@ -67,9 +67,9 @@ void transmitImuData(AllData* data)
 
     if(getCurrentFlightPhase() == PRELAUNCH)
     {
-        HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
+        HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
     }
-    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
+    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
 void transmitBarometerData(AllData* data)
@@ -91,9 +91,9 @@ void transmitBarometerData(AllData* data)
                         };
     if(getCurrentFlightPhase() == PRELAUNCH)
     {
-        HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Launch Systems
+        HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Launch Systems
     }
-    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
+    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
 void transmitGpsData(AllData* data)
@@ -122,9 +122,9 @@ void transmitGpsData(AllData* data)
 
     if(getCurrentFlightPhase() == PRELAUNCH)
     {
-        HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT); // Launch Systems
+        HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT); // Launch Systems
     }
-    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
+    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
 void transmitOxidizerTankData(AllData* data)
@@ -144,9 +144,9 @@ void transmitOxidizerTankData(AllData* data)
 
     if(getCurrentFlightPhase() == PRELAUNCH)
     {
-        HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
+        HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
     }
-    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
+    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
 void transmitCombustionChamberData(AllData* data)
@@ -165,9 +165,9 @@ void transmitCombustionChamberData(AllData* data)
                         };
     if(getCurrentFlightPhase() == PRELAUNCH)
     {
-        HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
+        HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
     }
-    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
+    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
 void transmitFlightPhaseData(AllData* data)
@@ -181,9 +181,9 @@ void transmitFlightPhaseData(AllData* data)
 
     if(getCurrentFlightPhase() == PRELAUNCH)
     {
-        HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
+        HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
     }
-    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
+    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
 void transmitVentValveStatus()
@@ -197,9 +197,9 @@ void transmitVentValveStatus()
 
     if(getCurrentFlightPhase() == PRELAUNCH)
     {
-        HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT); // Launch Systems
+        HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT); // Launch Systems
     }
-    HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Radio
+    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);  // Radio
 }
 
 void transmitDataTask(void const* arg)
