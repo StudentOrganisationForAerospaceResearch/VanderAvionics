@@ -20,31 +20,31 @@ int ventValveIsOpen = 0;
 void openVentValve()
 {
     // Powered is open
-    HAL_GPIO_WritePin(GPIOB, VENT_VALVE_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(VENT_VALVE_GPIO_Port, VENT_VALVE_Pin, GPIO_PIN_SET);
     ventValveIsOpen = 1;
 }
 
 void closeVentValve()
 {
     // Unpowered is closed
-    HAL_GPIO_WritePin(GPIOB, VENT_VALVE_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(VENT_VALVE_GPIO_Port, VENT_VALVE_Pin, GPIO_PIN_RESET);
     ventValveIsOpen = 0;
 }
 // High pulse is sent to change state of injection valve.
 void openInjectionValve()
 {
     // Send high pulse to open injection valve
-    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(INJECTION_VALVE_GPIO_Port, INJECTION_VALVE_Pin, GPIO_PIN_SET);
     osDelay(INJECTION_VALVE_PULSE_PERIOD);
-    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(INJECTION_VALVE_GPIO_Port, INJECTION_VALVE_Pin, GPIO_PIN_RESET);
 }
 
 void closeInjectionValve()
 {
     // Send high pulse to close injection valve
-    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(INJECTION_VALVE_GPIO_Port, INJECTION_VALVE_Pin, GPIO_PIN_SET);
     osDelay(INJECTION_VALVE_PULSE_PERIOD);
-    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(INJECTION_VALVE_GPIO_Port, INJECTION_VALVE_Pin, GPIO_PIN_RESET);
 }
 
 /**
