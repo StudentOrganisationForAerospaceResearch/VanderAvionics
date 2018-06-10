@@ -32,8 +32,8 @@ static const int CMD_TIMEOUT = 150;
 
 // Full Commands
 static const uint8_t ACTIVATE_GYRO_ACCEL_CMD = G1_CTRL_REGISTER_ADDR | WRITE_CMD_MASK;
-// 011 01 0 00 -> ODR 119, 500 DPS
-static const uint8_t ACTIVATE_GYRO_ACCEL_DATA = 0x68;	// ODR 119 has cutoff of 38Hz
+// 011 00 0 00 -> ODR 119, 245 DPS
+static const uint8_t ACTIVATE_GYRO_ACCEL_DATA = 0x60;	// ODR 119 has cutoff of 38Hz
 
 static const uint8_t SET_ACCEL_SCALE_CMD = XL6_CTRL_REGISTER_ADDR | WRITE_CMD_MASK;
 // 011 01 0 00 -> ODR 119, +/- 16G
