@@ -787,6 +787,9 @@ void StartDefaultTask(void const* argument)
     /* Infinite loop */
     HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 0);
 
+    // Turn on fan
+    HAL_GPIO_WritePin(FAN_CTRL_GPIO_Port, FAN_CTRL_Pin, 1);
+
     for (;;)
     {
         osDelay(FLIGHT_PHASE_DISPLAY_FREQ);
