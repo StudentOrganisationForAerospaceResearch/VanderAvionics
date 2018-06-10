@@ -9,29 +9,42 @@
 static const int PRELAUNCH_PHASE_PERIOD = 50;
 static const int BURN_DURATION = 10000;
 static const int POST_BURN_PERIOD = 10;
+static const int INJECTION_VALVE_PULSE_PERIOD = 500; 	// 0.5s high pulse to change state of injection valve
 
 static const int MAX_TANK_PRESSURE = 820000; // 820 psi, 5660 kPa, 25 deg C at saturation
 static const int MAX_DURATION_VENT_VALVE_OPEN = 8000;
 static const int REQUIRED_DURATION_VENT_VALVE_CLOSED = 4000;
 
+int ventValveIsOpen = 0;
+
 void openVentValve()
 {
-    // TODO
+    // Powered is open
+    HAL_GPIO_WritePin(GPIOB, VENT_VALVE_Pin, GPIO_PIN_SET);
+    ventValveIsOpen = 1;
 }
 
 void closeVentValve()
 {
-    // TDOD
+    // Unpowered is closed
+    HAL_GPIO_WritePin(GPIOB, VENT_VALVE_Pin, GPIO_PIN_RESET);
+    ventValveIsOpen = 0;
 }
-
+// High pulse is sent to change state of injection valve.
 void openInjectionValve()
 {
-    // TODO
+    // Send high pulse to open injection valve
+    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_Pin, GPIO_PIN_SET);
+    osDelay(INJECTION_VALVE_PULSE_PERIOD);
+    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_Pin, GPIO_PIN_RESET);
 }
 
 void closeInjectionValve()
 {
-    // TDOD
+    // Send high pulse to close injection valve
+    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_Pin, GPIO_PIN_SET);
+    osDelay(INJECTION_VALVE_PULSE_PERIOD);
+    HAL_GPIO_WritePin(GPIOB, INJECTION_VALVE_Pin, GPIO_PIN_RESET);
 }
 
 /**
@@ -47,8 +60,8 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
     for (;;)
     {
         osDelayUntil(&prevWakeTime, PRELAUNCH_PHASE_PERIOD);
-        // Ensure valve is closed
-        closeInjectionValve();
+        // Assume valve is closed
+        // closeInjectionValve();
 
         // Vent tank if over pressure
         if (osMutexWait(data->mutex_, 0) == osOK)
@@ -84,11 +97,6 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
             }
         }
 
-        if (launchCmdReceived != 0)
-        {
-            newFlightPhase(BURN);
-        }
-
         if (getCurrentFlightPhase() != PRELAUNCH)
         {
             return;
@@ -110,7 +118,7 @@ void engineControlBurnRoutine()
 }
 
 /**
- * This routine does nothing and allows the injection valve to stay open.
+ * This routine is the final phase.
  */
 void engineControlPostBurnRoutine()
 {
@@ -119,7 +127,6 @@ void engineControlPostBurnRoutine()
     for (;;)
     {
         osDelayUntil(&prevWakeTime, POST_BURN_PERIOD);
-        // closeInjectionValve();
     }
 }
 
@@ -143,6 +150,18 @@ void engineControlTask(void const* arg)
             case DROGUE_DESCENT:
             case MAIN_DESCENT:
                 engineControlPostBurnRoutine();
+                break;
+
+            case ABORT:
+
+                // Stop executing and wait let other code do what needs to be done
+                // This should already be done by other code in the program
+                for (;;)
+                {
+                    // do nothing this thread is finished
+                    osDelay(1000);
+                }
+
                 break;
 
             default:

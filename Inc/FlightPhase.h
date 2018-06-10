@@ -11,7 +11,8 @@ typedef enum
     BURN,
     COAST,
     DROGUE_DESCENT,
-    MAIN_DESCENT
+    MAIN_DESCENT,
+    ABORT
 } FlightPhase;
 
 void newFlightPhase(FlightPhase newPhase);
