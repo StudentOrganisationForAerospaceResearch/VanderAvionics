@@ -23,6 +23,9 @@ static const uint32_t MASK_24to16 = 0x00ff0000;
 static const uint32_t MASK_16to8 = 0x0000ff00;
 static const uint32_t MASK_8to0 = 0x000000ff;
 
+static const uint8_t CR = '\r';
+static const uint8_t LF = '\n';
+
 void transmitImuData(AllData* data)
 {
     int32_t accelX = -1;
@@ -58,7 +61,8 @@ void transmitImuData(AllData* data)
                          (uint8_t) ((gyroZ & MASK_32to24) >> 24), (uint8_t) ((gyroZ & MASK_24to16) >> 16), (uint8_t) ((gyroZ & MASK_16to8) >> 8), (uint8_t) (gyroZ & MASK_8to0),
                          (uint8_t) ((magnetoX & MASK_32to24) >> 24), (uint8_t) ((magnetoX & MASK_24to16) >> 16), (uint8_t) ((magnetoX & MASK_16to8) >> 8), (uint8_t) (magnetoX & MASK_8to0),
                          (uint8_t) ((magnetoY & MASK_32to24) >> 24), (uint8_t) ((magnetoY & MASK_24to16) >> 16), (uint8_t) ((magnetoY & MASK_16to8) >> 8), (uint8_t) (magnetoY & MASK_8to0),
-                         (uint8_t) ((magnetoZ & MASK_32to24) >> 24), (uint8_t) ((magnetoZ & MASK_24to16) >> 16), (uint8_t) ((magnetoZ & MASK_16to8) >> 8), (uint8_t) (magnetoZ & MASK_8to0)
+                         (uint8_t) ((magnetoZ & MASK_32to24) >> 24), (uint8_t) ((magnetoZ & MASK_24to16) >> 16), (uint8_t) ((magnetoZ & MASK_16to8) >> 8), (uint8_t) (magnetoZ & MASK_8to0),
+                         CR, LF
                         };
 
     if(getCurrentFlightPhase == PRELAUNCH)
@@ -82,7 +86,8 @@ void transmitBarometerData(AllData* data)
 
     uint8_t buffer [] = {BAROMETER_HEADER_BYTE,
                          (uint8_t) ((pressure & MASK_32to24) >> 24), (uint8_t) ((pressure & MASK_24to16) >> 16), (uint8_t) ((pressure & MASK_16to8) >> 8), (uint8_t) (pressure & MASK_8to0),
-                         (uint8_t) ((temperature & MASK_32to24) >> 24), (uint8_t) ((temperature & MASK_24to16) >> 16), (uint8_t) ((temperature & MASK_16to8) >> 8), (uint8_t) (temperature & MASK_8to0)
+                         (uint8_t) ((temperature & MASK_32to24) >> 24), (uint8_t) ((temperature & MASK_24to16) >> 16), (uint8_t) ((temperature & MASK_16to8) >> 8), (uint8_t) (temperature & MASK_8to0),
+                         CR, LF
                         };
     if(getCurrentFlightPhase == PRELAUNCH)
     {
@@ -111,7 +116,8 @@ void transmitGpsData(AllData* data)
                          (uint8_t) ((altitude & MASK_32to24) >> 24), (uint8_t) ((altitude & MASK_24to16) >> 16), (uint8_t) ((altitude & MASK_16to8) >> 8), (uint8_t) (altitude & MASK_8to0),
                          (uint8_t) ((epochTimeMsec & MASK_32to24) >> 24), (uint8_t) ((epochTimeMsec & MASK_24to16) >> 16), (uint8_t) ((epochTimeMsec & MASK_16to8) >> 8), (uint8_t) (epochTimeMsec & MASK_8to0),
                          (uint8_t) ((latitude & MASK_32to24) >> 24), (uint8_t) ((latitude & MASK_24to16) >> 16), (uint8_t) ((latitude & MASK_16to8) >> 8), (uint8_t) (latitude & MASK_8to0),
-                         (uint8_t) ((longitude & MASK_32to24) >> 24), (uint8_t) ((longitude & MASK_24to16) >> 16), (uint8_t) ((longitude & MASK_16to8) >> 8), (uint8_t) (longitude & MASK_8to0)
+                         (uint8_t) ((longitude & MASK_32to24) >> 24), (uint8_t) ((longitude & MASK_24to16) >> 16), (uint8_t) ((longitude & MASK_16to8) >> 8), (uint8_t) (longitude & MASK_8to0),
+                         CR, LF
                         };
 
     if(getCurrentFlightPhase == PRELAUNCH)
@@ -132,7 +138,8 @@ void transmitOxidizerTankData(AllData* data)
     }
 
     uint8_t buffer [] = {OXIDIZER_TANK_HEADER_BYTE,
-                         (uint8_t) ((oxidizerTankPressure & MASK_32to24) >> 24), (uint8_t) ((oxidizerTankPressure & MASK_24to16) >> 16), (uint8_t) ((oxidizerTankPressure & MASK_16to8) >> 8), (uint8_t) (oxidizerTankPressure & MASK_8to0)
+                         (uint8_t) ((oxidizerTankPressure & MASK_32to24) >> 24), (uint8_t) ((oxidizerTankPressure & MASK_24to16) >> 16), (uint8_t) ((oxidizerTankPressure & MASK_16to8) >> 8), (uint8_t) (oxidizerTankPressure & MASK_8to0),
+                         CR, LF
                         };
 
     if(getCurrentFlightPhase == PRELAUNCH)
@@ -153,7 +160,8 @@ void transmitCombustionChamberData(AllData* data)
     }
 
     uint8_t buffer [] = {COMBUSTION_CHAMBER_HEADER_BYTE,
-                         (uint8_t) ((combustionChamberPressure & MASK_32to24) >> 24), (uint8_t) ((combustionChamberPressure & MASK_24to16) >> 16), (uint8_t) ((combustionChamberPressure & MASK_16to8) >> 8), (uint8_t) (combustionChamberPressure & MASK_8to0)
+                         (uint8_t) ((combustionChamberPressure & MASK_32to24) >> 24), (uint8_t) ((combustionChamberPressure & MASK_24to16) >> 16), (uint8_t) ((combustionChamberPressure & MASK_16to8) >> 8), (uint8_t) (combustionChamberPressure & MASK_8to0),
+                         CR, LF
                         };
     if(getCurrentFlightPhase == PRELAUNCH)
     {
@@ -167,7 +175,8 @@ void transmitFlightPhaseData(AllData* data)
     uint8_t flightPhase = getCurrentFlightPhase();
 
     uint8_t buffer [] = {FLIGHT_PHASE_HEADER_BYTE,
-                         flightPhase
+                         flightPhase,
+                         CR, LF
                         };
 
     if(getCurrentFlightPhase == PRELAUNCH)
@@ -182,7 +191,8 @@ void transmitVentValveStatus()
     uint8_t ventValveStatus = ventValveIsOpen;
 
     uint8_t buffer [] = {VENT_VALVE_STATUS_HEADER_BYTE,
-                         (uint8_t) ((ventValveStatus))
+                         (uint8_t) ((ventValveStatus)),
+                         CR, LF
                         };
 
     if(getCurrentFlightPhase == PRELAUNCH)
