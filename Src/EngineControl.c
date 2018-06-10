@@ -118,8 +118,6 @@ void engineControlBurnRoutine()
 }
 
 /**
- * This routine keeps the injection valve closed for all phases past the burn phase.
- * The injection valve is closed to avoid overshooting the goal altitude and during descent.
  * This routine is the final phase.
  */
 void engineControlPostBurnRoutine()
@@ -129,7 +127,6 @@ void engineControlPostBurnRoutine()
     for (;;)
     {
         osDelayUntil(&prevWakeTime, POST_BURN_PERIOD);
-        //closeInjectionValve();
     }
 }
 
