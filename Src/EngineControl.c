@@ -15,7 +15,8 @@ static const int MAX_TANK_PRESSURE = 820000; // 820 psi, 5660 kPa, 25 deg C at s
 static const int MAX_DURATION_VENT_VALVE_OPEN = 8000;
 static const int REQUIRED_DURATION_VENT_VALVE_CLOSED = 4000;
 
-int ventValveIsOpen = 0;
+ventValveIsOpen = 0;
+injectionValveIsOpen = 0;
 
 void openVentValve()
 {
@@ -37,6 +38,7 @@ void openInjectionValve()
     HAL_GPIO_WritePin(INJECTION_VALVE_GPIO_Port, INJECTION_VALVE_Pin, GPIO_PIN_SET);
     osDelay(INJECTION_VALVE_PULSE_PERIOD);
     HAL_GPIO_WritePin(INJECTION_VALVE_GPIO_Port, INJECTION_VALVE_Pin, GPIO_PIN_RESET);
+    injectionValveIsOpen = 1;
 }
 
 void closeInjectionValve()
@@ -45,6 +47,7 @@ void closeInjectionValve()
     HAL_GPIO_WritePin(INJECTION_VALVE_GPIO_Port, INJECTION_VALVE_Pin, GPIO_PIN_SET);
     osDelay(INJECTION_VALVE_PULSE_PERIOD);
     HAL_GPIO_WritePin(INJECTION_VALVE_GPIO_Port, INJECTION_VALVE_Pin, GPIO_PIN_RESET);
+    injectionValveIsOpen = 0;
 }
 
 /**

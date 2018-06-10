@@ -65,7 +65,7 @@ void transmitImuData(AllData* data)
                          CR, LF
                         };
 
-    if(getCurrentFlightPhase == PRELAUNCH)
+    if(getCurrentFlightPhase() == PRELAUNCH)
     {
         HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
     }
@@ -89,7 +89,7 @@ void transmitBarometerData(AllData* data)
                          (uint8_t) ((temperature & MASK_32to24) >> 24), (uint8_t) ((temperature & MASK_24to16) >> 16), (uint8_t) ((temperature & MASK_16to8) >> 8), (uint8_t) (temperature & MASK_8to0),
                          CR, LF
                         };
-    if(getCurrentFlightPhase == PRELAUNCH)
+    if(getCurrentFlightPhase() == PRELAUNCH)
     {
         HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Launch Systems
     }
@@ -120,7 +120,7 @@ void transmitGpsData(AllData* data)
                          CR, LF
                         };
 
-    if(getCurrentFlightPhase == PRELAUNCH)
+    if(getCurrentFlightPhase() == PRELAUNCH)
     {
         HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT); // Launch Systems
     }
@@ -142,7 +142,7 @@ void transmitOxidizerTankData(AllData* data)
                          CR, LF
                         };
 
-    if(getCurrentFlightPhase == PRELAUNCH)
+    if(getCurrentFlightPhase() == PRELAUNCH)
     {
         HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
     }
@@ -163,7 +163,7 @@ void transmitCombustionChamberData(AllData* data)
                          (uint8_t) ((combustionChamberPressure & MASK_32to24) >> 24), (uint8_t) ((combustionChamberPressure & MASK_24to16) >> 16), (uint8_t) ((combustionChamberPressure & MASK_16to8) >> 8), (uint8_t) (combustionChamberPressure & MASK_8to0),
                          CR, LF
                         };
-    if(getCurrentFlightPhase == PRELAUNCH)
+    if(getCurrentFlightPhase() == PRELAUNCH)
     {
         HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
     }
@@ -179,7 +179,7 @@ void transmitFlightPhaseData(AllData* data)
                          CR, LF
                         };
 
-    if(getCurrentFlightPhase == PRELAUNCH)
+    if(getCurrentFlightPhase() == PRELAUNCH)
     {
         HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
     }
@@ -195,7 +195,7 @@ void transmitVentValveStatus()
                          CR, LF
                         };
 
-    if(getCurrentFlightPhase == PRELAUNCH)
+    if(getCurrentFlightPhase() == PRELAUNCH)
     {
         HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT); // Launch Systems
     }
