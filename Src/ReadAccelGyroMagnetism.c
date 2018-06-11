@@ -27,7 +27,7 @@ static const int CMD_TIMEOUT = 150;
 #define MAGNETO_X_LOW_REGISTER_ADDR 0x28
 
 #define ACCEL_SENSITIVITY 0.732 // Unit is mg/LSB
-#define GYRO_SENSITIVITY 17.50 // Unit is mdps/LSB
+#define GYRO_SENSITIVITY 8.75  // Unit is mdps/LSB
 #define MAGENTO_SENSITIVITY 0.14 // Unit is mgauss/LSB
 
 // Full Commands
