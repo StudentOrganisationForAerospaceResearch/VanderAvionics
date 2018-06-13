@@ -8,8 +8,10 @@
 
 static const int PRELAUNCH_PHASE_PERIOD = 50;
 static const int BURN_DURATION = 10000;
-static const int POST_BURN_PERIOD = 10;
+static const int POST_BURN_PERIOD = 1000;
 static const int INJECTION_VALVE_PULSE_PERIOD = 500; 	// 0.5s high pulse to change state of injection valve
+
+static const int POST_BURN_REOPEN_INJECTION_VALVE_DURATION = 20 * 60 * 1000; // 20 minutes
 
 static const int MAX_TANK_PRESSURE = 820000; // 820 psi, 5660 kPa, 25 deg C at saturation
 static const int MAX_DURATION_VENT_VALVE_OPEN = 8000;
@@ -123,10 +125,26 @@ void engineControlBurnRoutine()
 void engineControlPostBurnRoutine()
 {
     uint32_t prevWakeTime = osKernelSysTick();
+    uint32_t timeInPostBurn = 0;
 
     for (;;)
     {
         osDelayUntil(&prevWakeTime, POST_BURN_PERIOD);
+        FlightPhase phase = getCurrentFlightPhase();
+
+        if (phase != COAST && phase != DROGUE_DESCENT && phase != MAIN_DESCENT)
+        {
+            return;
+        }
+
+        // requires 49 days to overflow, not handling this case
+        timeInPostBurn += POST_BURN_PERIOD;
+
+        if (timeInPostBurn < POST_BURN_REOPEN_INJECTION_VALVE_DURATION) {
+            closeInjectionValve();
+        } else {
+            openInjectionValve();
+        }
     }
 }
 
