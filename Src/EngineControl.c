@@ -140,9 +140,12 @@ void engineControlPostBurnRoutine()
         // requires 49 days to overflow, not handling this case
         timeInPostBurn += POST_BURN_PERIOD;
 
-        if (timeInPostBurn < POST_BURN_REOPEN_INJECTION_VALVE_DURATION) {
+        if (timeInPostBurn < POST_BURN_REOPEN_INJECTION_VALVE_DURATION)
+        {
             closeInjectionValve();
-        } else {
+        }
+        else
+        {
             openInjectionValve();
         }
     }
