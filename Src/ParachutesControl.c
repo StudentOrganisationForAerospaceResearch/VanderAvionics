@@ -10,7 +10,7 @@
 
 // Pressure at spaceport america in 100*millibars on May 27, 2018
 static const int SEA_LEVEL_PRESSURE = 101421.93903699999; //TODO: THIS NEEDS TO BE UPDATED AND RECORDED ON LAUNCH DAY
-static const int MAIN_DEPLOYMENT_ALTITUDE = 457.2 + 1401; // Units in meters. Equivalent of 15000 ft + altitude of spaceport america.
+static const int MAIN_DEPLOYMENT_ALTITUDE = 457 + 1401; // Units in meters. Equivalent of 15000 ft + altitude of spaceport america.
 static const int MONITOR_FOR_PARACHUTES_PERIOD = 200;
 static const double KALMAN_GAIN[][2] =
 {
