@@ -32,6 +32,25 @@ void newFlightPhase(FlightPhase newPhase)
     return;
 }
 
+void resetFlightPhase()
+{
+    for (int i = 0; i < FLIGHT_MUTEX_RETRIES; i++)
+    {
+        if (osMutexWait(flightPhaseMutex, 0) == osOK)
+        {
+            currentFlightPhase = PRELAUNCH;
+            osMutexRelease(flightPhaseMutex);
+            return;
+        }
+    }
+
+    // Hopefully it never gets here
+    // if it does, risk a race condition
+    // better than not setting the phase
+    currentFlightPhase = PRELAUNCH;
+    return;
+}
+
 FlightPhase getCurrentFlightPhase()
 {
     FlightPhase phase;
