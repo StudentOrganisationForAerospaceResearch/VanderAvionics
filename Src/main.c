@@ -451,7 +451,7 @@ static void MX_ADC1_Init(void)
     hadc1.Init.ScanConvMode = DISABLE;
     hadc1.Init.ContinuousConvMode = ENABLE;
     hadc1.Init.DiscontinuousConvMode = DISABLE;
-    hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISINGFALLING;
     hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
     hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
     hadc1.Init.NbrOfConversion = 1;
@@ -490,7 +490,7 @@ static void MX_ADC2_Init(void)
     hadc2.Init.ScanConvMode = DISABLE;
     hadc2.Init.ContinuousConvMode = ENABLE;
     hadc2.Init.DiscontinuousConvMode = DISABLE;
-    hadc2.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    hadc2.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISINGFALLING;
     hadc2.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
     hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
     hadc2.Init.NbrOfConversion = 1;
@@ -655,7 +655,7 @@ static void MX_GPIO_Init(void)
     HAL_GPIO_WritePin(GPIOC, LED1_Pin | LED2_Pin | BARO_CS_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOB, MAG_CS_Pin | IMU_CS_Pin | GPIO_PIN_13, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, MAG_CS_Pin | IMU_CS_Pin | VENT_VALVE_Pin | INJECTION_VALVE_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(THERM_CS_GPIO_Port, THERM_CS_Pin, GPIO_PIN_RESET);
@@ -679,8 +679,8 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(ADC2_IN15_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pins : MAG_CS_Pin IMU_CS_Pin PB13 */
-    GPIO_InitStruct.Pin = MAG_CS_Pin | IMU_CS_Pin | GPIO_PIN_13;
+    /*Configure GPIO pins : MAG_CS_Pin IMU_CS_Pin VENT_VALVE_Pin INJECTION_VALVE_Pin */
+    GPIO_InitStruct.Pin = MAG_CS_Pin | IMU_CS_Pin | VENT_VALVE_Pin | INJECTION_VALVE_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
