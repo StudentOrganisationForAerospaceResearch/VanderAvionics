@@ -28,23 +28,29 @@ void monitorForEmergencyShutoffTask(void const* arg)
             osMutexRelease(data->mutex_);
         }
 
-        if (phase == BURN)
+        switch (getCurrentFlightPhase())
         {
-            // check if not right side up
-            // if ()
-            // {
-            //     newFlightPhase(ABORT);
-            // }
+            case PRELAUNCH:
+                // do nothing
+                osDelay(10);
+                break;
+
+            case BURN:
+                // check if not right side up
+                // if ()
+                // {
+                //     newFlightPhase(ABORT);
+                // }
+                break;
+
+            case DROGUE_DESCENT:
+            case MAIN_DESCENT:
+            case ABORT:
+            default:
+                // do nothing
+                osDelay(10);
+                break;
         }
 
-        if (phase == ABORT)
-        {
-            // job complete
-            for (;;)
-            {
-                // do nothing this thread is finished
-                osDelay(1000);
-            }
-        }
     }
 }
