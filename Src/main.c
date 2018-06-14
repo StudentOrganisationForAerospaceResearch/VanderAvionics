@@ -100,7 +100,7 @@ static osThreadId transmitDataTaskHandle;
 // Special abort thread
 static osThreadId abortPhaseTaskHandle;
 
-static uint8_t launchSystemsRxChar = 0;
+uint8_t launchSystemsRxChar = 0;
 static const uint8_t LAUNCH_CMD_BYTE = 0x20;
 static const uint8_t ABORT_CMD_BYTE = 0x2F;
 uint8_t launchCmdReceived = 0;
@@ -778,7 +778,6 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef* huart)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
 {
-    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
     if (huart->Instance == USART2)
     {
         if (launchSystemsRxChar == LAUNCH_CMD_BYTE)
@@ -788,11 +787,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
         else if (launchSystemsRxChar == ABORT_CMD_BYTE)
         {
             abortCmdReceived = 1;
-        }
-
-        if (HAL_UART_Receive_IT(&huart2, &launchSystemsRxChar, 1) != HAL_OK)
-        {
-            HAL_UART_Receive_IT(&huart2, &launchSystemsRxChar, 1); // try one more time
         }
     }
 
