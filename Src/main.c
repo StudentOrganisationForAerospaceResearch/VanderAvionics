@@ -241,7 +241,7 @@ int main(void)
 
     /* USER CODE BEGIN RTOS_TIMERS */
     /* start timers, add new ones, ... */
-    if (HAL_UART_Receive_IT(&huart2, launchSystemsRxChar, 1) != HAL_OK)
+    if (HAL_UART_Receive_IT(&huart2, &launchSystemsRxChar, 1) != HAL_OK)
     {
         /* Reception Error */
         HAL_UART_ErrorCallback(&huart2);
@@ -778,6 +778,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef* huart)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
 {
+    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
     if (huart->Instance == USART2)
     {
         if (launchSystemsRxChar == LAUNCH_CMD_BYTE)
@@ -789,9 +790,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
             abortCmdReceived = 1;
         }
 
-        if (HAL_UART_Receive_IT(&huart2, launchSystemsRxChar, 1) != HAL_OK)
+        if (HAL_UART_Receive_IT(&huart2, &launchSystemsRxChar, 1) != HAL_OK)
         {
-            HAL_UART_Receive_IT(&huart2, launchSystemsRxChar, 1); // try one more time
+            HAL_UART_Receive_IT(&huart2, &launchSystemsRxChar, 1); // try one more time
         }
     }
 

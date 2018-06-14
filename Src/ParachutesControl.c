@@ -215,7 +215,7 @@ void parachutesControlAscentRoutine(
         if (detectApogee(state))
         {
             ejectDrogueParachute();
-            newFlightPhase(DROGUE_DESCENT);
+            // newFlightPhase(DROGUE_DESCENT);
             return;
         }
     }

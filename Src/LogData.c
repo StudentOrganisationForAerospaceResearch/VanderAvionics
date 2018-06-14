@@ -121,7 +121,7 @@ void lowFrequencyLogToSdRoutine(AllData* data, char* buffer, FlightPhase entryPh
 
         if (f_mount(&fatfs, "SD:", 1) == FR_OK)
         {
-            HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
+            // HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
 
             if (f_open(&file, "SD:VanderAvionics.csv", FA_OPEN_APPEND | FA_READ | FA_WRITE) == FR_OK)
             {
@@ -130,7 +130,7 @@ void lowFrequencyLogToSdRoutine(AllData* data, char* buffer, FlightPhase entryPh
             }
 
             f_mount(NULL, "SD:", 1);
-            HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
+            // HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
         }
     }
 }
@@ -157,7 +157,7 @@ void highFrequencyLogToSdRoutine(AllData* data, char* buffer)
     }
 
     // Card mounted, start writing at high frequency
-    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
+    // HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
     uint32_t prevWakeTime = osKernelSysTick();
 
     for (;;)
@@ -183,7 +183,7 @@ void highFrequencyLogToSdRoutine(AllData* data, char* buffer)
         }
     }
 
-    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
+    // HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
     f_mount(NULL, "SD:", 1);
 }
 
@@ -216,7 +216,7 @@ void logDataTask(void const* arg)
 
     if (f_mount(&fatfs, "SD:", 1) == FR_OK)
     {
-        HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
+        // HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
 
         if (f_open(&file, "SD:VanderAvionics.csv", FA_OPEN_APPEND | FA_READ | FA_WRITE) == FR_OK)
         {
@@ -225,7 +225,7 @@ void logDataTask(void const* arg)
         }
 
         f_mount(NULL, "SD:", 1);
-        HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
+        // HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
     }
 
     for (;;)
