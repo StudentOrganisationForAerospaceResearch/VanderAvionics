@@ -183,13 +183,27 @@ void parachutesControlPrelaunchRoutine()
     }
 }
 
+void parachutesControlBurnRoutine()
+{
+    uint32_t prevWakeTime = osKernelSysTick();
+
+    for (;;)
+    {
+        osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
+
+        if (getCurrentFlightPhase() != BURN) {
+            return;
+        }
+    }
+}
+
 
 /**
  * This routine monitors for apogee.
  * Once apogee has been detected,
  * eject the drogue parachute and update the current flight phase.
  */
-void parachutesControlAscentRoutine(
+void parachutesControlCoastRoutine(
     AccelGyroMagnetismData* accelGyroMagnetismData,
     BarometerData* barometerData,
     struct KalmanStateVector state
@@ -273,9 +287,11 @@ void parachutesControlTask(void const* arg)
                 parachutesControlPrelaunchRoutine();
                 break;
 
-            case BURN: // fall through
+            case BURN:
+                parachutesControlBurnRoutine();
+                break;
             case COAST:
-                parachutesControlAscentRoutine(
+                parachutesControlCoastRoutine(
                     data->accelGyroMagnetismData_,
                     data->barometerData_,
                     state
