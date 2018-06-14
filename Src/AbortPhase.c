@@ -18,7 +18,8 @@ void abortPhaseTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, ABORT_PHASE_TASK_PERIOD);
 
-        if (abortCmdReceived) {
+        if (abortCmdReceived)
+        {
             newFlightPhase(ABORT);
         }
 
