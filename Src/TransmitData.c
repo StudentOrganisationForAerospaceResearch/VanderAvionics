@@ -246,21 +246,21 @@ void transmitDataTask(void const* arg)
 
     for (;;)
     {
-        osDelayUntil(&prevWakeTime, TRANSMIT_DATA_PERIOD);
+        // osDelayUntil(&prevWakeTime, TRANSMIT_DATA_PERIOD);
 
-        osDelay(10);
+        osDelay(100);
         transmitImuData(data);
-        osDelay(10);
+        osDelay(100);
         transmitBarometerData(data);
-        osDelay(10);
+        osDelay(100);
         transmitGpsData(data);
-        osDelay(10);
+        osDelay(100);
         transmitOxidizerTankData(data);
-        osDelay(10);
+        osDelay(100);
         transmitCombustionChamberData(data);
-        osDelay(10);
+        osDelay(100);
         transmitFlightPhaseData(data);
-        osDelay(10);
+        osDelay(100);
         transmitVentValveStatus();
     }
 }
