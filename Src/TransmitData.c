@@ -3,7 +3,7 @@
 #include "cmsis_os.h"
 
 #include "TransmitData.h"
-
+#include "Utils.h"
 #include "FlightPhase.h"
 #include "Data.h"
 
@@ -14,14 +14,18 @@ static const int8_t BAROMETER_HEADER_BYTE = 0x32;
 static const int8_t GPS_HEADER_BYTE = 0x33;
 static const int8_t OXIDIZER_TANK_HEADER_BYTE = 0x34;
 static const int8_t COMBUSTION_CHAMBER_HEADER_BYTE = 0x35;
-static const uint8_t FLIGHT_PHASE_HEADER_BYTE = 0x36;
-static const uint8_t VENT_VALVE_STATUS_HEADER_BYTE = 0x37;
+static const int8_t FLIGHT_PHASE_HEADER_BYTE = 0x36;
+static const int8_t VENT_VALVE_STATUS_HEADER_BYTE = 0x37;
+
+#define IMU_SERIAL_MSG_SIZE (41)
+#define BAROMETER_SERIAL_MSG_SIZE (13)
+#define GPS_SERIAL_MSG_SIZE (21)
+#define OXIDIZER_TANK_SERIAL_MSG_SIZE (9)
+#define COMBUSTION_CHAMBER_SERIAL_MSG_SIZE (9)
+#define FLIGHT_PHASE_SERIAL_MSG_SIZE (6)
+#define VENT_VALVE_STATUS_SERIAL_MSG_SIZE (6)
 
 static const uint8_t UART_TIMEOUT = 100;
-static const uint32_t MASK_32to24 = 0xff000000;
-static const uint32_t MASK_24to16 = 0x00ff0000;
-static const uint32_t MASK_16to8 = 0x0000ff00;
-static const uint32_t MASK_8to0 = 0x000000ff;
 
 void transmitImuData(AllData* data)
 {
@@ -49,23 +53,28 @@ void transmitImuData(AllData* data)
         osMutexRelease(data->accelGyroMagnetismData_->mutex_);
     }
 
-    int8_t buffer [] = {IMU_HEADER_BYTE,
-                        (int8_t) (accelX & MASK_8to0), (int8_t) ((accelX & MASK_16to8) >> 8), (int8_t) ((accelX & MASK_24to16) >> 16), (int8_t) ((accelX & MASK_32to24) >> 24),
-                        (int8_t) (accelY & MASK_8to0), (int8_t) ((accelY & MASK_16to8) >> 8), (int8_t) ((accelY & MASK_24to16) >> 16), (int8_t) ((accelY & MASK_32to24) >> 24),
-                        (int8_t) (accelZ & MASK_8to0), (int8_t) ((accelZ & MASK_16to8) >> 8), (int8_t) ((accelZ & MASK_24to16) >> 16), (int8_t) ((accelZ & MASK_32to24) >> 24),
-                        (int8_t) (gyroX & MASK_8to0), (int8_t) ((gyroX & MASK_16to8) >> 8), (int8_t) ((gyroX & MASK_24to16) >> 16), (int8_t) ((gyroX & MASK_32to24) >> 24),
-                        (int8_t) (gyroY & MASK_8to0), (int8_t) ((gyroY & MASK_16to8) >> 8), (int8_t) ((gyroY & MASK_24to16) >> 16), (int8_t) ((gyroY & MASK_32to24) >> 24),
-                        (int8_t) (gyroZ & MASK_8to0), (int8_t) ((gyroZ & MASK_16to8) >> 8), (int8_t) ((gyroZ & MASK_24to16) >> 16), (int8_t) ((gyroZ & MASK_32to24) >> 24),
-                        (int8_t) (magnetoX & MASK_8to0), (int8_t) ((magnetoX & MASK_16to8) >> 8), (int8_t) ((magnetoX & MASK_24to16) >> 16), (int8_t) ((magnetoX & MASK_32to24) >> 24),
-                        (int8_t) (magnetoY & MASK_8to0), (int8_t) ((magnetoY & MASK_16to8) >> 8), (int8_t) ((magnetoY & MASK_24to16) >> 16), (int8_t) ((magnetoY & MASK_32to24) >> 24),
-                        (int8_t) (magnetoZ & MASK_8to0), (int8_t) ((magnetoZ & MASK_16to8) >> 8), (int8_t) ((magnetoZ & MASK_24to16) >> 16), (int8_t) ((magnetoZ & MASK_32to24) >> 24),
-                        0X00
-                        };
+    int8_t buffer[IMU_SERIAL_MSG_SIZE] = {0};
 
-    if( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    buffer[0] = IMU_HEADER_BYTE;
+    buffer[1] = IMU_HEADER_BYTE;
+    buffer[2] = IMU_HEADER_BYTE;
+    buffer[3] = IMU_HEADER_BYTE;
+    writeInt32ToArray(&buffer, 4, accelX);
+    writeInt32ToArray(&buffer, 8, accelY);
+    writeInt32ToArray(&buffer, 12, accelZ);
+    writeInt32ToArray(&buffer, 16, gyroX);
+    writeInt32ToArray(&buffer, 20, gyroY);
+    writeInt32ToArray(&buffer, 24, gyroZ);
+    writeInt32ToArray(&buffer, 28, magnetoX);
+    writeInt32ToArray(&buffer, 32, magnetoY);
+    writeInt32ToArray(&buffer, 36, magnetoZ);
+    buffer[IMU_SERIAL_MSG_SIZE - 1] = 0x00;
+
+    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
     {
         HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
     }
+
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
@@ -81,15 +90,21 @@ void transmitBarometerData(AllData* data)
         osMutexRelease(data->barometerData_->mutex_);
     }
 
-    int8_t buffer [] = {BAROMETER_HEADER_BYTE,
-                        (int8_t) (pressure & MASK_8to0), (int8_t) ((pressure & MASK_16to8) >> 8), (int8_t) ((pressure & MASK_24to16) >> 16), (int8_t) ((pressure & MASK_32to24) >> 24),
-                        (int8_t) (temperature & MASK_8to0), (int8_t) ((temperature & MASK_16to8) >> 8), (int8_t) ((temperature & MASK_24to16) >> 16), (int8_t) ((temperature & MASK_32to24) >> 24),
-                        0X00
-                        };
-    if( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    uint8_t buffer[BAROMETER_SERIAL_MSG_SIZE] = {0};
+
+    buffer[0] = BAROMETER_HEADER_BYTE;
+    buffer[1] = BAROMETER_HEADER_BYTE;
+    buffer[2] = BAROMETER_HEADER_BYTE;
+    buffer[3] = BAROMETER_HEADER_BYTE;
+    writeInt32ToArray(&buffer, 4, pressure);
+    writeInt32ToArray(&buffer, 8, temperature);
+    buffer[BAROMETER_SERIAL_MSG_SIZE - 1] = 0x00;
+
+    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
     {
         HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Launch Systems
     }
+
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
@@ -109,18 +124,23 @@ void transmitGpsData(AllData* data)
         osMutexRelease(data->gpsData_->mutex_);
     }
 
-    int8_t buffer [] = {GPS_HEADER_BYTE,
-                        (int8_t) (altitude & MASK_8to0), (int8_t) ((altitude & MASK_16to8) >> 8), (int8_t) ((altitude & MASK_24to16) >> 16), (int8_t) ((altitude & MASK_32to24) >> 24),
-                        (int8_t) (epochTimeMsec & MASK_8to0), (int8_t) ((epochTimeMsec & MASK_16to8) >> 8), (int8_t) ((epochTimeMsec & MASK_24to16) >> 16), (int8_t) ((epochTimeMsec & MASK_32to24) >> 24),
-                        (int8_t) (latitude & MASK_8to0), (int8_t) ((latitude & MASK_16to8) >> 8), (int8_t) ((latitude & MASK_24to16) >> 16), (int8_t) ((latitude & MASK_32to24) >> 24),
-                        (int8_t) (longitude & MASK_8to0), (int8_t) ((longitude & MASK_16to8) >> 8), (int8_t) ((longitude & MASK_24to16) >> 16), (int8_t) ((longitude & MASK_32to24) >> 24),
-                        0x00
-                        };
+    int8_t buffer[GPS_SERIAL_MSG_SIZE] = {0};
 
-    if( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    buffer[0] = GPS_HEADER_BYTE;
+    buffer[1] = GPS_HEADER_BYTE;
+    buffer[2] = GPS_HEADER_BYTE;
+    buffer[3] = GPS_HEADER_BYTE;
+    writeInt32ToArray(&buffer, 4, altitude);
+    writeInt32ToArray(&buffer, 8, epochTimeMsec);
+    writeInt32ToArray(&buffer, 12, latitude);
+    writeInt32ToArray(&buffer, 16, longitude);
+    buffer[GPS_SERIAL_MSG_SIZE - 1] = 0x00;
+
+    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
     {
         HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT); // Launch Systems
     }
+
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
@@ -134,15 +154,21 @@ void transmitOxidizerTankData(AllData* data)
         osMutexRelease(data->oxidizerTankPressureData_->mutex_);
     }
 
-    int8_t buffer [] = {OXIDIZER_TANK_HEADER_BYTE,
-                        (int8_t) (oxidizerTankPressure & MASK_8to0), (int8_t) ((oxidizerTankPressure & MASK_16to8) >> 8), (int8_t) ((oxidizerTankPressure & MASK_24to16) >> 16), (int8_t) ((oxidizerTankPressure & MASK_32to24) >> 24),
-                        0x00
-                        };
+    int8_t buffer[OXIDIZER_TANK_SERIAL_MSG_SIZE] = {0};
 
-    if( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    buffer[0] = OXIDIZER_TANK_HEADER_BYTE;
+    buffer[1] = OXIDIZER_TANK_HEADER_BYTE;
+    buffer[2] = OXIDIZER_TANK_HEADER_BYTE;
+    buffer[3] = OXIDIZER_TANK_HEADER_BYTE;
+    writeInt32ToArray(&buffer, 4, oxidizerTankPressure);
+    buffer[OXIDIZER_TANK_SERIAL_MSG_SIZE - 1] = 0x00;
+
+
+    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
     {
         HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
     }
+
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
@@ -156,14 +182,20 @@ void transmitCombustionChamberData(AllData* data)
         osMutexRelease(data->combustionChamberPressureData_->mutex_);
     }
 
-    int8_t buffer [] = {COMBUSTION_CHAMBER_HEADER_BYTE,
-                        (int8_t) (combustionChamberPressure & MASK_8to0), (int8_t) ((combustionChamberPressure & MASK_16to8) >> 8), (int8_t) ((combustionChamberPressure & MASK_24to16) >> 16), (int8_t) ((combustionChamberPressure & MASK_32to24) >> 24),
-                        0x00
-                        };
-    if(getCurrentFlightPhase() == PRELAUNCH)
+    int8_t buffer[COMBUSTION_CHAMBER_SERIAL_MSG_SIZE] = {0};
+
+    buffer[0] = COMBUSTION_CHAMBER_HEADER_BYTE;
+    buffer[1] = COMBUSTION_CHAMBER_HEADER_BYTE;
+    buffer[2] = COMBUSTION_CHAMBER_HEADER_BYTE;
+    buffer[3] = COMBUSTION_CHAMBER_HEADER_BYTE;
+    writeInt32ToArray(&buffer, 4, combustionChamberPressure);
+    buffer[COMBUSTION_CHAMBER_SERIAL_MSG_SIZE - 1] = 0x00;
+
+    if (getCurrentFlightPhase() == PRELAUNCH)
     {
         HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
     }
+
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
@@ -172,14 +204,18 @@ void transmitFlightPhaseData(AllData* data)
     uint8_t flightPhase = getCurrentFlightPhase();
 
     uint8_t buffer [] = {FLIGHT_PHASE_HEADER_BYTE,
-                        flightPhase,
-                        0x00
+                         FLIGHT_PHASE_HEADER_BYTE,
+                         FLIGHT_PHASE_HEADER_BYTE,
+                         FLIGHT_PHASE_HEADER_BYTE,
+                         flightPhase,
+                         0x00
                         };
 
-    if( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
     {
         HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
     }
+
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
@@ -188,14 +224,18 @@ void transmitVentValveStatus()
     uint8_t ventValveStatus = ventValveIsOpen;
 
     uint8_t buffer [] = {VENT_VALVE_STATUS_HEADER_BYTE,
-                        (uint8_t) ((ventValveStatus)),
-                        0x00
+                         VENT_VALVE_STATUS_HEADER_BYTE,
+                         VENT_VALVE_STATUS_HEADER_BYTE,
+                         VENT_VALVE_STATUS_HEADER_BYTE,
+                         (uint8_t) ((ventValveStatus)),
+                         0x00
                         };
 
-    if( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
     {
         HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT); // Launch Systems
     }
+
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);  // Radio
 }
 
@@ -208,12 +248,19 @@ void transmitDataTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, TRANSMIT_DATA_PERIOD);
 
+        osDelay(10);
         transmitImuData(data);
+        osDelay(10);
         transmitBarometerData(data);
+        osDelay(10);
         transmitGpsData(data);
+        osDelay(10);
         transmitOxidizerTankData(data);
+        osDelay(10);
         transmitCombustionChamberData(data);
+        osDelay(10);
         transmitFlightPhaseData(data);
+        osDelay(10);
         transmitVentValveStatus();
     }
 }
