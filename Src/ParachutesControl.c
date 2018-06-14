@@ -183,7 +183,11 @@ void parachutesControlPrelaunchRoutine()
     }
 }
 
-void parachutesControlBurnRoutine()
+void parachutesControlBurnRoutine(
+    AccelGyroMagnetismData* accelGyroMagnetismData,
+    BarometerData* barometerData,
+    struct KalmanStateVector state
+)
 {
     uint32_t prevWakeTime = osKernelSysTick();
 
@@ -191,9 +195,21 @@ void parachutesControlBurnRoutine()
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
-        if (getCurrentFlightPhase() != BURN) {
+        if (getCurrentFlightPhase() != BURN)
+        {
             return;
         }
+
+        int32_t currentAccel = readAccel(accelGyroMagnetismData);
+        int32_t currentPressure = readPressure(barometerData);
+
+        if (currentAccel == -1 || currentPressure == -1)
+        {
+            // failed to read values
+            continue;
+        }
+
+        filterSensors(state, currentAccel, currentPressure, MONITOR_FOR_PARACHUTES_PERIOD);
     }
 }
 
@@ -288,8 +304,13 @@ void parachutesControlTask(void const* arg)
                 break;
 
             case BURN:
-                parachutesControlBurnRoutine();
+                parachutesControlBurnRoutine(
+                    data->accelGyroMagnetismData_,
+                    data->barometerData_,
+                    state
+                );
                 break;
+
             case COAST:
                 parachutesControlCoastRoutine(
                     data->accelGyroMagnetismData_,
