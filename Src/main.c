@@ -63,6 +63,7 @@
 #include "ParachutesControl.h"
 #include "LogData.h"
 #include "TransmitData.h"
+#include "AbortPhase.h"
 #include "Data.h"
 #include "FlightPhase.h"
 /* USER CODE END Includes */
@@ -96,6 +97,8 @@ static osThreadId parachutesControlTaskHandle;
 // Storing data
 static osThreadId logDataTaskHandle;
 static osThreadId transmitDataTaskHandle;
+// Special abort thread
+static osThreadId abortPhaseTaskHandle;
 
 static uint8_t launchSystemsRxChar = 0;
 static const uint8_t LAUNCH_CMD_BYTE = 0x20;
@@ -238,11 +241,14 @@ int main(void)
 
     /* USER CODE BEGIN RTOS_TIMERS */
     /* start timers, add new ones, ... */
-    // if (HAL_UART_Receive_IT(&huart1, launchSystemsRxChar, 1) != HAL_OK)
-    // {
-    //     /* Reception Error */
-    //     HAL_UART_ErrorCallback(&huart1);
-    // }
+    if (HAL_UART_Receive_IT(&huart2, launchSystemsRxChar, 1) != HAL_OK)
+    {
+        /* Reception Error */
+        HAL_UART_ErrorCallback(&huart2);
+    }
+
+    // Turn on fan
+    HAL_GPIO_WritePin(FAN_CTRL_GPIO_Port, FAN_CTRL_Pin, 1);
 
     /* USER CODE END RTOS_TIMERS */
 
@@ -353,6 +359,15 @@ int main(void)
     transmitDataTaskHandle =
         osThreadCreate(osThread(transmitDataThread), allData);
 
+    osThreadDef(
+        abortPhaseThread,
+        abortPhaseTask,
+        osPriorityHigh,
+        1,
+        configMINIMAL_STACK_SIZE
+    );
+    abortPhaseTaskHandle =
+        osThreadCreate(osThread(abortPhaseThread), NULL);
     /* USER CODE END RTOS_THREADS */
 
     /* USER CODE BEGIN RTOS_QUEUES */
@@ -760,7 +775,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef* huart)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
 {
-    if (huart->Instance == USART1)
+    if (huart->Instance == USART2)
     {
         if (launchSystemsRxChar == LAUNCH_CMD_BYTE)
         {
@@ -770,12 +785,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
         {
             abortCmdReceived = 1;
         }
+
+        if (HAL_UART_Receive_IT(&huart2, launchSystemsRxChar, 1) != HAL_OK)
+        {
+            HAL_UART_Receive_IT(&huart2, launchSystemsRxChar, 1); // try one more time
+        }
     }
 
-    if (HAL_UART_Receive_IT(&huart1, launchSystemsRxChar, 1) != HAL_OK)
-    {
-        HAL_UART_Receive_IT(&huart1, launchSystemsRxChar, 1); // try one more time
-    }
 }
 /* USER CODE END 4 */
 
@@ -786,9 +802,6 @@ void StartDefaultTask(void const* argument)
     /* USER CODE BEGIN 5 */
     /* Infinite loop */
     HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 0);
-
-    // Turn on fan
-    HAL_GPIO_WritePin(FAN_CTRL_GPIO_Port, FAN_CTRL_Pin, 1);
 
     for (;;)
     {

@@ -5,46 +5,13 @@
 #include "EngineControl.h"
 #include "FlightPhase.h"
 #include "Data.h"
+#include "ValveControl.h"
 
 static const int PRELAUNCH_PHASE_PERIOD = 50;
 static const int BURN_DURATION = 10000;
 static const int POST_BURN_PERIOD = 10;
-static const int INJECTION_VALVE_PULSE_PERIOD = 500; 	// 0.5s high pulse to change state of injection valve
 
 static const int MAX_TANK_PRESSURE = 820000; // 820 psi, 5660 kPa, 25 deg C at saturation
-static const int MAX_DURATION_VENT_VALVE_OPEN = 8000;
-static const int REQUIRED_DURATION_VENT_VALVE_CLOSED = 4000;
-
-ventValveIsOpen = 0;
-injectionValveIsOpen = 0;
-
-void openVentValve()
-{
-    // Powered is open
-    HAL_GPIO_WritePin(VENT_VALVE_GPIO_Port, VENT_VALVE_Pin, GPIO_PIN_SET);
-    ventValveIsOpen = 1;
-}
-
-void closeVentValve()
-{
-    // Unpowered is closed
-    HAL_GPIO_WritePin(VENT_VALVE_GPIO_Port, VENT_VALVE_Pin, GPIO_PIN_RESET);
-    ventValveIsOpen = 0;
-}
-// High pulse is sent to change state of injection valve.
-void openInjectionValve()
-{
-    // Powered is open
-    HAL_GPIO_WritePin(INJECTION_VALVE_GPIO_Port, INJECTION_VALVE_Pin, GPIO_PIN_SET);
-    injectionValveIsOpen = 1;
-}
-
-void closeInjectionValve()
-{
-    // Unpowered is closed
-    HAL_GPIO_WritePin(INJECTION_VALVE_GPIO_Port, INJECTION_VALVE_Pin, GPIO_PIN_RESET);
-    injectionValveIsOpen = 0;
-}
 
 /**
  * This routine keeps the injection valve closed during prelaunch.

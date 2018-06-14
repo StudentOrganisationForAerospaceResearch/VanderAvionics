@@ -53,7 +53,7 @@ void transmitImuData(AllData* data)
         osMutexRelease(data->accelGyroMagnetismData_->mutex_);
     }
 
-    int8_t buffer[IMU_SERIAL_MSG_SIZE] = {0};
+    uint8_t buffer[IMU_SERIAL_MSG_SIZE] = {0};
 
     buffer[0] = IMU_HEADER_BYTE;
     buffer[1] = IMU_HEADER_BYTE;
@@ -124,7 +124,7 @@ void transmitGpsData(AllData* data)
         osMutexRelease(data->gpsData_->mutex_);
     }
 
-    int8_t buffer[GPS_SERIAL_MSG_SIZE] = {0};
+    uint8_t buffer[GPS_SERIAL_MSG_SIZE] = {0};
 
     buffer[0] = GPS_HEADER_BYTE;
     buffer[1] = GPS_HEADER_BYTE;
@@ -154,7 +154,7 @@ void transmitOxidizerTankData(AllData* data)
         osMutexRelease(data->oxidizerTankPressureData_->mutex_);
     }
 
-    int8_t buffer[OXIDIZER_TANK_SERIAL_MSG_SIZE] = {0};
+    uint8_t buffer[OXIDIZER_TANK_SERIAL_MSG_SIZE] = {0};
 
     buffer[0] = OXIDIZER_TANK_HEADER_BYTE;
     buffer[1] = OXIDIZER_TANK_HEADER_BYTE;
@@ -182,7 +182,7 @@ void transmitCombustionChamberData(AllData* data)
         osMutexRelease(data->combustionChamberPressureData_->mutex_);
     }
 
-    int8_t buffer[COMBUSTION_CHAMBER_SERIAL_MSG_SIZE] = {0};
+    uint8_t buffer[COMBUSTION_CHAMBER_SERIAL_MSG_SIZE] = {0};
 
     buffer[0] = COMBUSTION_CHAMBER_HEADER_BYTE;
     buffer[1] = COMBUSTION_CHAMBER_HEADER_BYTE;
@@ -246,21 +246,14 @@ void transmitDataTask(void const* arg)
 
     for (;;)
     {
-        // osDelayUntil(&prevWakeTime, TRANSMIT_DATA_PERIOD);
+        osDelayUntil(&prevWakeTime, TRANSMIT_DATA_PERIOD);
 
-        osDelay(100);
         transmitImuData(data);
-        osDelay(100);
         transmitBarometerData(data);
-        osDelay(100);
         transmitGpsData(data);
-        osDelay(100);
         transmitOxidizerTankData(data);
-        osDelay(100);
         transmitCombustionChamberData(data);
-        osDelay(100);
         transmitFlightPhaseData(data);
-        osDelay(100);
         transmitVentValveStatus();
     }
 }

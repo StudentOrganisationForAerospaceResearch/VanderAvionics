@@ -26,9 +26,9 @@ static const int CMD_TIMEOUT = 150;
 #define ACCEL_X_LOW_REGISTER_ADDR 0x28
 #define MAGNETO_X_LOW_REGISTER_ADDR 0x28
 
-#define ACCEL_SENSITIVITY 0.732 // Unit is mg/LSB
-#define GYRO_SENSITIVITY 8.75  // Unit is mdps/LSB
-#define MAGENTO_SENSITIVITY 0.14 // Unit is mgauss/LSB
+static const int ACCEL_SENSITIVITY = 0.732; // Unit is mg/LSB
+static const int GYRO_SENSITIVITY = 8.75;  // Unit is mdps/LSB
+static const int MAGENTO_SENSITIVITY = 0.14; // Unit is mgauss/LSB
 
 // Full Commands
 static const uint8_t ACTIVATE_GYRO_ACCEL_CMD = G1_CTRL_REGISTER_ADDR | WRITE_CMD_MASK;
@@ -54,7 +54,7 @@ void readAccelGyroMagnetismTask(void const* arg)
     AccelGyroMagnetismData* data = (AccelGyroMagnetismData*) arg;
     uint32_t prevWakeTime = osKernelSysTick();
 
-    osDelay(1000);
+    osDelay(1000); // need this to let IMU warmup to set configurations
 
     HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&hspi1, &READ_GYRO_X_G_LOW_CMD, 1, CMD_TIMEOUT);
@@ -70,10 +70,10 @@ void readAccelGyroMagnetismTask(void const* arg)
     HAL_SPI_Transmit(&hspi1, &SET_ACCEL_SCALE_DATA, 1, CMD_TIMEOUT);
     HAL_GPIO_WritePin(IMU_CS_GPIO_Port, IMU_CS_Pin, GPIO_PIN_SET);
 
-    HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(&hspi1, &ACTIVATE_MAGNETO_CMD, 1, CMD_TIMEOUT);
-    HAL_SPI_Transmit(&hspi1, &ACTIVATE_MAGNETO_DATA, 1, CMD_TIMEOUT);
-    HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_SET);
+    // HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_RESET);
+    // HAL_SPI_Transmit(&hspi1, &ACTIVATE_MAGNETO_CMD, 1, CMD_TIMEOUT);
+    // HAL_SPI_Transmit(&hspi1, &ACTIVATE_MAGNETO_DATA, 1, CMD_TIMEOUT);
+    // HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_SET);
 
     /* Read WHO AM I register for verification, should read 104. */
     // uint8_t whoami;
