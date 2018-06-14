@@ -17,4 +17,5 @@ typedef enum
 
 void newFlightPhase(FlightPhase newPhase);
 FlightPhase getCurrentFlightPhase();
+void resetFlightPhase();
 

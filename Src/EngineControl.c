@@ -9,8 +9,9 @@
 
 static const int PRELAUNCH_PHASE_PERIOD = 50;
 static const int BURN_DURATION = 10000;
-static const int POST_BURN_PERIOD = 10;
+static const int POST_BURN_PERIOD = 1000;
 
+static const int POST_BURN_REOPEN_INJECTION_VALVE_DURATION = 20 * 60 * 1000; // 20 minutes
 static const int MAX_TANK_PRESSURE = 820000; // 820 psi, 5660 kPa, 25 deg C at saturation
 
 /**
@@ -63,6 +64,11 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
             }
         }
 
+        if (launchCmdReceived != 0)
+        {
+            newFlightPhase(BURN);
+        }
+
         if (getCurrentFlightPhase() != PRELAUNCH)
         {
             return;
@@ -89,10 +95,29 @@ void engineControlBurnRoutine()
 void engineControlPostBurnRoutine()
 {
     uint32_t prevWakeTime = osKernelSysTick();
+    uint32_t timeInPostBurn = 0;
 
     for (;;)
     {
         osDelayUntil(&prevWakeTime, POST_BURN_PERIOD);
+        FlightPhase phase = getCurrentFlightPhase();
+
+        if (phase != COAST && phase != DROGUE_DESCENT && phase != MAIN_DESCENT)
+        {
+            return;
+        }
+
+        // requires 49 days to overflow, not handling this case
+        timeInPostBurn += POST_BURN_PERIOD;
+
+        if (timeInPostBurn < POST_BURN_REOPEN_INJECTION_VALVE_DURATION)
+        {
+            closeInjectionValve();
+        }
+        else
+        {
+            openInjectionValve();
+        }
     }
 }
 
@@ -120,13 +145,8 @@ void engineControlTask(void const* arg)
 
             case ABORT:
 
-                // Stop executing and wait let other code do what needs to be done
-                // This should already be done by other code in the program
-                for (;;)
-                {
-                    // do nothing this thread is finished
-                    osDelay(1000);
-                }
+                // Do nothing and let other code do what needs to be done
+                osDelay(1000);
 
                 break;
 
