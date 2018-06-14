@@ -76,8 +76,10 @@ SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 SPI_HandleTypeDef hspi3;
 
+UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
 
 osThreadId defaultTaskHandle;
 
@@ -98,6 +100,12 @@ static osThreadId transmitDataTaskHandle;
 // Special abort thread
 static osThreadId abortPhaseTaskHandle;
 
+static uint8_t launchSystemsRxChar = 0;
+static const uint8_t LAUNCH_CMD_BYTE = 0x20;
+static const uint8_t ABORT_CMD_BYTE = 0x2F;
+uint8_t launchCmdReceived = 0;
+uint8_t abortCmdReceived = 0;
+
 static const int FLIGHT_PHASE_DISPLAY_FREQ = 1000;
 static const int FLIGHT_PHASE_BLINK_FREQ = 100;
 /* USER CODE END PV */
@@ -105,13 +113,15 @@ static const int FLIGHT_PHASE_BLINK_FREQ = 100;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_SPI3_Init(void);
-static void MX_SPI2_Init(void);
-static void MX_SPI1_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_ADC2_Init(void);
+static void MX_SPI1_Init(void);
+static void MX_SPI3_Init(void);
+static void MX_SPI2_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_UART4_Init(void);
+static void MX_USART3_UART_Init(void);
 void StartDefaultTask(void const* argument);
 
 /* USER CODE BEGIN PFP */
@@ -151,13 +161,15 @@ int main(void)
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
-    MX_SPI3_Init();
-    MX_SPI2_Init();
-    MX_SPI1_Init();
     MX_ADC1_Init();
     MX_ADC2_Init();
+    MX_SPI1_Init();
+    MX_SPI3_Init();
+    MX_SPI2_Init();
     MX_USART1_UART_Init();
     MX_USART2_UART_Init();
+    MX_UART4_Init();
+    MX_USART3_UART_Init();
     /* USER CODE BEGIN 2 */
     // data primitive structs
     AccelGyroMagnetismData* accelGyroMagnetismData =
@@ -229,6 +241,15 @@ int main(void)
 
     /* USER CODE BEGIN RTOS_TIMERS */
     /* start timers, add new ones, ... */
+    if (HAL_UART_Receive_IT(&huart2, launchSystemsRxChar, 1) != HAL_OK)
+    {
+        /* Reception Error */
+        HAL_UART_ErrorCallback(&huart2);
+    }
+
+    // Turn on fan
+    HAL_GPIO_WritePin(FAN_CTRL_GPIO_Port, FAN_CTRL_Pin, 1);
+
     /* USER CODE END RTOS_TIMERS */
 
     /* Create the thread(s) */
@@ -451,7 +472,7 @@ static void MX_ADC1_Init(void)
     hadc1.Init.ScanConvMode = DISABLE;
     hadc1.Init.ContinuousConvMode = ENABLE;
     hadc1.Init.DiscontinuousConvMode = DISABLE;
-    hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISINGFALLING;
+    hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
     hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
     hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
     hadc1.Init.NbrOfConversion = 1;
@@ -465,7 +486,7 @@ static void MX_ADC1_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
     */
-    sConfig.Channel = ADC_CHANNEL_4;
+    sConfig.Channel = ADC_CHANNEL_8;
     sConfig.Rank = 1;
     sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
 
@@ -490,7 +511,7 @@ static void MX_ADC2_Init(void)
     hadc2.Init.ScanConvMode = DISABLE;
     hadc2.Init.ContinuousConvMode = ENABLE;
     hadc2.Init.DiscontinuousConvMode = DISABLE;
-    hadc2.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISINGFALLING;
+    hadc2.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
     hadc2.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
     hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
     hadc2.Init.NbrOfConversion = 1;
@@ -504,7 +525,7 @@ static void MX_ADC2_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
     */
-    sConfig.Channel = ADC_CHANNEL_15;
+    sConfig.Channel = ADC_CHANNEL_9;
     sConfig.Rank = 1;
     sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
 
@@ -590,6 +611,26 @@ static void MX_SPI3_Init(void)
 
 }
 
+/* UART4 init function */
+static void MX_UART4_Init(void)
+{
+
+    huart4.Instance = UART4;
+    huart4.Init.BaudRate = 4800;
+    huart4.Init.WordLength = UART_WORDLENGTH_8B;
+    huart4.Init.StopBits = UART_STOPBITS_1;
+    huart4.Init.Parity = UART_PARITY_NONE;
+    huart4.Init.Mode = UART_MODE_TX_RX;
+    huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart4.Init.OverSampling = UART_OVERSAMPLING_16;
+
+    if (HAL_UART_Init(&huart4) != HAL_OK)
+    {
+        _Error_Handler(__FILE__, __LINE__);
+    }
+
+}
+
 /* USART1 init function */
 static void MX_USART1_UART_Init(void)
 {
@@ -615,7 +656,7 @@ static void MX_USART2_UART_Init(void)
 {
 
     huart2.Instance = USART2;
-    huart2.Init.BaudRate = 4800;
+    huart2.Init.BaudRate = 9600;
     huart2.Init.WordLength = UART_WORDLENGTH_8B;
     huart2.Init.StopBits = UART_STOPBITS_1;
     huart2.Init.Parity = UART_PARITY_NONE;
@@ -630,14 +671,32 @@ static void MX_USART2_UART_Init(void)
 
 }
 
+/* USART3 init function */
+static void MX_USART3_UART_Init(void)
+{
+
+    huart3.Instance = USART3;
+    huart3.Init.BaudRate = 4800;
+    huart3.Init.WordLength = UART_WORDLENGTH_8B;
+    huart3.Init.StopBits = UART_STOPBITS_1;
+    huart3.Init.Parity = UART_PARITY_NONE;
+    huart3.Init.Mode = UART_MODE_TX_RX;
+    huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+
+    if (HAL_UART_Init(&huart3) != HAL_OK)
+    {
+        _Error_Handler(__FILE__, __LINE__);
+    }
+
+}
+
 /** Configure pins as
         * Analog
         * Input
         * Output
         * EVENT_OUT
         * EXTI
-     PA4   ------> SharedAnalog_PA4
-     PC5   ------> SharedAnalog_PC5
 */
 static void MX_GPIO_Init(void)
 {
@@ -652,57 +711,91 @@ static void MX_GPIO_Init(void)
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
     /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOC, LED1_Pin | LED2_Pin | BARO_CS_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, UNUSED_PIN_Pin | UNUSED_PINC14_Pin | UNUSED_PINC15_Pin | UNUSED_PINC0_Pin
+                      | UNUSED_PINC1_Pin | UNUSED_PINC2_Pin | MAG_CS_Pin | LED1_Pin
+                      | BARO_CS_Pin | DROGUE_PARACHUTE_Pin | MAIN_PARACHUTE_Pin | UNUSED_PINC9_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOB, MAG_CS_Pin | IMU_CS_Pin | VENT_VALVE_Pin | INJECTION_VALVE_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOA, IMU_CS_Pin | UNUSED_PINA8_Pin | UNUSED_PINA9_Pin | UNUSED_PINA10_Pin
+                      | VENT_VALVE_Pin | INJECTION_VALVE_Pin | SD1_CS_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(THERM_CS_GPIO_Port, THERM_CS_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, LED2_Pin | UNUSED_PINB12_Pin | UNUSED_PINB4_Pin | FAN_CTRL_Pin
+                      | UNUSED_PINB8_Pin | UNUSED_PINB9_Pin, GPIO_PIN_RESET);
 
-    /*Configure GPIO pins : LED1_Pin LED2_Pin BARO_CS_Pin */
-    GPIO_InitStruct.Pin = LED1_Pin | LED2_Pin | BARO_CS_Pin;
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(SD2_CS_GPIO_Port, SD2_CS_Pin, GPIO_PIN_RESET);
+
+    /*Configure GPIO pins : UNUSED_PIN_Pin UNUSED_PINC14_Pin UNUSED_PINC15_Pin UNUSED_PINC0_Pin
+                             UNUSED_PINC1_Pin UNUSED_PINC2_Pin MAG_CS_Pin LED1_Pin
+                             BARO_CS_Pin DROGUE_PARACHUTE_Pin MAIN_PARACHUTE_Pin UNUSED_PINC9_Pin */
+    GPIO_InitStruct.Pin = UNUSED_PIN_Pin | UNUSED_PINC14_Pin | UNUSED_PINC15_Pin | UNUSED_PINC0_Pin
+                          | UNUSED_PINC1_Pin | UNUSED_PINC2_Pin | MAG_CS_Pin | LED1_Pin
+                          | BARO_CS_Pin | DROGUE_PARACHUTE_Pin | MAIN_PARACHUTE_Pin | UNUSED_PINC9_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : ADC1_IN4_Pin */
-    GPIO_InitStruct.Pin = ADC1_IN4_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    /*Configure GPIO pin : LAUNCH_Pin */
+    GPIO_InitStruct.Pin = LAUNCH_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(ADC1_IN4_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(LAUNCH_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : ADC2_IN15_Pin */
-    GPIO_InitStruct.Pin = ADC2_IN15_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    /*Configure GPIO pins : IMU_CS_Pin UNUSED_PINA8_Pin UNUSED_PINA9_Pin UNUSED_PINA10_Pin
+                             VENT_VALVE_Pin INJECTION_VALVE_Pin SD1_CS_Pin */
+    GPIO_InitStruct.Pin = IMU_CS_Pin | UNUSED_PINA8_Pin | UNUSED_PINA9_Pin | UNUSED_PINA10_Pin
+                          | VENT_VALVE_Pin | INJECTION_VALVE_Pin | SD1_CS_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(ADC2_IN15_GPIO_Port, &GPIO_InitStruct);
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /*Configure GPIO pins : MAG_CS_Pin IMU_CS_Pin VENT_VALVE_Pin INJECTION_VALVE_Pin */
-    GPIO_InitStruct.Pin = MAG_CS_Pin | IMU_CS_Pin | VENT_VALVE_Pin | INJECTION_VALVE_Pin;
+    /*Configure GPIO pins : LED2_Pin UNUSED_PINB12_Pin UNUSED_PINB4_Pin FAN_CTRL_Pin
+                             UNUSED_PINB8_Pin UNUSED_PINB9_Pin */
+    GPIO_InitStruct.Pin = LED2_Pin | UNUSED_PINB12_Pin | UNUSED_PINB4_Pin | FAN_CTRL_Pin
+                          | UNUSED_PINB8_Pin | UNUSED_PINB9_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : THERM_CS_Pin */
-    GPIO_InitStruct.Pin = THERM_CS_Pin;
+    /*Configure GPIO pin : SD2_CS_Pin */
+    GPIO_InitStruct.Pin = SD2_CS_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(THERM_CS_GPIO_Port, &GPIO_InitStruct);
-
-    /*Configure GPIO pin : SD_CS_Pin */
-    GPIO_InitStruct.Pin = SD_CS_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(SD_CS_GPIO_Port, &GPIO_InitStruct);
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(SD2_CS_GPIO_Port, &GPIO_InitStruct);
 
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef* huart)
+{
 
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
+{
+    if (huart->Instance == USART2)
+    {
+        if (launchSystemsRxChar == LAUNCH_CMD_BYTE)
+        {
+            launchCmdReceived = 1;
+        }
+        else if (launchSystemsRxChar == ABORT_CMD_BYTE)
+        {
+            abortCmdReceived = 1;
+        }
+
+        if (HAL_UART_Receive_IT(&huart2, launchSystemsRxChar, 1) != HAL_OK)
+        {
+            HAL_UART_Receive_IT(&huart2, launchSystemsRxChar, 1); // try one more time
+        }
+    }
+
+}
 /* USER CODE END 4 */
 
 /* StartDefaultTask function */

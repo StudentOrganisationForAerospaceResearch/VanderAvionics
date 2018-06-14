@@ -63,6 +63,7 @@ C_SOURCES = \
   Src/ReadBarometer.c \
   Src/ReadCombustionChamberPressure.c \
   Src/ReadGps.c \
+  Src/ValveControl.c \
   Src/ReadOxidizerTankPressure.c \
   Src/stm32f4xx_hal_msp.c \
   Src/stm32f4xx_hal_timebase_TIM.c \
