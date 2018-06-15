@@ -6,7 +6,7 @@
 #include "FlightPhase.h"
 #include "ValveControl.h"
 
-static const int ABORT_PHASE_TASK_PERIOD = 50;
+static const int ABORT_PHASE_TASK_PERIOD = 100;
 static const int ABORT_INJECTION_DELAY = 5 * 60 * 1000; // 5 minutes
 
 void abortPhaseTask(void const* arg)

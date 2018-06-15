@@ -10,9 +10,9 @@
 
 #define QUEUE_SIZE 5
 
-static int READ_COMBUSTION_CHAMBER_PRESSURE_PERIOD = 80;
+static int READ_COMBUSTION_CHAMBER_PRESSURE_PERIOD = 25;
 
-static const int COMBUSTION_CHAMBER_ADC_POLL_TIMEOUT = 50;
+static const int COMBUSTION_CHAMBER_ADC_POLL_TIMEOUT = 25;
 static const double R1 = 100;    // Resistor values in kOhms
 static const double R2 = 133;
 

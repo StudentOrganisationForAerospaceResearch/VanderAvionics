@@ -6,7 +6,7 @@
 #include "ReadBarometer.h"
 #include "Data.h"
 
-static const int READ_BAROMETER_PERIOD = 20;    // Sampling delay set to 50 Hz to match high frequency logging
+static const int READ_BAROMETER_PERIOD = 25;
 
 static const int CMD_SIZE = 1;
 static const int CMD_TIMEOUT = 150;
