@@ -47,6 +47,7 @@ void abortPhaseTask(void const* arg)
                 {
                     launchCmdReceived = 0;
                     abortCmdReceived = 0;
+                    heartbeatTimer = HEARTBEAT_TIMEOUT;
 
                     timeInAbort = 0;
 
