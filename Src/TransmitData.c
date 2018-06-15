@@ -239,7 +239,7 @@ void transmitFlightPhaseData(AllData* data, uint8_t sendToLaunchSystems, uint8_t
     }
 }
 
-void transmitVentValveStatus(, uint8_t sendToLaunchSystems, uint8_t sendToRadio)
+void transmitVentValveStatus(uint8_t sendToLaunchSystems, uint8_t sendToRadio)
 {
     uint8_t ventValveStatus = ventValveIsOpen;
 
@@ -300,7 +300,7 @@ void transmitDataTask(void const* arg)
         else
         {
             // yes send to launch systems and reset timer
-            launchSystemsSendCounter = 0
+            launchSystemsSendCounter = 0;
         }
 
         if (radioSendCounter < TRANSMIT_RADIO_PERIOD)
@@ -310,7 +310,7 @@ void transmitDataTask(void const* arg)
         else
         {
             // yes send to launch systems and reset timer
-            radioSendCounter = 0
+            radioSendCounter = 0;
         }
 
         // actual transmission
@@ -320,7 +320,7 @@ void transmitDataTask(void const* arg)
         transmitOxidizerTankData(data, sendToLaunchSystems, sendToRadio);
         transmitCombustionChamberData(data, sendToLaunchSystems, sendToRadio);
         transmitFlightPhaseData(data, sendToLaunchSystems, sendToRadio);
-        transmitVentValveStatus(, sendToLaunchSystems, sendToRadio);
+        transmitVentValveStatus(sendToLaunchSystems, sendToRadio);
         HAL_UART_Receive_IT(&huart2, &launchSystemsRxChar, 1);
     }
 }
