@@ -18,6 +18,11 @@ void abortPhaseTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, ABORT_PHASE_TASK_PERIOD);
 
+        if (abortCmdReceived)
+        {
+            newFlightPhase(ABORT);
+        }
+
         if (getCurrentFlightPhase() == ABORT)
         {
             // close injection valve
@@ -46,6 +51,7 @@ void abortPhaseTask(void const* arg)
                 if (getCurrentFlightPhase() != ABORT)
                 {
                     timeInAbort = 0;
+                    abortCmdReceived = 0;
                     break;
                 }
             }
