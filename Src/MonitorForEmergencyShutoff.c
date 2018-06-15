@@ -34,6 +34,7 @@ void monitorForEmergencyShutoffTask(void const* arg)
         {
             case PRELAUNCH:
                 heartbeatTimer -= MONITOR_FOR_EMERGENCY_SHUTOFF_PERIOD;
+
                 if (prelaunchChecks())
                 {
                     newFlightPhase(ABORT);
@@ -67,7 +68,8 @@ int prelaunchChecks()
         return 1;
     }
 
-    if (heartbeatTimer <= 0) {
+    if (heartbeatTimer <= 0)
+    {
         return 1;
     }
 
