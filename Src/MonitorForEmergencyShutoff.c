@@ -31,8 +31,10 @@ void monitorForEmergencyShutoffTask(void const* arg)
         switch (getCurrentFlightPhase())
         {
             case PRELAUNCH:
-                // do nothing
-                osDelay(1000);
+                if (abortCmdReceived)
+                {
+                    newFlightPhase(ABORT);
+                }
                 break;
 
             case BURN:
@@ -48,7 +50,6 @@ void monitorForEmergencyShutoffTask(void const* arg)
             case ABORT:
             default:
                 // do nothing
-                osDelay(1000);
                 break;
         }
     }

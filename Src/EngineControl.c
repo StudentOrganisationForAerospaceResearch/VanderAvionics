@@ -146,7 +146,7 @@ void engineControlTask(void const* arg)
             case ABORT:
 
                 // Do nothing and let other code do what needs to be done
-                osDelay(1000);
+                osDelay(PRELAUNCH_PHASE_PERIOD);
 
                 break;
 

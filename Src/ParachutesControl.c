@@ -175,7 +175,7 @@ void parachutesControlPrelaunchRoutine()
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
-        if (getCurrentFlightPhase() > PRELAUNCH)
+        if (getCurrentFlightPhase() != PRELAUNCH)
         {
             // Ascent has begun
             return;
@@ -331,7 +331,7 @@ void parachutesControlTask(void const* arg)
             case MAIN_DESCENT:
             case ABORT:
                 // do nothing
-                osDelay(1000);
+                osDelay(MONITOR_FOR_PARACHUTES_PERIOD);
                 break;
 
             default:

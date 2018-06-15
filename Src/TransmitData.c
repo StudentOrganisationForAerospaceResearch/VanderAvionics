@@ -70,7 +70,7 @@ void transmitImuData(AllData* data)
     writeInt32ToArray(&buffer, 36, magnetoZ);
     buffer[IMU_SERIAL_MSG_SIZE - 1] = 0x00;
 
-    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    if ((getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT))
     {
         HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
     }
@@ -100,7 +100,7 @@ void transmitBarometerData(AllData* data)
     writeInt32ToArray(&buffer, 8, temperature);
     buffer[BAROMETER_SERIAL_MSG_SIZE - 1] = 0x00;
 
-    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    if ((getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT))
     {
         HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Launch Systems
     }
@@ -136,7 +136,7 @@ void transmitGpsData(AllData* data)
     writeInt32ToArray(&buffer, 16, longitude);
     buffer[GPS_SERIAL_MSG_SIZE - 1] = 0x00;
 
-    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    if ((getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT))
     {
         HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT); // Launch Systems
     }
@@ -164,7 +164,7 @@ void transmitOxidizerTankData(AllData* data)
     buffer[OXIDIZER_TANK_SERIAL_MSG_SIZE - 1] = 0x00;
 
 
-    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    if ((getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT))
     {
         HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
     }
@@ -211,7 +211,7 @@ void transmitFlightPhaseData(AllData* data)
                          0x00
                         };
 
-    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    if ((getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT))
     {
         HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
     }
@@ -231,7 +231,7 @@ void transmitVentValveStatus()
                          0x00
                         };
 
-    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    if ((getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT))
     {
         HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT); // Launch Systems
     }
