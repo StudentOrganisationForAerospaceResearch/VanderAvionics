@@ -43,12 +43,14 @@ void abortPhaseTask(void const* arg)
                     closeInjectionValve();
                 }
 
-                if (getCurrentFlightPhase() != ABORT)
+                if (resetAvionicsCmdReceived)
                 {
                     launchCmdReceived = 0;
                     abortCmdReceived = 0;
 
                     timeInAbort = 0;
+
+                    resetFlightPhase();
                     break;
                 }
             }
