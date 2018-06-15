@@ -279,11 +279,13 @@ void transmitDataTask(void const* arg)
         // determine if should send to radio or launch sytems based on flightphase
         FlightPhase phase = getCurrentFlightPhase();
 
-        if (phase == PRELAUNCH || phase == ABORT) {
+        if (phase == PRELAUNCH || phase == ABORT)
+        {
             sendToLaunchSystems = 1;
         }
 
-        if (phase == PRELAUNCH || phase == ABORT || phase == MAIN_DESCENT) {
+        if (phase == PRELAUNCH || phase == ABORT || phase == MAIN_DESCENT)
+        {
             sendToRadio = 1;
         }
 
@@ -291,16 +293,22 @@ void transmitDataTask(void const* arg)
         launchSystemsSendCounter += TRANSMIT_DATA_PERIOD;
         radioSendCounter += TRANSMIT_DATA_PERIOD;
 
-        if(launchSystemsSendCounter < TRANSMIT_LAUNCH_SYSTEMS_PERIOD) {
+        if (launchSystemsSendCounter < TRANSMIT_LAUNCH_SYSTEMS_PERIOD)
+        {
             sendToLaunchSystems = 0;
-        } else {
+        }
+        else
+        {
             // yes send to launch systems and reset timer
             launchSystemsSendCounter = 0
         }
 
-        if(radioSendCounter < TRANSMIT_RADIO_PERIOD) {
+        if (radioSendCounter < TRANSMIT_RADIO_PERIOD)
+        {
             sendToRadio = 0;
-        } else {
+        }
+        else
+        {
             // yes send to launch systems and reset timer
             radioSendCounter = 0
         }
