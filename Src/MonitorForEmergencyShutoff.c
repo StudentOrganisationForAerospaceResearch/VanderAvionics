@@ -35,6 +35,7 @@ void monitorForEmergencyShutoffTask(void const* arg)
                 {
                     newFlightPhase(ABORT);
                 }
+
                 break;
 
             case BURN:
