@@ -12,6 +12,7 @@
 static const int SEA_LEVEL_PRESSURE = 101421.93903699999; //TODO: THIS NEEDS TO BE UPDATED AND RECORDED ON LAUNCH DAY
 static const int MAIN_DEPLOYMENT_ALTITUDE = 457 + 1401; // Units in meters. Equivalent of 15000 ft + altitude of spaceport america.
 static const int MONITOR_FOR_PARACHUTES_PERIOD = 100;
+static const int KALMAN_FILTER_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 static const double KALMAN_GAIN[][2] =
 {
     {0.105553059, 0.109271566},
@@ -226,10 +227,17 @@ void parachutesControlCoastRoutine(
 )
 {
     uint32_t prevWakeTime = osKernelSysTick();
-
+    uint32_t elapsedTime = 0;
+ 
     for (;;)
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
+
+        elapsedTime += MONITOR_FOR_PARACHUTES_PERIOD;
+        if (elapsedTime > KALMAN_FILTER_TIMEOUT) {
+            newFlightPhase(DROGUE_DESCENT);
+            return;
+        }
 
         int32_t currentAccel = readAccel(accelGyroMagnetismData);
         int32_t currentPressure = readPressure(barometerData);
@@ -263,11 +271,17 @@ void parachutesControlDrogueDescentRoutine(
 )
 {
     uint32_t prevWakeTime = osKernelSysTick();
+    uint32_t elapsedTime = 0;
 
     for (;;)
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
+        elapsedTime += MONITOR_FOR_PARACHUTES_PERIOD;
+        if (elapsedTime > KALMAN_FILTER_TIMEOUT) {
+            newFlightPhase(MAIN_DESCENT);
+            return;
+        }
 
         int32_t currentAccel = readAccel(accelGyroMagnetismData);
         int32_t currentPressure = readPressure(barometerData);
@@ -329,6 +343,8 @@ void parachutesControlTask(void const* arg)
                 break;
 
             case MAIN_DESCENT:
+
+
             case ABORT:
                 // do nothing
                 osDelay(MONITOR_FOR_PARACHUTES_PERIOD);
