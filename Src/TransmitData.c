@@ -279,7 +279,7 @@ void transmitDataTask(void const* arg)
         // determine if should send to radio or launch sytems based on flightphase
         FlightPhase phase = getCurrentFlightPhase();
 
-        if (phase == PRELAUNCH || phase == ABORT)
+        if (phase == PRELAUNCH || phase == BURN || phase == ABORT)
         {
             sendToLaunchSystems = 1;
         }
