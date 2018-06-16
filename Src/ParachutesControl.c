@@ -14,6 +14,7 @@ static const int MAIN_DEPLOYMENT_ALTITUDE = 457 + 1401; // Units in meters. Equi
 static const int MONITOR_FOR_PARACHUTES_PERIOD = 100;
 static const int KALMAN_FILTER_DROGUE_TIMEOUT = 2 * 60 * 1000; // 2 minutes
 static const int KALMAN_FILTER_MAIN_PARACHUTE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+static const int PARACHUTE_PULSE_DURATION = 3 * 1000; // 3 seconds
 static const double KALMAN_GAIN[][2] =
 {
     {0.105553059, 0.109271566},
@@ -161,10 +162,21 @@ void ejectDrogueParachute()
     HAL_GPIO_WritePin(DROGUE_PARACHUTE_GPIO_Port, DROGUE_PARACHUTE_Pin, GPIO_PIN_SET);  // high signal causes high current to ignite e-match
 }
 
+void closeDrogueParachute()
+{
+    HAL_GPIO_WritePin(DROGUE_PARACHUTE_GPIO_Port, DROGUE_PARACHUTE_Pin, GPIO_PIN_RESET);
+}
+
 void ejectMainParachute()
 {
     HAL_GPIO_WritePin(MAIN_PARACHUTE_GPIO_Port, MAIN_PARACHUTE_Pin, GPIO_PIN_SET);  // high signal causes high current to ignite e-match
 }
+
+void closeMainParachute()
+{
+    HAL_GPIO_WritePin(MAIN_PARACHUTE_GPIO_Port, MAIN_PARACHUTE_Pin, GPIO_PIN_RESET);
+}
+
 
 /**
  * This routine just waits for the current flight phase to get out of PRELAUNCH
@@ -235,7 +247,9 @@ void parachutesControlCoastRoutine(
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
         elapsedTime += MONITOR_FOR_PARACHUTES_PERIOD;
-        if (elapsedTime > KALMAN_FILTER_DROGUE_TIMEOUT) {
+
+        if (elapsedTime > KALMAN_FILTER_DROGUE_TIMEOUT)
+        {
             newFlightPhase(DROGUE_DESCENT);
             return;
         }
@@ -279,9 +293,16 @@ void parachutesControlDrogueDescentRoutine(
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
         elapsedTime += MONITOR_FOR_PARACHUTES_PERIOD;
-        if (elapsedTime > KALMAN_FILTER_MAIN_PARACHUTE_TIMEOUT) {
+
+        if (elapsedTime > KALMAN_FILTER_MAIN_PARACHUTE_TIMEOUT)
+        {
             newFlightPhase(MAIN_DESCENT);
             return;
+        }
+
+        if (elapsedTime > PARACHUTE_PULSE_DURATION)
+        {
+            closeDrogueParachute();
         }
 
         int32_t currentAccel = readAccel(accelGyroMagnetismData);
@@ -301,6 +322,26 @@ void parachutesControlDrogueDescentRoutine(
             ejectMainParachute();
             newFlightPhase(MAIN_DESCENT);
             return;
+        }
+    }
+}
+
+// this task just ensures the gpios for the parachutes are turned off after 3 seconds
+void parachutesControlMainDescentRoutine()
+{
+    uint32_t prevWakeTime = osKernelSysTick();
+    uint32_t elapsedTime = 0;
+
+    for (;;)
+    {
+        osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
+
+        elapsedTime += MONITOR_FOR_PARACHUTES_PERIOD;
+
+        if (elapsedTime > PARACHUTE_PULSE_DURATION)
+        {
+            closeDrogueParachute();
+            closeMainParachute();
         }
     }
 }
@@ -344,7 +385,8 @@ void parachutesControlTask(void const* arg)
                 break;
 
             case MAIN_DESCENT:
-
+                parachutesControlMainDescentRoutine();
+                break;
 
             case ABORT:
                 // do nothing
