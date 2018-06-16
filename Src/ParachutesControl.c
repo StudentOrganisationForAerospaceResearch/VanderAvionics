@@ -12,7 +12,8 @@
 static const int SEA_LEVEL_PRESSURE = 101421.93903699999; //TODO: THIS NEEDS TO BE UPDATED AND RECORDED ON LAUNCH DAY
 static const int MAIN_DEPLOYMENT_ALTITUDE = 457 + 1401; // Units in meters. Equivalent of 15000 ft + altitude of spaceport america.
 static const int MONITOR_FOR_PARACHUTES_PERIOD = 100;
-static const int KALMAN_FILTER_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+static const int KALMAN_FILTER_DROGUE_TIMEOUT = 2 * 60 * 1000; // 2 minutes
+static const int KALMAN_FILTER_MAIN_PARACHUTE_TIMEOUT = 10 * 60 * 1000; // 60 minutes
 static const double KALMAN_GAIN[][2] =
 {
     {0.105553059, 0.109271566},
@@ -234,9 +235,7 @@ void parachutesControlCoastRoutine(
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
         elapsedTime += MONITOR_FOR_PARACHUTES_PERIOD;
-
-        if (elapsedTime > KALMAN_FILTER_TIMEOUT)
-        {
+        if (elapsedTime > KALMAN_FILTER_DROGUE_TIMEOUT) {
             newFlightPhase(DROGUE_DESCENT);
             return;
         }
@@ -280,9 +279,7 @@ void parachutesControlDrogueDescentRoutine(
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
         elapsedTime += MONITOR_FOR_PARACHUTES_PERIOD;
-
-        if (elapsedTime > KALMAN_FILTER_TIMEOUT)
-        {
+        if (elapsedTime > KALMAN_FILTER_MAIN_PARACHUTE_TIMEOUT) {
             newFlightPhase(MAIN_DESCENT);
             return;
         }
