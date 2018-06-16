@@ -228,13 +228,15 @@ void parachutesControlCoastRoutine(
 {
     uint32_t prevWakeTime = osKernelSysTick();
     uint32_t elapsedTime = 0;
- 
+
     for (;;)
     {
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
         elapsedTime += MONITOR_FOR_PARACHUTES_PERIOD;
-        if (elapsedTime > KALMAN_FILTER_TIMEOUT) {
+
+        if (elapsedTime > KALMAN_FILTER_TIMEOUT)
+        {
             newFlightPhase(DROGUE_DESCENT);
             return;
         }
@@ -278,7 +280,9 @@ void parachutesControlDrogueDescentRoutine(
         osDelayUntil(&prevWakeTime, MONITOR_FOR_PARACHUTES_PERIOD);
 
         elapsedTime += MONITOR_FOR_PARACHUTES_PERIOD;
-        if (elapsedTime > KALMAN_FILTER_TIMEOUT) {
+
+        if (elapsedTime > KALMAN_FILTER_TIMEOUT)
+        {
             newFlightPhase(MAIN_DESCENT);
             return;
         }
