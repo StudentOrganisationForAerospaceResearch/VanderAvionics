@@ -83,6 +83,7 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
  */
 void engineControlBurnRoutine()
 {
+    closeInjectionValve();
     openInjectionValve();
     osDelay(BURN_DURATION);
     newFlightPhase(COAST);
