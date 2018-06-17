@@ -71,8 +71,6 @@ void abortPhaseTask(void const* arg)
                 resetAvionicsCmdReceived = 0;
                 heartbeatTimer = HEARTBEAT_TIMEOUT;
                 resetFlightPhase();
-
-                break;
             }
         }
     }
