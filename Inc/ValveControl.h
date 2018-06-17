@@ -1,7 +1,7 @@
 #pragma once
 
-#define MAX_DURATION_VENT_VALVE_OPEN (8000)
-#define REQUIRED_DURATION_VENT_VALVE_CLOSED (4000)
+#define MAX_DURATION_VENT_VALVE_OPEN (5000)
+#define REQUIRED_DURATION_VENT_VALVE_CLOSED (2200)
 
 void openVentValve();
 void closeVentValve();
