@@ -10,11 +10,10 @@
 
 // Pressure at spaceport america in 100*millibars on May 27, 2018
 static const int SEA_LEVEL_PRESSURE = 101421.93903699999; //TODO: THIS NEEDS TO BE UPDATED AND RECORDED ON LAUNCH DAY
-static const int MAIN_DEPLOYMENT_ALTITUDE = 457 + 1401; // Units in meters. Equivalent of 15000 ft + altitude of spaceport america.
+static const int MAIN_DEPLOYMENT_ALTITUDE = 457 + 1401; // Units in meters. Equivalent of 1500 ft + altitude of spaceport america.
 static const int MONITOR_FOR_PARACHUTES_PERIOD = 100;
 static const int KALMAN_FILTER_DROGUE_TIMEOUT = 2 * 60 * 1000; // 2 minutes
-static const int KALMAN_FILTER_MAIN_PARACHUTE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
-static const int PARACHUTE_PULSE_DURATION = 3 * 1000; // 3 seconds
+static const int PARACHUTE_PULSE_DURATION = 2 * 1000; // 2 seconds
 static const double KALMAN_GAIN[][2] =
 {
     {0.105553059, 0.109271566},
@@ -305,7 +304,7 @@ void parachutesControlDrogueDescentRoutine(
         filterSensors(state, currentAccel, currentPressure, MONITOR_FOR_PARACHUTES_PERIOD);
 
         // detect 4600 ft above sea level and eject main parachute
-        if (detectMainDeploymentAltitude(state) || elapsedTime > KALMAN_FILTER_MAIN_PARACHUTE_TIMEOUT)
+        if (detectMainDeploymentAltitude(state))
         {
             ejectMainParachute();
             newFlightPhase(MAIN_DESCENT);

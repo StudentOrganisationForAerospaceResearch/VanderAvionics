@@ -8,7 +8,7 @@
 #include "ValveControl.h"
 
 static const int PRELAUNCH_PHASE_PERIOD = 50;
-static const int BURN_DURATION = 10000;
+static const int BURN_DURATION = 11000;
 static const int POST_BURN_PERIOD = 1000;
 
 static const int POST_BURN_REOPEN_INJECTION_VALVE_DURATION = 20 * 60 * 1000; // 20 minutes
