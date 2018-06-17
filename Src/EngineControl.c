@@ -22,46 +22,47 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
 {
     uint32_t prevWakeTime = osKernelSysTick();
     int32_t tankPressure = -1;
-    int32_t durationVentValveControlled = 0;
+
+    // If not 0, a vent pulse is in progress
+    // greater than REQUIRED_DURATION_VENT_VALVE_CLOSED is open period
+    // 0 to REQUIRED_DURATION_VENT_VALVE_CLOSED is closed period
+    int32_t ventPulseCounter = 0;
+    closeInjectionValve();
 
     for (;;)
     {
         osDelayUntil(&prevWakeTime, PRELAUNCH_PHASE_PERIOD);
-        // Assume valve is closed
-        // closeInjectionValve();
 
         // Vent tank if over pressure
-        if (osMutexWait(data->mutex_, 0) == osOK)
+        if (ventPulseCounter == 0) // vent pulse is not active, check for over pressure
         {
-            // read tank pressure
-            tankPressure = data->pressure_;
-            osMutexRelease(data->mutex_);
+            if (osMutexWait(data->mutex_, 0) == osOK)
+            {
+                // read tank pressure
+                tankPressure = data->pressure_;
+                osMutexRelease(data->mutex_);
+            }
 
-            // open or close valve based on tank pressure
-            // also do not open valve if it's been open for too long
-            // otherwise the vent valve will break
             if (tankPressure > MAX_TANK_PRESSURE)
             {
-                if (durationVentValveControlled < MAX_DURATION_VENT_VALVE_OPEN)
-                {
-                    // open vent valve
-                    durationVentValveControlled += PRELAUNCH_PHASE_PERIOD;
-                    openVentValve();
-                }
-                else if (durationVentValveControlled <
-                         (MAX_DURATION_VENT_VALVE_OPEN + REQUIRED_DURATION_VENT_VALVE_CLOSED))
-                {
-                    // vent valve has been open for more than max time it can be open
-                    durationVentValveControlled += PRELAUNCH_PHASE_PERIOD;
-                    closeVentValve();
-                }
-                else
-                {
-                    // vent valve has closed to reset itself as long as is necessary
-                    openVentValve();
-                    durationVentValveControlled = 0;
-                }
+                ventPulseCounter =
+                    REQUIRED_DURATION_VENT_VALVE_CLOSED + MAX_DURATION_VENT_VALVE_OPEN;
             }
+        }
+
+        // do vent pulse routine
+        if (ventPulseCounter)
+        {
+            if (ventPulseCounter > REQUIRED_DURATION_VENT_VALVE_CLOSED)
+            {
+                openVentValve();
+            }
+            else
+            {
+                closeVentValve();
+            }
+
+            ventPulseCounter -= PRELAUNCH_PHASE_PERIOD;
         }
 
         if (launchCmdReceived != 0)
@@ -83,7 +84,7 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
  */
 void engineControlBurnRoutine()
 {
-    closeInjectionValve();
+    closeVentValve();
     openInjectionValve();
     osDelay(BURN_DURATION);
     newFlightPhase(COAST);
