@@ -13,6 +13,26 @@ static const int POST_BURN_PERIOD = 1000;
 
 static const int POST_BURN_REOPEN_INJECTION_VALVE_DURATION = 20 * 60 * 1000; // 20 minutes
 static const int MAX_TANK_PRESSURE = 820000; // 820 psi, 5660 kPa, 25 deg C at saturation
+static const int PRELAUNCH_VENT_PULSE_DURATION = 1000; // 1 second
+
+int8_t oxidizerTankIsOverPressure(OxidizerTankPressureData* data)
+{
+    int32_t tankPressure = -1;
+
+    if (osMutexWait(data->mutex_, 0) == osOK)
+    {
+        // read tank pressure
+        tankPressure = data->pressure_;
+        osMutexRelease(data->mutex_);
+    }
+
+    if (tankPressure > MAX_TANK_PRESSURE)
+    {
+        return 1;
+    }
+
+    return 0;
+}
 
 /**
  * This routine keeps the injection valve closed during prelaunch.
@@ -21,11 +41,9 @@ static const int MAX_TANK_PRESSURE = 820000; // 820 psi, 5660 kPa, 25 deg C at s
 void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
 {
     uint32_t prevWakeTime = osKernelSysTick();
-    int32_t tankPressure = -1;
 
-    // If not 0, a vent pulse is in progress
-    // greater than REQUIRED_DURATION_VENT_VALVE_CLOSED is open period
-    // 0 to REQUIRED_DURATION_VENT_VALVE_CLOSED is closed period
+    // If 0, no venting
+    // If non 0, vent for that much more time
     int32_t ventPulseCounter = 0;
     closeInjectionValve();
 
@@ -33,35 +51,27 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
     {
         osDelayUntil(&prevWakeTime, PRELAUNCH_PHASE_PERIOD);
 
-        // Vent tank if over pressure
-        if (ventPulseCounter == 0) // vent pulse is not active, check for over pressure
+        // handle request
+        if (pulseVentValveRequested)
         {
-            if (osMutexWait(data->mutex_, 0) == osOK)
-            {
-                // read tank pressure
-                tankPressure = data->pressure_;
-                osMutexRelease(data->mutex_);
-            }
-
-            if (tankPressure > MAX_TANK_PRESSURE)
-            {
-                ventPulseCounter =
-                    REQUIRED_DURATION_VENT_VALVE_CLOSED + MAX_DURATION_VENT_VALVE_OPEN;
-            }
+            ventPulseCounter = PRELAUNCH_VENT_PULSE_DURATION;
+            pulseVentValveRequested = 0; // request has been dealt with
         }
 
-        // do vent pulse routine
-        if (ventPulseCounter)
+        // if not already venting, check if over pressure
+        if (ventPulseCounter <= 0)
         {
-            if (ventPulseCounter > REQUIRED_DURATION_VENT_VALVE_CLOSED)
-            {
-                openVentValve();
-            }
-            else
-            {
-                closeVentValve();
-            }
+            closeVentValve(); // close vent valve if not venting
 
+            if (oxidizerTankIsOverPressure(data))
+            {
+                ventPulseCounter = PRELAUNCH_VENT_PULSE_DURATION;
+            }
+        }
+        else
+        {
+            // venting is requested, continue venting process
+            openVentValve();
             ventPulseCounter -= PRELAUNCH_PHASE_PERIOD;
         }
 

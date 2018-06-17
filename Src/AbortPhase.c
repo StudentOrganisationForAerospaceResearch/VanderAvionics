@@ -13,47 +13,65 @@ void abortPhaseTask(void const* arg)
 {
     uint32_t prevWakeTime = osKernelSysTick();
     uint32_t timeInAbort = 0;
+    uint32_t pulseVentCounter = 0;
 
     for (;;)
     {
         osDelayUntil(&prevWakeTime, ABORT_PHASE_TASK_PERIOD);
 
-        if (getCurrentFlightPhase() == ABORT)
+        if (getCurrentFlightPhase() != ABORT)
         {
-            // close injection valve
-            closeInjectionValve();
+            continue; // do nothing unless in abort phase
+        }
+        else
+        {
+            timeInAbort += ABORT_PHASE_TASK_PERIOD;
+
+            // open injection valve to quickly empty out oxidizer
+            // wait after time period to ensure no recombustion
+            if (timeInAbort > ABORT_INJECTION_DELAY)
+            {
+                openInjectionValve();
+            }
+            else
+            {
+                closeInjectionValve();
+            }
 
             // pulse vent valve
-            for (;;)
+            pulseVentCounter += ABORT_PHASE_TASK_PERIOD;
+
+            if (pulseVentCounter < MAX_TIME_VENT_VALVE_OPEN)
             {
                 openVentValve();
-                osDelay(MAX_DURATION_VENT_VALVE_OPEN);
-                timeInAbort += MAX_DURATION_VENT_VALVE_OPEN;
-
+            }
+            else if (pulseVentCounter > MAX_TIME_VENT_VALVE_OPEN &&
+                     pulseVentCounter < MAX_TIME_VENT_VALVE_OPEN + REQUIRED_TIME_VENT_VALVE_CLOSED)
+            {
                 closeVentValve();
-                osDelay(REQUIRED_DURATION_VENT_VALVE_CLOSED);
-                timeInAbort += REQUIRED_DURATION_VENT_VALVE_CLOSED;
+            }
+            else
+            {
+                // pulseVentCounter >  MAX_TIME_VENT_VALVE_OPEN + TIME_VENT_VALVE_CLOSED
+                pulseVentCounter = 0;
+            }
 
-                if (timeInAbort > ABORT_INJECTION_DELAY)
-                {
-                    openInjectionValve();
-                }
-                else
-                {
-                    closeInjectionValve();
-                }
+            // detect a reset
+            if (resetAvionicsCmdReceived)
+            {
+                // reset local variables
+                timeInAbort = 0;
+                pulseVentCounter = 0;
 
-                if (resetAvionicsCmdReceived)
-                {
-                    launchCmdReceived = 0;
-                    abortCmdReceived = 0;
-                    heartbeatTimer = HEARTBEAT_TIMEOUT;
+                // reset global variables
+                closeVentValve();
+                closeInjectionValve();
+                launchCmdReceived = 0;
+                abortCmdReceived = 0;
+                heartbeatTimer = HEARTBEAT_TIMEOUT;
+                resetFlightPhase();
 
-                    timeInAbort = 0;
-
-                    resetFlightPhase();
-                    break;
-                }
+                break;
             }
         }
     }
