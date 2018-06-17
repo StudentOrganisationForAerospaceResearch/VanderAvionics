@@ -13,7 +13,7 @@ static const int POST_BURN_PERIOD = 1000;
 
 static const int POST_BURN_REOPEN_INJECTION_VALVE_DURATION = 20 * 60 * 1000; // 20 minutes
 static const int MAX_TANK_PRESSURE = 820000; // 820 psi, 5660 kPa, 25 deg C at saturation
-static const int PRELAUNCH_VENT_PULSE_DURATION = 1000; // 1 second
+static const int PRELAUNCH_VENT_PULSE_DURATION = 2 * 1000; // 2 seconds
 
 int8_t oxidizerTankIsOverPressure(OxidizerTankPressureData* data)
 {

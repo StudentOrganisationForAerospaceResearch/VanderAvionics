@@ -45,8 +45,7 @@ void abortPhaseTask(void const* arg)
             {
                 openVentValve();
             }
-            else if (pulseVentCounter > MAX_TIME_VENT_VALVE_OPEN &&
-                     pulseVentCounter < MAX_TIME_VENT_VALVE_OPEN + REQUIRED_TIME_VENT_VALVE_CLOSED)
+            else if (pulseVentCounter < MAX_TIME_VENT_VALVE_OPEN + REQUIRED_TIME_VENT_VALVE_CLOSED)
             {
                 closeVentValve();
             }
@@ -67,7 +66,9 @@ void abortPhaseTask(void const* arg)
                 closeVentValve();
                 closeInjectionValve();
                 launchCmdReceived = 0;
+                pulseVentValveRequested = 0;
                 abortCmdReceived = 0;
+                resetAvionicsCmdReceived = 0;
                 heartbeatTimer = HEARTBEAT_TIMEOUT;
                 resetFlightPhase();
 
