@@ -7,9 +7,9 @@
 #include "FlightPhase.h"
 #include "Data.h"
 
-static const int TRANSMIT_DATA_PERIOD = 100;
-static const int TRANSMIT_LAUNCH_SYSTEMS_PERIOD = 250;
-static const int TRANSMIT_RADIO_PERIOD = 2000;
+static const int TRANSMIT_DATA_PERIOD = 50;
+static const int TRANSMIT_LAUNCH_SYSTEMS_PERIOD = 100;
+static const int TRANSMIT_RADIO_PERIOD = 250;
 
 static const int8_t IMU_HEADER_BYTE = 0x31;
 static const int8_t BAROMETER_HEADER_BYTE = 0x32;
@@ -273,21 +273,17 @@ void transmitDataTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, TRANSMIT_DATA_PERIOD);
 
-        uint8_t sendToLaunchSystems = 0;
-        uint8_t sendToRadio = 0;
 
         // determine if should send to radio or launch sytems based on flightphase
         FlightPhase phase = getCurrentFlightPhase();
 
+        uint8_t sendToLaunchSystems = 0;
         if (phase == PRELAUNCH || phase == BURN || phase == ABORT)
         {
             sendToLaunchSystems = 1;
         }
 
-        if (phase == PRELAUNCH || phase == ABORT || phase == MAIN_DESCENT)
-        {
-            sendToRadio = 1;
-        }
+        uint8_t sendToRadio = 1;
 
         // determine if should send to radio or launch sytems based on elapsed time
         launchSystemsSendCounter += TRANSMIT_DATA_PERIOD;
