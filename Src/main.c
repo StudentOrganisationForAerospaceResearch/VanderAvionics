@@ -111,7 +111,7 @@ uint8_t pulseVentValveRequested = 0;
 uint8_t abortCmdReceived = 0;
 uint8_t resetAvionicsCmdReceived = 0;
 
-const int32_t HEARTBEAT_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+const int32_t HEARTBEAT_TIMEOUT = 1 * 60 * 1000; // 5 minutes
 int32_t heartbeatTimer = 0; // initalized to HEARTBEAT_TIMEOUT in MonitorForEmergencyShutoff thread
 
 

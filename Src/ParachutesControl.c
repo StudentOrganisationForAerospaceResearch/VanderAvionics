@@ -258,7 +258,8 @@ void parachutesControlCoastRoutine(
 
         filterSensors(state, currentAccel, currentPressure, MONITOR_FOR_PARACHUTES_PERIOD);
 
-        if (detectApogee(state) || elapsedTime > KALMAN_FILTER_DROGUE_TIMEOUT)
+        if (elapsedTime > 30000)
+            // if (detectApogee(state) || elapsedTime > KALMAN_FILTER_DROGUE_TIMEOUT)
         {
             ejectDrogueParachute();
             newFlightPhase(DROGUE_DESCENT);
@@ -304,7 +305,8 @@ void parachutesControlDrogueDescentRoutine(
         filterSensors(state, currentAccel, currentPressure, MONITOR_FOR_PARACHUTES_PERIOD);
 
         // detect 4600 ft above sea level and eject main parachute
-        if (detectMainDeploymentAltitude(state))
+        if (elapsedTime > 30000)
+            // if (detectMainDeploymentAltitude(state))
         {
             ejectMainParachute();
             newFlightPhase(MAIN_DESCENT);
