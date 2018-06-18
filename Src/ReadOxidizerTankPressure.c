@@ -57,6 +57,7 @@ void readOxidizerTankPressureTask(void const* arg)
             continue;
         }
 
+        tankPressure = 0;
         data->pressure_ = (int32_t) tankPressure;
         osMutexRelease(data->mutex_);
     }
