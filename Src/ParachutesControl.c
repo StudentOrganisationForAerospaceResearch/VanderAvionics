@@ -8,9 +8,14 @@
 #include "FlightPhase.h"
 #include "Data.h"
 
+#define SPACE_PORT_AMERICA_ALTITUDE_ABOVE_SEA_LEVEL (1401) // metres
+
 // Pressure at spaceport america in 100*millibars on May 27, 2018
 static const int SEA_LEVEL_PRESSURE = 101421.93903699999; //TODO: THIS NEEDS TO BE UPDATED AND RECORDED ON LAUNCH DAY
-static const int MAIN_DEPLOYMENT_ALTITUDE = 457 + 1401; // Units in meters. Equivalent of 1500 ft + altitude of spaceport america.
+
+// Units in meters. Equivalent of 1500 ft + altitude of spaceport america.
+static const int MAIN_DEPLOYMENT_ALTITUDE = 457 + SPACE_PORT_AMERICA_ALTITUDE_ABOVE_SEA_LEVEL;
+
 static const int MONITOR_FOR_PARACHUTES_PERIOD = 50;
 static const int KALMAN_FILTER_DROGUE_TIMEOUT = 2 * 60 * 1000; // 2 minutes
 static const int PARACHUTE_PULSE_DURATION = 2 * 1000; // 2 seconds
@@ -20,6 +25,15 @@ static const double KALMAN_GAIN[][2] =
     {0.0361533034, 0.0661198847},
     {0.000273178915, 0.618030079}
 };
+
+struct KalmanStateVector
+{
+    double altitude;
+    double velocity;
+    double acceleration;
+};
+
+static struct KalmanStateVector kalmanFilterState;
 
 int32_t readAccel(AccelGyroMagnetismData* data)
 {
@@ -191,8 +205,7 @@ void parachutesControlPrelaunchRoutine()
 
 void parachutesControlBurnRoutine(
     AccelGyroMagnetismData* accelGyroMagnetismData,
-    BarometerData* barometerData,
-    struct KalmanStateVector state
+    BarometerData* barometerData
 )
 {
     uint32_t prevWakeTime = osKernelSysTick();
@@ -215,7 +228,7 @@ void parachutesControlBurnRoutine(
             continue;
         }
 
-        filterSensors(state, currentAccel, currentPressure, MONITOR_FOR_PARACHUTES_PERIOD);
+        filterSensors(kalmanFilterState, currentAccel, currentPressure, MONITOR_FOR_PARACHUTES_PERIOD);
     }
 }
 
@@ -227,8 +240,7 @@ void parachutesControlBurnRoutine(
  */
 void parachutesControlCoastRoutine(
     AccelGyroMagnetismData* accelGyroMagnetismData,
-    BarometerData* barometerData,
-    struct KalmanStateVector state
+    BarometerData* barometerData
 )
 {
     uint32_t prevWakeTime = osKernelSysTick();
@@ -249,9 +261,9 @@ void parachutesControlCoastRoutine(
             continue;
         }
 
-        filterSensors(state, currentAccel, currentPressure, MONITOR_FOR_PARACHUTES_PERIOD);
+        filterSensors(kalmanFilterState, currentAccel, currentPressure, MONITOR_FOR_PARACHUTES_PERIOD);
 
-        if (detectApogee(state) || elapsedTime > KALMAN_FILTER_DROGUE_TIMEOUT)
+        if (detectApogee(kalmanFilterState) || elapsedTime > KALMAN_FILTER_DROGUE_TIMEOUT)
         {
             ejectDrogueParachute();
             newFlightPhase(DROGUE_DESCENT);
@@ -267,8 +279,7 @@ void parachutesControlCoastRoutine(
  */
 void parachutesControlDrogueDescentRoutine(
     AccelGyroMagnetismData* accelGyroMagnetismData,
-    BarometerData* barometerData,
-    struct KalmanStateVector state
+    BarometerData* barometerData
 )
 {
     uint32_t prevWakeTime = osKernelSysTick();
@@ -294,10 +305,10 @@ void parachutesControlDrogueDescentRoutine(
             continue;
         }
 
-        filterSensors(state, currentAccel, currentPressure, MONITOR_FOR_PARACHUTES_PERIOD);
+        filterSensors(kalmanFilterState, currentAccel, currentPressure, MONITOR_FOR_PARACHUTES_PERIOD);
 
         // detect 4600 ft above sea level and eject main parachute
-        if (detectMainDeploymentAltitude(state))
+        if (detectMainDeploymentAltitude(kalmanFilterState))
         {
             ejectMainParachute();
             newFlightPhase(MAIN_DESCENT);
@@ -329,7 +340,9 @@ void parachutesControlMainDescentRoutine()
 void parachutesControlTask(void const* arg)
 {
     ParachutesControlData* data = (ParachutesControlData*) arg;
-    struct KalmanStateVector state;
+    kalmanFilterState.altitude = SPACE_PORT_AMERICA_ALTITUDE_ABOVE_SEA_LEVEL;
+    kalmanFilterState.velocity = 0;
+    kalmanFilterState.acceleration = 0;
 
     for (;;)
     {
@@ -342,24 +355,21 @@ void parachutesControlTask(void const* arg)
             case BURN:
                 parachutesControlBurnRoutine(
                     data->accelGyroMagnetismData_,
-                    data->barometerData_,
-                    state
+                    data->barometerData_
                 );
                 break;
 
             case COAST:
                 parachutesControlCoastRoutine(
                     data->accelGyroMagnetismData_,
-                    data->barometerData_,
-                    state
+                    data->barometerData_
                 );
                 break;
 
             case DROGUE_DESCENT:
                 parachutesControlDrogueDescentRoutine(
                     data->accelGyroMagnetismData_,
-                    data->barometerData_,
-                    state
+                    data->barometerData_
                 );
 
                 break;
