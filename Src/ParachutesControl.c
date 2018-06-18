@@ -21,13 +21,6 @@ static const double KALMAN_GAIN[][2] =
     {0.000273178915, 0.618030079}
 };
 
-struct KalmanStateVector
-{
-    double altitude;
-    double velocity;
-    double acceleration;
-};
-
 int32_t readAccel(AccelGyroMagnetismData* data)
 {
     if (osMutexWait(data->mutex_, 0) != osOK)
