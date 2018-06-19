@@ -17,7 +17,8 @@ static const int SEA_LEVEL_PRESSURE = 101421.93903699999; //TODO: THIS NEEDS TO 
 static const int MAIN_DEPLOYMENT_ALTITUDE = 457 + SPACE_PORT_AMERICA_ALTITUDE_ABOVE_SEA_LEVEL;
 
 static const int MONITOR_FOR_PARACHUTES_PERIOD = 50;
-static const int KALMAN_FILTER_DROGUE_TIMEOUT = 2 * 60 * 1000; // 2 minutes
+static const int KALMAN_FILTER_DROGUE_TIMEOUT = 3 * 60 * 1000; // 3 minutes
+static const int KALMAN_FILTER_MAIN_TIMEOUT = 20 * 60 * 1000; // 20 minutes
 static const int PARACHUTE_PULSE_DURATION = 2 * 1000; // 2 seconds
 static const double KALMAN_GAIN[][2] =
 {
@@ -310,7 +311,7 @@ void parachutesControlDrogueDescentRoutine(
 
         // detect 4600 ft above sea level and eject main parachute
         if (elapsedTime > 30000)
-        // if (detectMainDeploymentAltitude(kalmanFilterState))
+        // if (detectMainDeploymentAltitude(kalmanFilterState) || elapsedTime > KALMAN_FILTER_MAIN_TIMEOUT)
         {
             ejectMainParachute();
             newFlightPhase(MAIN_DESCENT);
