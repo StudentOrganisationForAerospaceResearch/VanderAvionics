@@ -21,7 +21,9 @@ void abortPhaseTask(void const* arg)
 
         if (getCurrentFlightPhase() != ABORT)
         {
-            continue; // do nothing unless in abort phase
+            // don't do anything unless in abort
+            resetAvionicsCmdReceived = 0;
+            continue;
         }
         else
         {
