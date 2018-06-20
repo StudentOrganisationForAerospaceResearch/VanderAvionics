@@ -278,6 +278,7 @@ void transmitDataTask(void const* arg)
         FlightPhase phase = getCurrentFlightPhase();
 
         uint8_t sendToLaunchSystems = 0;
+
         if (phase == PRELAUNCH || phase == BURN || phase == ABORT)
         {
             sendToLaunchSystems = 1;
