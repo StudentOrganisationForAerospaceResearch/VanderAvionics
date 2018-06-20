@@ -789,7 +789,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
     {
         if (launchSystemsRxChar == LAUNCH_CMD_BYTE)
         {
-            if(systemIsArmed) {
+            if (systemIsArmed)
+            {
                 launchCmdReceived++;
             }
         }
