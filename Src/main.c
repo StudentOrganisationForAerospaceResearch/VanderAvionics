@@ -101,11 +101,13 @@ static osThreadId transmitDataTaskHandle;
 static osThreadId abortPhaseTaskHandle;
 
 static const uint8_t LAUNCH_CMD_BYTE = 0x20;
+static const uint8_t ARM_CMD_BYTE = 0x21;
 static const uint8_t PULSE_VENT_VALVE = 0x24;
 static const uint8_t ABORT_CMD_BYTE = 0x2F;
 static const uint8_t RESET_AVIONICS_CMD_BYTE = 0x4F;
 static const uint8_t HEARTBEAT_BYTE = 0x46;
 uint8_t launchSystemsRxChar = 0;
+uint8_t systemIsArmed = 0;
 uint8_t launchCmdReceived = 0;
 uint8_t pulseVentValveRequested = 0;
 uint8_t abortCmdReceived = 0;
@@ -787,7 +789,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
     {
         if (launchSystemsRxChar == LAUNCH_CMD_BYTE)
         {
-            launchCmdReceived = 1;
+            if(systemIsArmed) {
+                launchCmdReceived++;
+            }
+        }
+        else if (launchSystemsRxChar == ARM_CMD_BYTE)
+        {
+            systemIsArmed = 1;
         }
         else if (launchSystemsRxChar == PULSE_VENT_VALVE)
         {

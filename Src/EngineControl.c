@@ -75,7 +75,7 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
             ventPulseCounter -= PRELAUNCH_PHASE_PERIOD;
         }
 
-        if (launchCmdReceived != 0)
+        if (launchCmdReceived >= 2)
         {
             newFlightPhase(BURN);
         }
