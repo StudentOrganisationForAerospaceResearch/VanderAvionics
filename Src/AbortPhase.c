@@ -68,6 +68,7 @@ void abortPhaseTask(void const* arg)
                 closeVentValve();
                 closeInjectionValve();
                 launchCmdReceived = 0;
+                systemIsArmed = 0;
                 pulseVentValveRequested = 0;
                 abortCmdReceived = 0;
                 resetAvionicsCmdReceived = 0;
