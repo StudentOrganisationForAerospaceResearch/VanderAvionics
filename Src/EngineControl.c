@@ -51,6 +51,8 @@ void engineControlPrelaunchRoutine(OxidizerTankPressureData* data)
     {
         osDelayUntil(&prevWakeTime, PRELAUNCH_PHASE_PERIOD);
 
+        closeInjectionValve();
+
         // handle request
         if (pulseVentValveRequested)
         {
