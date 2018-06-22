@@ -17,8 +17,8 @@ static const int SEA_LEVEL_PRESSURE = 101421.93903699999; //TODO: THIS NEEDS TO 
 static const int MAIN_DEPLOYMENT_ALTITUDE = 457 + SPACE_PORT_AMERICA_ALTITUDE_ABOVE_SEA_LEVEL;
 
 static const int MONITOR_FOR_PARACHUTES_PERIOD = 50;
-static const int KALMAN_FILTER_DROGUE_TIMEOUT = 3 * 60 * 1000; // 3 minutes
-static const int KALMAN_FILTER_MAIN_TIMEOUT = 20 * 60 * 1000; // 20 minutes
+static const int KALMAN_FILTER_DROGUE_TIMEOUT = 2 * 60 * 1000; // 2 minutes
+static const int KALMAN_FILTER_MAIN_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 static const int PARACHUTE_PULSE_DURATION = 2 * 1000; // 2 seconds
 static const double KALMAN_GAIN[][2] =
 {
@@ -133,7 +133,7 @@ struct KalmanStateVector filterSensors(
 int32_t detectApogee(struct KalmanStateVector state)
 {
     // Monitor for when to deploy drogue chute. Simple velocity tolerance, looking for a minimum.
-    if (state.velocity < 25)
+    if (state.velocity < 10)
     {
         return 1;
     }
