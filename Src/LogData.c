@@ -10,7 +10,7 @@
 #include "Data.h"
 #include "FlightPhase.h"
 
-static int SLOW_LOG_DATA_PERIOD = 1000;
+static int SLOW_LOG_DATA_PERIOD = 50;
 static int FAST_LOG_DATA_PERIOD = 50;
 
 static FATFS fatfs;
@@ -30,12 +30,6 @@ void buildLogEntry(AllData* data, char* buffer)
     int32_t magnetoZ = -1;
     int32_t pressure = -1;
     int32_t temperature = -1;
-    int32_t combustionChamberPressure = -1;
-    int32_t altitude = -1;
-    int32_t epochTimeMsec = -1;
-    int32_t latitude = -1;
-    int32_t longitude = -1;
-    int32_t oxidizerTankPressure = -1;
 
     if (osMutexWait(data->accelGyroMagnetismData_->mutex_, 0) == osOK)
     {
@@ -58,47 +52,17 @@ void buildLogEntry(AllData* data, char* buffer)
         osMutexRelease(data->barometerData_->mutex_);
     }
 
-    if (osMutexWait(data->combustionChamberPressureData_->mutex_, 0) == osOK)
-    {
-        combustionChamberPressure = data->combustionChamberPressureData_->pressure_;
-        osMutexRelease(data->combustionChamberPressureData_->mutex_);
-    }
-
-    if (osMutexWait(data->gpsData_->mutex_, 0) == osOK)
-    {
-        altitude = data->gpsData_->altitude_;
-        epochTimeMsec = data->gpsData_->epochTimeMsec_;
-        latitude = data->gpsData_->latitude_;
-        longitude = data->gpsData_->longitude_;
-        osMutexRelease(data->gpsData_->mutex_);
-    }
-
-    if (osMutexWait(data->oxidizerTankPressureData_->mutex_, 0) == osOK)
-    {
-        oxidizerTankPressure = data->oxidizerTankPressureData_->pressure_;
-        osMutexRelease(data->oxidizerTankPressureData_->mutex_);
-    }
-
     sprintf(
         buffer,
-        "%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%d\n",
+        "%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%d\n",
         accelX,
         accelY,
         accelZ,
         gyroX,
         gyroY,
         gyroZ,
-        magnetoX,
-        magnetoY,
-        magnetoZ,
         pressure,
         temperature,
-        combustionChamberPressure,
-        altitude,
-        epochTimeMsec,
-        latitude,
-        longitude,
-        oxidizerTankPressure,
         getCurrentFlightPhase()
     );
 }
@@ -200,17 +164,8 @@ void logDataTask(void const* arg)
         "gyroX,"
         "gyroY,"
         "gyroZ,"
-        "magnetoX,"
-        "magnetoY,"
-        "magnetoZ,"
         "pressure,"
         "temperature,"
-        "combustionChamberPressure,"
-        "altitude,"
-        "epochTimeMsec,"
-        "latitude,"
-        "longitude,"
-        "oxidizerTankPressure,"
         "currentFlightPhase\n"
     );
 

@@ -7,7 +7,7 @@
 #include "FlightPhase.h"
 #include "Data.h"
 
-static const int TRANSMIT_DATA_PERIOD = 500;
+static const int TRANSMIT_DATA_PERIOD = 2500;
 
 static const int8_t IMU_HEADER_BYTE = 0x31;
 static const int8_t BAROMETER_HEADER_BYTE = 0x32;
@@ -70,10 +70,10 @@ void transmitImuData(AllData* data)
     writeInt32ToArray(&buffer, 36, magnetoZ);
     buffer[IMU_SERIAL_MSG_SIZE - 1] = 0x00;
 
-    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
-    {
-        HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
-    }
+    // if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    // {
+    //     HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
+    // }
 
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
@@ -100,46 +100,18 @@ void transmitBarometerData(AllData* data)
     writeInt32ToArray(&buffer, 8, temperature);
     buffer[BAROMETER_SERIAL_MSG_SIZE - 1] = 0x00;
 
-    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
-    {
-        HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Launch Systems
-    }
+    // if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    // {
+    //     HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);	// Launch Systems
+    // }
 
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
 void transmitGpsData(AllData* data)
 {
-    int32_t altitude = -1;
-    int32_t epochTimeMsec = -1;
-    int32_t latitude = -1;
-    int32_t longitude = -1;
-
-    if (osMutexWait(data->gpsData_->mutex_, 0) == osOK)
-    {
-        altitude = data->gpsData_->altitude_;
-        epochTimeMsec = data->gpsData_->epochTimeMsec_;
-        latitude = data->gpsData_->latitude_;
-        longitude = data->gpsData_->longitude_;
-        osMutexRelease(data->gpsData_->mutex_);
-    }
-
-    uint8_t buffer[GPS_SERIAL_MSG_SIZE] = {0};
-
-    buffer[0] = GPS_HEADER_BYTE;
-    buffer[1] = GPS_HEADER_BYTE;
-    buffer[2] = GPS_HEADER_BYTE;
-    buffer[3] = GPS_HEADER_BYTE;
-    writeInt32ToArray(&buffer, 4, altitude);
-    writeInt32ToArray(&buffer, 8, epochTimeMsec);
-    writeInt32ToArray(&buffer, 12, latitude);
-    writeInt32ToArray(&buffer, 16, longitude);
-    buffer[GPS_SERIAL_MSG_SIZE - 1] = 0x00;
-
-    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
-    {
-        HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT); // Launch Systems
-    }
+    char buffer[200];
+    HAL_UART_Receive(&huart4, (uint8_t*)buffer, 200, 50);
 
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
@@ -164,10 +136,10 @@ void transmitOxidizerTankData(AllData* data)
     buffer[OXIDIZER_TANK_SERIAL_MSG_SIZE - 1] = 0x00;
 
 
-    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
-    {
-        HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
-    }
+    // if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    // {
+    //     HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
+    // }
 
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
@@ -191,10 +163,10 @@ void transmitCombustionChamberData(AllData* data)
     writeInt32ToArray(&buffer, 4, combustionChamberPressure);
     buffer[COMBUSTION_CHAMBER_SERIAL_MSG_SIZE - 1] = 0x00;
 
-    if (getCurrentFlightPhase() == PRELAUNCH)
-    {
-        HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
-    }
+    // if (getCurrentFlightPhase() == PRELAUNCH)
+    // {
+    //     HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
+    // }
 
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
@@ -211,10 +183,10 @@ void transmitFlightPhaseData(AllData* data)
                          0x00
                         };
 
-    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
-    {
-        HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
-    }
+    // if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    // {
+    //     HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
+    // }
 
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
@@ -231,10 +203,10 @@ void transmitVentValveStatus()
                          0x00
                         };
 
-    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
-    {
-        HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT); // Launch Systems
-    }
+    // if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    // {
+    //     HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT); // Launch Systems
+    // }
 
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);  // Radio
 }
@@ -249,11 +221,15 @@ void transmitDataTask(void const* arg)
         osDelayUntil(&prevWakeTime, TRANSMIT_DATA_PERIOD);
 
         transmitImuData(data);
+        osDelayUntil(&prevWakeTime, 100);
         transmitBarometerData(data);
-        transmitGpsData(data);
-        transmitOxidizerTankData(data);
-        transmitCombustionChamberData(data);
+        osDelayUntil(&prevWakeTime, 50);
         transmitFlightPhaseData(data);
-        transmitVentValveStatus();
+        osDelayUntil(&prevWakeTime, 50);
+        transmitGpsData(data);
+        // transmitOxidizerTankData(data);
+        // transmitCombustionChamberData(data);
+
+        // transmitVentValveStatus();
     }
 }
