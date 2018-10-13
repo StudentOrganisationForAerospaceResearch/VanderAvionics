@@ -352,7 +352,7 @@ int main(void)
     osThreadDef(
         transmitDataThread,
         transmitDataTask,
-        osPriorityNormal,
+        osPriorityAboveNormal,
         1,
         configMINIMAL_STACK_SIZE * 3
     );

@@ -7,7 +7,7 @@
 #include "FlightPhase.h"
 #include "Data.h"
 
-static const int TRANSMIT_DATA_PERIOD = 2500;
+static const int TRANSMIT_DATA_PERIOD = 500;
 
 static const int8_t IMU_HEADER_BYTE = 0x31;
 static const int8_t BAROMETER_HEADER_BYTE = 0x32;
@@ -47,9 +47,9 @@ void transmitImuData(AllData* data)
         gyroX = data->accelGyroMagnetismData_->gyroX_;
         gyroY = data->accelGyroMagnetismData_->gyroY_;
         gyroZ = data->accelGyroMagnetismData_->gyroZ_;
-        magnetoX = data->accelGyroMagnetismData_->magnetoX_;
-        magnetoY = data->accelGyroMagnetismData_->magnetoY_;
-        magnetoZ = data->accelGyroMagnetismData_->magnetoZ_;
+        // magnetoX = data->accelGyroMagnetismData_->magnetoX_;
+        // magnetoY = data->accelGyroMagnetismData_->magnetoY_;
+        // magnetoZ = data->accelGyroMagnetismData_->magnetoZ_;
         osMutexRelease(data->accelGyroMagnetismData_->mutex_);
     }
 
@@ -65,9 +65,9 @@ void transmitImuData(AllData* data)
     writeInt32ToArray(&buffer, 16, gyroX);
     writeInt32ToArray(&buffer, 20, gyroY);
     writeInt32ToArray(&buffer, 24, gyroZ);
-    writeInt32ToArray(&buffer, 28, magnetoX);
-    writeInt32ToArray(&buffer, 32, magnetoY);
-    writeInt32ToArray(&buffer, 36, magnetoZ);
+    // writeInt32ToArray(&buffer, 28, magnetoX);
+    // writeInt32ToArray(&buffer, 32, magnetoY);
+    // writeInt32ToArray(&buffer, 36, magnetoZ);
     buffer[IMU_SERIAL_MSG_SIZE - 1] = 0x00;
 
     // if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
@@ -108,13 +108,13 @@ void transmitBarometerData(AllData* data)
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
 
-void transmitGpsData(AllData* data)
-{
-    char buffer[200];
-    HAL_UART_Receive(&huart4, (uint8_t*)buffer, 200, 50);
+// void transmitGpsData(AllData* data)
+// {
+//     char buffer[200];
+//     HAL_UART_Receive(&huart4, (uint8_t*)buffer, 200, 50);
 
-    HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
-}
+//     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
+// }
 
 void transmitOxidizerTankData(AllData* data)
 {
@@ -183,10 +183,10 @@ void transmitFlightPhaseData(AllData* data)
                          0x00
                         };
 
-    // if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
-    // {
-    //     HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
-    // }
+    if ( (getCurrentFlightPhase() == PRELAUNCH) || (getCurrentFlightPhase() == ABORT) ) // Add RESET phase here too
+    {
+        HAL_UART_Transmit(&huart2, &buffer, sizeof(buffer), UART_TIMEOUT);  // Launch Systems
+    }
 
     HAL_UART_Transmit(&huart1, &buffer, sizeof(buffer), UART_TIMEOUT);	// Radio
 }
@@ -220,13 +220,14 @@ void transmitDataTask(void const* arg)
     {
         osDelayUntil(&prevWakeTime, TRANSMIT_DATA_PERIOD);
 
-        transmitImuData(data);
-        osDelayUntil(&prevWakeTime, 100);
         transmitBarometerData(data);
-        osDelayUntil(&prevWakeTime, 50);
-        transmitFlightPhaseData(data);
-        osDelayUntil(&prevWakeTime, 50);
-        transmitGpsData(data);
+        // osDelayUntil(&prevWakeTime, 50);
+        transmitImuData(data);
+        // osDelayUntil(&prevWakeTime, 50);
+
+        // transmitFlightPhaseData(data);
+        // osDelayUntil(&prevWakeTime, 50);
+        // transmitGpsData(data);
         // transmitOxidizerTankData(data);
         // transmitCombustionChamberData(data);
 
